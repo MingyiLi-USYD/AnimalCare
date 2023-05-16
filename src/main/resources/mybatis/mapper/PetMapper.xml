@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="usyd.mingyi.animalcare.mapper.PetMapper">
+    <insert id="addPet" parameterType="Pet" useGeneratedKeys="true" keyProperty="petId" keyColumn="pet_id">
+        insert into pet (pet_user_id,name,pet_image_address,category,pet_description)
+        values (#{userId},#{petName},#{petImageAddress},#{category},#{petDescription})
+    </insert>
+    <insert id="addImage">
+        insert into petimage(image_pet_id,image_url)values (#{imagePetId},#{imageUrl})
+    </insert>
+    <select id="getPetList" resultMap="petsInfo">
+        select * from pet where pet_user_id=#{userId}
+    </select>
+
+    <select id="getPet" resultMap="petInfo">
+        select * from pet
+        left join petimage on pet_id=image_pet_id
+        where pet_id=#{petId} and pet_user_id=#{useId}
+    </select>
+
+    <delete id="deletePet">
+        delete from pet where pet_id=#{petId} and pet_user_id=#{useId}
+    </delete>
+
+    <resultMap id="petInfo" type="Pet">
+        <result property="petId" column="pet_id"/>
+        <result property="petName" column="name"/>
+        <result property="age" column="age"/>
+        <result property="category" column="category"/>
+        <result property="petDescription" column="pet_description"/>
+        <result property="petImageAddress" column="pet_image_address"/>
+        <collection property="petImageList" ofType="String">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+    <resultMap id="petsInfo" type="Pet">
+        <result property="petId" column="pet_id"/>
+        <result property="petName" column="name"/>
+        <result property="age" column="age"/>
+        <result property="category" column="category"/>
+        <result property="petDescription" column="pet_description"/>
+        <result property="petImageAddress" column="pet_image_address"/>
+    </resultMap>
+
+    <select id="myTest" resultMap="testMe">
+        select pet_id,name,age,category,pet_description,pet_image_address,image_url from pet
+                          left join petimage on pet_id=image_pet_id
+        where pet_id=#{petId} and pet_user_id=#{useId}
+    </select>
+
+    <resultMap id="testMe" type="java.util.Map">
+        <result property="petId" column="pet_id"/>
+        <!--<result property="userId" column="pet_user_id"/>-->
+        <result property="petName" column="name"/>
+        <result property="age" column="age"/>
+        <result property="category" column="category"/>
+        <result property="petDescription" column="pet_description"/>
+        <result property="petImageAddress" column="pet_image_address"/>
+      <!--  <result property="petImageList" column="image_url"/>-->
+        <collection property="petImageList" ofType="String" javaType="java.util.List">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+</mapper>

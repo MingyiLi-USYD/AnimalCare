@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="usyd.mingyi.animalcare.mapper.PostMapper">
+
+     <insert id="addPost" parameterType="Post" useGeneratedKeys="true" keyProperty="postId" keyColumn="post_id">
+         insert into post (post_id,post_user_id,post_content,post_time,tag,topic)
+          values (#{postId},#{userId},#{postContent},#{posTime},#{tag},#{topic})
+     </insert>
+
+    <insert id="addImage">
+        insert into image(image_post_id,image_url)values (#{imagePostId},#{imageUrl})
+    </insert>
+
+    <select id="getAllPosts" resultMap="postsInfo">
+        select *,(SELECT COUNT(*) FROM post)AS total from post AS po left join image AS i on po.post_id=i.image_post_id
+        left join user As u on po.post_user_id=u.id order by po.post_id desc
+        limit #{currPage} , #{pageSize}
+    </select>
+    <select id="getAllPostsOrderByLove" resultMap="postsInfo">
+        select *,(SELECT COUNT(*) FROM post)AS total from post AS po left join image AS i on po.post_id=i.image_post_id
+                                                                     left join user As u on po.post_user_id=u.id order by po.love desc
+            limit #{currPage} , #{pageSize}
+    </select>
+    <select id="getPostsByKeywords" resultMap="postsInfo">
+        select * from post AS po
+                          left join image AS i on po.post_id=i.image_post_id
+                          left join user As u on po.post_user_id=u.id
+        where match (topic) against (#{keywords}in boolean mode) or match (post_content) against (#{keywords}in boolean mode)
+    </select>
+    <!--match (post_content) against (#{keywords}in boolean mode) or-->
+
+    <resultMap id="postsInfo" type="Post">
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="post_user_id"/>
+        <result property="love" column="love"/>
+        <result property="postContent" column="post_content"/>
+        <result property="topic" column="topic"/>
+        <result property="posTime" column="post_time"/>
+        <result property="tag" column="tag"/>
+        <result property="userAvatar" column="user_image_address"/>
+        <result property="totalPosts" column="total"/>
+        <collection property="imageUrlList" ofType="String">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryPostById" resultMap="postInfo">
+        select * from post AS po left join image AS i on po.post_id=i.image_post_id
+                                 left join user As u on po.post_user_id=u.id
+        where po.post_id=#{postId}
+    </select>
+
+    <resultMap id="postInfo" type="Post">
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="post_user_id"/>
+        <result property="love" column="love"/>
+        <result property="postContent" column="post_content"/>
+        <result property="topic" column="topic"/>
+        <result property="posTime" column="post_time"/>
+        <result property="tag" column="tag"/>
+        <result property="userAvatar" column="user_image_address"/>
+        <result property="nickName" column="nickname"/>
+        <result property="userName" column="username"/>
+        <collection property="imageUrlList" ofType="String">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+    <select id="checkLoved" resultType="java.lang.Boolean">
+       select count(*) from userlove where post_id = #{postId} and user_id = #{userId}
+    </select>
+    
+    <update id="lovePlus">
+        update post set love=love+1 where post_id = #{postId}
+    </update>
+
+    <update id="loveMinus">
+        update post set love=love-1 where post_id = #{postId}
+    </update>
+
+    <insert id="love">
+        insert into userlove(post_id,user_id)values (#{postId},#{userId})
+    </insert>
+
+    <delete id="cancelLove">
+        delete from userlove where post_id=#{postId} and user_id=#{userId}
+    </delete>
+
+    <delete id="deletePost">
+        delete from post where post_id = #{postId} and post_user_id =#{userId}
+    </delete>
+
+    <select id="getPostsByUserId" resultMap="postsById">
+        select*from post AS po left join image AS i on po.post_id=i.image_post_id
+               where po.post_user_id = #{userId}
+    </select>
+
+    <resultMap id="postsById" type="Post">
+        <result property="postId" column="post_id"/>
+        <result property="userId" column="post_user_id"/>
+        <result property="love" column="love"/>
+        <result property="postContent" column="post_content"/>
+        <result property="topic" column="topic"/>
+        <result property="posTime" column="post_time"/>
+        <result property="tag" column="tag"/>
+        <result property="userAvatar" column="user_image_address"/>
+        <result property="nickName" column="nickname"/>
+        <result property="userName" column="username"/>
+        <collection property="imageUrlList" ofType="String">
+            <result column="image_url"/>
+        </collection>
+    </resultMap>
+
+    <insert id="addComment" parameterType="Comment">
+        insert into comment(comment_id, comment_post_id,comment_user_id,comment_time,comment_content)
+        values(#{id},#{postId},#{userId},#{commentTime},#{commentContent})
+    </insert>
+
+    <select id="getCommentsByPostId" resultMap="commentsByPostId">
+        select*from comment AS co
+            left join user AS u on co.comment_user_id = u.id
+        where comment_post_id = #{postId}
+    </select>
+
+    <resultMap id="commentsByPostId" type="Comment">
+        <result property="id" column="comment_id" />
+        <result property="postId" column="comment_post_id" />
+        <result property="commentTime" column="comment_time" />
+        <result property="commentContent" column="comment_content" />
+        <result property="nickName" column="nickname" />
+        <result property="userAvatar" column="user_image_address" />
+        <result property="userId" column="id" />
+    </resultMap>
+    
+
+    
+</mapper>

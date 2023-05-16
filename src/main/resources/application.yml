@@ -1,0 +1,73 @@
+spring:
+  datasource:
+    username: root
+    #password: LMY741917776!
+    password: 123456
+    url: jdbc:mysql://localhost:3306/db01?useUnicode=true&characterEncoding=utf-8
+    #url: jdbc:mysql://mysql:3306/db01?useUnicode=true&characterEncoding=utf-8
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  servlet:
+    multipart:
+      max-request-size: 100MB
+      max-file-size: 100MB
+
+
+  mail:
+    port: 587
+    host: smtp.gmail.com
+    username: LMY741917776@gmail.com
+    password: walycwwkefhiojsm
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  redis:
+    host: 35.189.27.6
+    port: 6381
+    #host: redis
+    #port: 6379
+    database: 0
+    timeout: 1800000
+    lettuce:
+      pool:
+       max-active: 8
+       max-wait: -1
+       max-idle: 8
+       min-idle: 0
+    password: LMY741917776!
+
+
+  thymeleaf:
+    cache: true
+  devtools:
+    restart:
+      enabled: true
+      additional-paths: src/main/java
+
+#mybatis
+mybatis:
+  type-aliases-package: usyd.mingyi.animalcare.pojo
+  mapper-locations: classpath:mybatis/mapper/*.xml
+
+project:
+  #file-disk-location: "/D:/userdata/"
+  file-disk-location: "/userdata/"
+  project-prefix: "http://35.189.24.208:8080/api/images/"
+  #project-prefix: "http://localhost:8080/images/"
+
+server:
+  servlet:
+    session:
+      timeout: 3600s
+    context-path: /api
+  port: 8080
+  tomcat:
+    max-http-form-post-size: -1
+    #max-http-post-size: -1 # idea issue, no problem here,although deprecated
+
+
+
+
+

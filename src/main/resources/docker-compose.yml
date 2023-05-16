@@ -1,0 +1,64 @@
+version: "3"
+
+services:
+  animalcareserivce:
+    restart: always
+    build:
+     context: ./Backend
+     dockerfile: Dockerfile
+    container_name: acs01
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./app/animalcareserivce:/data
+      - ./app/images:/userdata
+    networks:
+      - mingyi_net
+    depends_on:
+      - mysql
+      - redis
+  nginx:
+    image: nginx
+    restart: always
+    container_name: nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./app/nginx/html/:/usr/share/nginx/html/
+      - ./app/nginx/conf:/etc/nginx/conf.d
+    privileged: true # 这个必须要，解决nginx的文件调用的权限问题
+    networks:
+      - mingyi_net
+  redis:
+    image: redis:6.0.8
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./app/redis/redis.conf:/etc/redis/redis.conf
+      - ./app/redis/data:/data
+    networks:
+      - mingyi_net
+    command: redis-server /etc/redis/redis.conf
+     
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'LMY741917776!'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'no'
+      MYSQL_DATABASE: 'db01'
+      MYSQL_USER: 'lmy'
+      MYSQL_PASSWORD: 'lmy520'
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./app/mysql/d:/var/lib/mysql
+      - ./app/mysql/conf/conf.d:/etc/mysql/conf.d
+      - ./app/mysql/log:/var/log/mysql
+      - ./app/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - mingyi_net
+    command: --default-authentication-plugin=mysql_native_password #外部访问
+networks:
+  mingyi_net:

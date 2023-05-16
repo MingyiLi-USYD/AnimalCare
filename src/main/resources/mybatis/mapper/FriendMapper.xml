@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="usyd.mingyi.animalcare.mapper.FriendMapper">
+    <select id="checkExistRequest" resultType="Integer">
+        select count(*) from requestlist
+        where user_id_from=#{fromId} and user_id_to=#{toId}
+
+    </select>
+
+    <select id="checkRequestReverse" resultType="Integer">
+        select count(*)from requestlist
+        where user_id_from=#{toId} and user_id_to=#{fromId}
+    </select>
+
+    <select id="isFriend" resultType="Boolean">
+      <![CDATA[ select count(*) from friendlist where user_id=#{fromId} and friend_id=#{toId} ]]>
+    </select>
+
+    <insert id="sendFriendRequest">
+        insert into requestlist(user_id_from,user_id_to)values (#{fromId},#{toId})
+    </insert>
+
+    <delete id="deleteFriendRequest">
+        delete from requestlist where user_id_from=#{fromId} and user_id_to=#{toId}
+    </delete>
+
+    <delete id="deleteFromFriendList">
+        delete from friendlist where user_id =#{fromId} and friend_id=#{toId}
+    </delete>
+
+    <insert id="addToFriendList">
+        insert into friendlist(user_id,friend_id)values (#{fromId},#{toId})
+    </insert>
+
+    <select id="getAllFriends" resultMap="friendsInfo">
+        SELECT id,nickname,description,user_image_address
+        FROM friendlist AS fl
+        LEFT JOIN user AS u ON u.id = fl.friend_id
+        WHERE fl.user_id = #{id}
+    </select>
+
+    <resultMap id="friendsInfo" type="User">
+        <result property="id" column="id"/>
+        <result property="nickName" column="nickname"/>
+        <result property="description" column="description"/>
+        <result property="userImageAddress" column="user_image_address"/>
+    </resultMap>
+
+    <select id="getAllRequests" resultMap="requestsInfo">
+        SELECT user_id_from,nickname,description,user_image_address
+        FROM requestlist AS rl
+                 LEFT JOIN user AS u ON rl.user_id_from=u.id
+        WHERE rl.user_id_to = #{id}
+    </select>
+    <resultMap id="requestsInfo" type="User">
+        <result property="id" column="user_id_from"/>
+        <result property="nickName" column="nickname"/>
+        <result property="description" column="description"/>
+        <result property="userImageAddress" column="user_image_address"/>
+    </resultMap>
+
+</mapper>
