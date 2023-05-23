@@ -2,6 +2,7 @@ package usyd.mingyi.animalcare.controller;
 
 
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-
+@Slf4j
 @RestController
 public class PageController {
 
@@ -118,7 +119,7 @@ public class PageController {
     @PostMapping("/post/android/newPost")
     @ResponseBody
     @Transactional
-    public ResponseEntity<Object> upLoadPostInAndroid(@RequestParam(value = "images",required = false) MultipartFile[] images,
+    public ResponseEntity<Object> upLoadPostInAndroid(@RequestParam(value = "images[]",required = false) MultipartFile[] images,
                                                                                 @RequestParam("postTopic") String postTopic,
                                                                                 @RequestParam("postContent") String postContent,
                                                                                 @RequestParam("postTag") String postTag,
@@ -128,10 +129,10 @@ public class PageController {
         String projectPrefix = projectProperties.projectPrefix;
 
         HttpSession session = request.getSession();
-
+        System.out.println(images);
+        log.info(postTopic);
         String userName = (String) session.getAttribute("userName");
         int id = (int) session.getAttribute("id");
-
         Post post = new Post();
         post.setUserId(id);
         post.setLove(0);
@@ -139,6 +140,7 @@ public class PageController {
         post.setPostContent(postContent);
         post.setTopic(postTopic);
         post.setTag(postTag);
+
         if (postService.addPost(post) != 1) {
             return new ResponseEntity<>(ResultData.fail(201, "Content invalid"), HttpStatus.CREATED);
         }

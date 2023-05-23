@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.controller;
 
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 
 @RestController
+@Slf4j
 public class UserController {
     @Autowired
     UserService userService;
@@ -39,8 +41,10 @@ public class UserController {
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
     @ResponseBody
+
     public ResponseEntity<Object> login(@RequestBody User userInfo, HttpSession session) {
 
+        log.info("登录");
         String username = userInfo.getUserName();
         String password = userInfo.getPassword();
         String encryptedPassword = userService.queryPassword(username);

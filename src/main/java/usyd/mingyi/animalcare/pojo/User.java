@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,9 +19,11 @@ public class User implements Serializable {
     private String userName;
     private String password;
     private String email;
+    @JsonProperty(value = "nickname")
     private String nickName;
     private String description;
     private String uuid;
+    @JsonProperty("avatar")
     private String userImageAddress;
     private String Tag;
     private List<Post> postList;

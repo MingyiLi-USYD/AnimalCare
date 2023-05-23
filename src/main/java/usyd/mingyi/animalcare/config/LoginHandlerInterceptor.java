@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.config;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
+import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.ResultData;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +21,9 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("id") != null) {
+            Integer id = (Integer) request.getSession().getAttribute("id");
+            log.info("Thread id is: {}",Thread.currentThread().getId());
+            BaseContext.setCurrentId(id);
             return true;
         } else {
             response.setCharacterEncoding("UTF-8");
