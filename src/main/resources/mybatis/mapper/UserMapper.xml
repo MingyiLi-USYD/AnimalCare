@@ -29,7 +29,7 @@
         <result property="description" column="description"/>
         <result property="email" column="email"/>
         <result property="uuid" column="uuid"/>
-        <result property="userImageAddress" column="user_image_address"/>
+        <result property="avatar" column="avatar"/>
         <collection property="postList" ofType="Post">
             <result property="postId" column="post_id"/>
             <result property="topic" column="topic"/>
@@ -48,7 +48,7 @@
     </resultMap>
 
     <insert id="addUser" parameterType="User">
-          insert into user (username,password,uuid,email,user_image_address,nickname) values (#{userName},#{password},#{uuid},#{email},#{userImageAddress},#{nickName})
+          insert into user (username,password,uuid,email,avatar,nickname) values (#{userName},#{password},#{uuid},#{email},#{avatar},#{nickName})
     </insert>
 
     <select id="queryPassword" parameterType="String" resultType="String">
@@ -57,7 +57,7 @@
 
     <update id="updateUser" parameterType="User">
         update user
-        set  <if test="email !=null and email !=''">email = #{email},</if> nickname = #{nickName}, description = #{description}<if test="userImageAddress !=null and userImageAddress !=''">,user_image_address = #{userImageAddress}</if>
+        set  <if test="email !=null and email !=''">email = #{email},</if> nickname = #{nickName}, description = #{description}<if test="avatar !=null and avatar !=''">,avatar = #{avatar}</if>
         where id = #{id};
     </update>
 

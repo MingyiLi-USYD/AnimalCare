@@ -33,7 +33,7 @@ public class ChatEndpoint {
 
     private static ObjectMapper objectMapper;
 
-    private static Map<Integer,ChatEndpoint> onlineUsers = new ConcurrentHashMap<>();
+    private static Map<Long,ChatEndpoint> onlineUsers = new ConcurrentHashMap<>();
 
     private Session session;
 
@@ -45,14 +45,14 @@ public class ChatEndpoint {
     }
 
     @OnOpen
-    public void onOpen(Session session, EndpointConfig config,@PathParam("userId") Integer userId){
+    public void onOpen(Session session, EndpointConfig config,@PathParam("userId") Long userId){
            this.session = session;
         log.info("当前登录用户的id是: {}",userId);
         onlineUsers.put(userId,this);
         broadcastAllUsers(userId);
 
     }
-    private void broadcastAllUsers(Integer id){
+    private void broadcastAllUsers(Long id){
 
         List<User> allFriends = friendService.getAllFriends(id);
         log.info("我有{}个朋友",allFriends.size());
@@ -67,7 +67,7 @@ public class ChatEndpoint {
 
 
     }
-    private void remindFriendOn(Integer friend,Integer me){
+    private void remindFriendOn(Long friend,Long me){
         try {
             ChatEndpoint chatEndpoint = onlineUsers.get(friend);
             log.info(objectMapper.writeValueAsString(new ResponseMessage(true,"ON",null,me)));
@@ -80,9 +80,11 @@ public class ChatEndpoint {
     }
 
     @OnMessage
-    public void onMessage(String message,Session session,@PathParam("userId") Integer userId){
+    public void onMessage(String message,Session session,@PathParam("userId") Long userId){
+
         try {
             RequestMessage requestMessage = objectMapper.readValue(message, RequestMessage.class);
+            System.out.println(requestMessage);
             if(onlineUsers.containsKey(requestMessage.getToId())){
              ChatEndpoint chatEndpoint = onlineUsers.get(requestMessage.getToId());
                 System.out.println(message);

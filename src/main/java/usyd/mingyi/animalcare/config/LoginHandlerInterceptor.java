@@ -21,7 +21,7 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
         HttpSession session = request.getSession(false);
 
         if (session != null && session.getAttribute("id") != null) {
-            Integer id = (Integer) request.getSession().getAttribute("id");
+            Long id = (Long) request.getSession().getAttribute("id");
             log.info("Thread id is: {}",Thread.currentThread().getId());
             BaseContext.setCurrentId(id);
             return true;

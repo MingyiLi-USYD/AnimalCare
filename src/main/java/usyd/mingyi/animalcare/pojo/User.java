@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class User implements Serializable {
 
-    private Integer id;
+    private Long id;
     private String userName;
     private String password;
     private String email;
@@ -23,8 +23,8 @@ public class User implements Serializable {
     private String nickName;
     private String description;
     private String uuid;
-    @JsonProperty("avatar")
-    private String userImageAddress;
+    //@JsonProperty(value = "avatar",access = JsonProperty.Access.READ_ONLY)
+    private String avatar;
     private String Tag;
     private List<Post> postList;
     private List<Pet> petList;

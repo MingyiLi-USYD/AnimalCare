@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class ResponseMessage {
     private boolean isSystem;
     private String type;
-    private Integer fromId;
+    private Long fromId;
     private Object message;
 
 }

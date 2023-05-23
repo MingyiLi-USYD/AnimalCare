@@ -65,7 +65,7 @@ public class UserController {
             session.setAttribute("id", user.getId());
             session.setAttribute("userName", user.getUserName());
             session.setAttribute("nickName", user.getNickName());
-            session.setAttribute("userAvatar", user.getUserImageAddress());
+            session.setAttribute("userAvatar", user.getAvatar());
             return new ResponseEntity<>(ResultData.success(user.getId()), HttpStatus.OK);
 
         } else {
@@ -86,8 +86,8 @@ public class UserController {
     @PostMapping("/signup")
     @ResponseBody
     public ResponseEntity<Object> signup(@RequestBody User userInfo) {
-        if(StringUtil.isNullOrEmpty(userInfo.getUserImageAddress())){
-            userInfo.setUserImageAddress("http://35.189.24.208:8080/api/images/default.jpg");
+        if(StringUtil.isNullOrEmpty(userInfo.getAvatar())){
+            userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
         }
         userInfo.setPassword(JasyptEncryptorUtils.encode(userInfo.getPassword()));
         userInfo.setUuid(UUID.randomUUID().toString());
@@ -153,10 +153,10 @@ public class UserController {
         String fileDiskLocation = projectProperties.fileDiskLocation;
         ;
         String projectPrefix = projectProperties.projectPrefix;
-        int id = (int) session.getAttribute("id");
+        long id = (long) session.getAttribute("id");
         String userName = (String) session.getAttribute("userName");
         userInfo.setId(id);
-        String avatarUrl = userInfo.getUserImageAddress();
+        String avatarUrl = userInfo.getAvatar();
         if (!StringUtil.isNullOrEmpty(avatarUrl) && ImageUtil.checkImage(avatarUrl)) {
             //更改照片
             String suffix = ImageUtil.getSuffix(avatarUrl);
@@ -165,7 +165,7 @@ public class UserController {
             String path = fileDiskLocation + userName; //文件路径
             try {
                 ImageUtil.convertBase64ToFile(data, path, tempFileName);
-                userInfo.setUserImageAddress(projectPrefix + userName + "/" + tempFileName);
+                userInfo.setAvatar(projectPrefix + userName + "/" + tempFileName);
                 userService.updateUser(userInfo);
                 //删掉本地之前的头像（未写）
             } catch (Exception e) {
@@ -188,7 +188,7 @@ public class UserController {
         String fileDiskLocation = projectProperties.fileDiskLocation;
         ;
         String projectPrefix = projectProperties.projectPrefix;
-        int id = (int) session.getAttribute("id");
+        long id = (long) session.getAttribute("id");
         String userName = (String) session.getAttribute("userName");
         User userInfo = new User();
         userInfo.setNickName(nickName);
@@ -207,7 +207,7 @@ public class UserController {
                 newFile.getParentFile().mkdirs();
             }
             avatar.transferTo(newFile);
-            userInfo.setUserImageAddress(projectPrefix + userName + "/" + tempFileName);
+            userInfo.setAvatar(projectPrefix + userName + "/" + tempFileName);
         }catch (NullPointerException | IOException e) {
             e.printStackTrace();
         }

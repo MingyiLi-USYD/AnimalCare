@@ -485,7 +485,7 @@ public class PageController {
 
     @GetMapping("/profile")
     public ResponseEntity<Object> getMyProfile(HttpSession session) {
-        int id = (int) session.getAttribute("id");
+        long id = (long) session.getAttribute("id");
         User profile = userService.getProfile(id);
         return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
     }
@@ -572,7 +572,7 @@ public class PageController {
     @GetMapping("/friends")
     @ResponseBody
     public ResponseEntity<Object> getFriendsList(HttpSession session) {
-        int id = (int) session.getAttribute("id");
+        long id = (long) session.getAttribute("id");
         List<User> allFriends = friendService.getAllFriends(id);
         return new ResponseEntity<>(ResultData.success(allFriends), HttpStatus.OK);
     }
@@ -580,7 +580,7 @@ public class PageController {
     @GetMapping("/friends/requests")
     @ResponseBody
     public ResponseEntity<Object> getRequestList(HttpSession session) {
-        int id = (int) session.getAttribute("id");
+        long id = (long) session.getAttribute("id");
         List<User> allRequests = friendService.getAllRequests(id);
         return new ResponseEntity<>(ResultData.success(allRequests), HttpStatus.OK);
     }
@@ -588,7 +588,7 @@ public class PageController {
     @DeleteMapping("/friends/delete/{id}")
     @ResponseBody
     public ResponseEntity<Object> deleteFriendFromList(@PathVariable("id") int toId, HttpSession session) {
-        int fromId = (int) session.getAttribute("id");
+        long fromId = (long) session.getAttribute("id");
         if (fromId == toId)
             return new ResponseEntity<>(ResultData.fail(201, "Can not delete yourself"), HttpStatus.CREATED);
 

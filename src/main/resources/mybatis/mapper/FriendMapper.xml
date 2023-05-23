@@ -35,7 +35,7 @@
     </insert>
 
     <select id="getAllFriends" resultMap="friendsInfo">
-        SELECT id,nickname,description,user_image_address
+        SELECT id,nickname,description,avatar
         FROM friendlist AS fl
         LEFT JOIN user AS u ON u.id = fl.friend_id
         WHERE fl.user_id = #{id}
@@ -45,11 +45,11 @@
         <result property="id" column="id"/>
         <result property="nickName" column="nickname"/>
         <result property="description" column="description"/>
-        <result property="userImageAddress" column="user_image_address"/>
+        <result property="avatar" column="avatar"/>
     </resultMap>
 
     <select id="getAllRequests" resultMap="requestsInfo">
-        SELECT user_id_from,nickname,description,user_image_address
+        SELECT user_id_from,nickname,description,avatar
         FROM requestlist AS rl
                  LEFT JOIN user AS u ON rl.user_id_from=u.id
         WHERE rl.user_id_to = #{id}
@@ -58,7 +58,7 @@
         <result property="id" column="user_id_from"/>
         <result property="nickName" column="nickname"/>
         <result property="description" column="description"/>
-        <result property="userImageAddress" column="user_image_address"/>
+        <result property="avatar" column="avatar"/>
     </resultMap>
 
 </mapper>

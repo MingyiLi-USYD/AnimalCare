@@ -39,7 +39,7 @@
         <result property="topic" column="topic"/>
         <result property="posTime" column="post_time"/>
         <result property="tag" column="tag"/>
-        <result property="userAvatar" column="user_image_address"/>
+        <result property="userAvatar" column="avatar"/>
         <result property="totalPosts" column="total"/>
         <collection property="imageUrlList" ofType="String">
             <result column="image_url"/>
@@ -60,7 +60,7 @@
         <result property="topic" column="topic"/>
         <result property="posTime" column="post_time"/>
         <result property="tag" column="tag"/>
-        <result property="userAvatar" column="user_image_address"/>
+        <result property="userAvatar" column="avatar"/>
         <result property="nickName" column="nickname"/>
         <result property="userName" column="username"/>
         <collection property="imageUrlList" ofType="String">
@@ -105,7 +105,7 @@
         <result property="topic" column="topic"/>
         <result property="posTime" column="post_time"/>
         <result property="tag" column="tag"/>
-        <result property="userAvatar" column="user_image_address"/>
+        <result property="userAvatar" column="avatar"/>
         <result property="nickName" column="nickname"/>
         <result property="userName" column="username"/>
         <collection property="imageUrlList" ofType="String">
@@ -130,7 +130,7 @@
         <result property="commentTime" column="comment_time" />
         <result property="commentContent" column="comment_content" />
         <result property="nickName" column="nickname" />
-        <result property="userAvatar" column="user_image_address" />
+        <result property="userAvatar" column="avatar" />
         <result property="userId" column="id" />
     </resultMap>
     

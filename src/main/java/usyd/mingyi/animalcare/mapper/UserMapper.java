@@ -56,7 +56,7 @@ public interface UserMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    User queryUserById(int userId);
+    User queryUserById(long userId);
     /** 
     * @Description: 查看对应id的主页
     * @Param: [userId] 
@@ -64,7 +64,7 @@ public interface UserMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    User getProfile(int userId);
+    User getProfile(long userId);
 
     int updatePassword(String username,String password);
 

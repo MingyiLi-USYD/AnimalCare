@@ -20,9 +20,9 @@ public interface UserService {
 
     public  void sendEmail(String email,String userName);
 
-    User queryUserById(int userId);
+    User queryUserById(long userId);
 
-    User getProfile(int userId);
+    User getProfile(long userId);
 
     int updatePassword(String username,String password);
 }

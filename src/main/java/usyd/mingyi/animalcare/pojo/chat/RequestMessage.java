@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RequestMessage {
-    private Integer toId;
+    private Long toId;
     private ChatInfo message;
 
 }

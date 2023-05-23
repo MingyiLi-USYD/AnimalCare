@@ -1,13 +1,13 @@
 package usyd.mingyi.animalcare.utils;
 
 public class BaseContext {
-    private static ThreadLocal<Integer> threadLocal = new ThreadLocal<>();
+    private static ThreadLocal<Long> threadLocal = new ThreadLocal<>();
 
-    public static void setCurrentId(Integer id){
+    public static void setCurrentId(Long id){
         threadLocal.set(id);
     }
 
-    public static Integer getCurrentId(){
+    public static Long getCurrentId(){
         return threadLocal.get();
     }
 }

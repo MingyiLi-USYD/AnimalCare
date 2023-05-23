@@ -67,12 +67,12 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public User queryUserById(int userId) {
+    public User queryUserById(long userId) {
         return userMapper.queryUserById(userId);
     }
 
     @Override
-    public User getProfile(int userId) {
+    public User getProfile(long userId) {
         return userMapper.getProfile(userId);
     }
 
