@@ -10,13 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.utils.ImageUtil;
-import usyd.mingyi.animalcare.utils.JasyptEncryptorUtils;
-import usyd.mingyi.animalcare.utils.RandomUtils;
-import usyd.mingyi.animalcare.utils.ResultData;
+import usyd.mingyi.animalcare.utils.*;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
@@ -54,7 +52,7 @@ public class UserController {
         } else {
             String decode = JasyptEncryptorUtils.decode(encryptedPassword);
             if (!decode.equals(password)) {
-                return new ResponseEntity<>(ResultData.fail(401, "Password error"), HttpStatus.UNAUTHORIZED);
+                throw new CustomException("密码不正确");
             }
         }
 
@@ -66,12 +64,23 @@ public class UserController {
             session.setAttribute("userName", user.getUserName());
             session.setAttribute("nickName", user.getNickName());
             session.setAttribute("userAvatar", user.getAvatar());
-            return new ResponseEntity<>(ResultData.success(user.getId()), HttpStatus.OK);
+
+            return new ResponseEntity<>(ResultData.success(JWTUtils.generateToken(user)), HttpStatus.OK);
 
         } else {
             return new ResponseEntity<>(ResultData.fail(401, "Password error"), HttpStatus.UNAUTHORIZED);
 
         }
+    }
+
+    @GetMapping("/currentUser")
+    public ResponseEntity<Object> getCurrentUser(HttpSession session) {
+        long id = (long) session.getAttribute("id");
+        User profile = userService.getProfile(id);
+        if (profile==null){
+            return new ResponseEntity<>(ResultData.fail(401,"login first"),HttpStatus.UNAUTHORIZED);
+        }
+        return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
     }
 
     @GetMapping("/logout")

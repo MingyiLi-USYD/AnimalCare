@@ -1,14 +1,8 @@
 package usyd.mingyi.animalcare.utils;
 
-import io.netty.util.internal.StringUtil;
 import org.apache.commons.codec.binary.Base64;
-import usyd.mingyi.animalcare.pojo.Comment;
-import usyd.mingyi.animalcare.pojo.Pet;
-import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.User;
 
 import java.io.*;
-import java.util.List;
 
 
 public class ImageUtil {

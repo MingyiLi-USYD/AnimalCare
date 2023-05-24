@@ -84,17 +84,14 @@ public class ChatEndpoint {
 
         try {
             RequestMessage requestMessage = objectMapper.readValue(message, RequestMessage.class);
-            System.out.println(requestMessage);
             if(onlineUsers.containsKey(requestMessage.getToId())){
              ChatEndpoint chatEndpoint = onlineUsers.get(requestMessage.getToId());
                 System.out.println(message);
              ResponseMessage responseMessage = new ResponseMessage(false, "CHAT", userId, requestMessage);
                 System.out.println("开始回复");
-                //JsonProperty.Access
                 System.out.println(objectMapper.writeValueAsString(responseMessage));
              chatEndpoint.session.getBasicRemote().sendText(objectMapper.writeValueAsString(responseMessage));
             }else {
-                //当前用户不在线
                 log.info("当前用户不在线");
             }
 
