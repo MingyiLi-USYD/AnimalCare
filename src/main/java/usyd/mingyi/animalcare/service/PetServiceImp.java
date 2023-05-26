@@ -20,17 +20,17 @@ public class PetServiceImp implements PetService {
     }
 
     @Override
-    public List<Pet> getPetList(int userId) {
+    public List<Pet> getPetList(long userId) {
         return petMapper.getPetList(userId);
     }
 
     @Override
-    public Pet getPet(int petId, int useId) {
+    public Pet getPet(int petId, long useId) {
         return petMapper.getPet(petId, useId);
     }
 
     @Override
-    public int deletePet(int petId, int useId) {
+    public int deletePet(int petId, long useId) {
         return petMapper.deletePet(petId, useId);
     }
 

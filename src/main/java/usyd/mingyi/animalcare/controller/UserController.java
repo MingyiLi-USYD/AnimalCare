@@ -11,6 +11,7 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
+import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
@@ -40,7 +41,7 @@ public class UserController {
     @PostMapping("/login")
     @ResponseBody
 
-    public ResponseEntity<Object> login(@RequestBody User userInfo, HttpSession session) {
+    public R<String> login(@RequestBody User userInfo) {
 
         log.info("登录");
         String username = userInfo.getUserName();
@@ -48,35 +49,37 @@ public class UserController {
         String encryptedPassword = userService.queryPassword(username);
 
         if (encryptedPassword == null) {
-            return new ResponseEntity<>(ResultData.fail(401, "No such user"), HttpStatus.UNAUTHORIZED);
+            throw new CustomException("No such user");
         } else {
             String decode = JasyptEncryptorUtils.decode(encryptedPassword);
             if (!decode.equals(password)) {
-                throw new CustomException("密码不正确");
+                throw new CustomException("Password Error");
             }
         }
 
         User user = userService.queryUser(username, encryptedPassword);
 
         if (user != null) {
-
-            session.setAttribute("id", user.getId());
+    /*        session.setAttribute("id", user.getId());
             session.setAttribute("userName", user.getUserName());
             session.setAttribute("nickName", user.getNickName());
-            session.setAttribute("userAvatar", user.getAvatar());
+            session.setAttribute("userAvatar", user.getAvatar());*/
 
-            return new ResponseEntity<>(ResultData.success(JWTUtils.generateToken(user)), HttpStatus.OK);
+            return R.success(JWTUtils.generateToken(user));
 
         } else {
-            return new ResponseEntity<>(ResultData.fail(401, "Password error"), HttpStatus.UNAUTHORIZED);
-
+            throw new CustomException("Password Error");
         }
     }
 
     @GetMapping("/currentUser")
-    public ResponseEntity<Object> getCurrentUser(HttpSession session) {
-        long id = (long) session.getAttribute("id");
-        User profile = userService.getProfile(id);
+    public ResponseEntity<Object> getCurrentUser() {
+        log.info("拦截后的线程ID {}",  Thread.currentThread().getId());
+        Long currentId = BaseContext.getCurrentId();
+        User byId = userService.getById(currentId);
+        System.out.println(byId);
+        log.info(byId.toString());
+        User profile = userService.getProfile(currentId);
         if (profile==null){
             return new ResponseEntity<>(ResultData.fail(401,"login first"),HttpStatus.UNAUTHORIZED);
         }

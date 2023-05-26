@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 import usyd.mingyi.animalcare.pojo.User;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @Mapper
 @Repository
-public interface UserMapper {
+public interface UserMapper extends BaseMapper<User> {
     /** 
     * @Description: 根据账号密码查询到具体用户 
     * @Param: [username, password] 

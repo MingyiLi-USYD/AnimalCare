@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.service;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,12 +14,11 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserServiceImp implements UserService {
+public class UserServiceImp extends ServiceImpl<UserMapper,User> implements UserService  {
 
     @Autowired
     UserMapper userMapper;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     JavaMailSenderImpl mailSender;
 

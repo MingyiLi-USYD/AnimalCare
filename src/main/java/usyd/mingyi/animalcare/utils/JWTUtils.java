@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.pojo.User;
 
 import java.util.Calendar;
@@ -27,9 +28,14 @@ public class JWTUtils {
     }
 
     public static boolean verify(String token){
-        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(SALT)).build();
-        DecodedJWT verify = jwtVerifier.verify(token);
-        return true;
+        try {
+            JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(SALT)).build();
+            DecodedJWT verify = jwtVerifier.verify(token);
+
+        }catch (Exception e){
+            throw new CustomException("token error");
+        }
+         return true;
     }
 
     public static DecodedJWT getTokenInfo(String token){

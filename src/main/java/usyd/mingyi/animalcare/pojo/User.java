@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,16 +15,17 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User implements Serializable {
-
+    private static final long serialVersionUID = 1L;
     private Long id;
+    @TableField("username")
     private String userName;
     private String password;
     private String email;
     @JsonProperty(value = "nickname")
+    @TableField("nickname")
     private String nickName;
     private String description;
     private String uuid;
-    //@JsonProperty(value = "avatar",access = JsonProperty.Access.READ_ONLY)
     private String avatar;
     private String Tag;
     private List<Post> postList;

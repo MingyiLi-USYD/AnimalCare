@@ -450,7 +450,7 @@ public class PageController {
 
     @GetMapping("/pet/{petId}")
     public ResponseEntity<Object> getPet(@PathVariable("petId") int petId, HttpSession session) {
-        int id = (int) session.getAttribute("id");
+        Long id = BaseContext.getCurrentId();
         Pet pet = petService.getPet(petId, id);
 
         if (pet != null) {
@@ -484,8 +484,8 @@ public class PageController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<Object> getMyProfile(HttpSession session) {
-        long id = (long) session.getAttribute("id");
+    public ResponseEntity<Object> getMyProfile() {
+        Long id = BaseContext.getCurrentId();
         User profile = userService.getProfile(id);
         return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
     }
@@ -572,7 +572,7 @@ public class PageController {
     @GetMapping("/friends")
     @ResponseBody
     public ResponseEntity<Object> getFriendsList(HttpSession session) {
-        long id = (long) session.getAttribute("id");
+        long id = BaseContext.getCurrentId();
         List<User> allFriends = friendService.getAllFriends(id);
         return new ResponseEntity<>(ResultData.success(allFriends), HttpStatus.OK);
     }

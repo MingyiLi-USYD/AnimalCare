@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface PetService {
     int addPet(Pet pet);
-    List<Pet> getPetList(int userId);
-    Pet getPet(int petId,int useId);
-    int deletePet(int petId,int useId);
+    List<Pet> getPetList(long userId);
+    Pet getPet(int petId,long useId);
+    int deletePet(int petId,long useId);
     int addImage(int imagePetId,String imageUrl);
 }

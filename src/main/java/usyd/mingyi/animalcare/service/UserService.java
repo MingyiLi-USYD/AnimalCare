@@ -1,13 +1,12 @@
 package usyd.mingyi.animalcare.service;
 
-import org.springframework.stereotype.Service;
-import usyd.mingyi.animalcare.pojo.Post;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.User;
 
-import java.util.List;
 
-
-public interface UserService {
+public interface UserService extends IService<User> {
     User queryUser(String username, String password);
 
     int addUser(User user);

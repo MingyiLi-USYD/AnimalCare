@@ -46,10 +46,13 @@ spring:
       enabled: true
       additional-paths: src/main/java
 
-#mybatis
-mybatis:
-  type-aliases-package: usyd.mingyi.animalcare.pojo
+#mybatis-plus
+mybatis-plus:
   mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: usyd.mingyi.animalcare.pojo
+  configuration:
+    map-underscore-to-camel-case: true
+
 
 project:
   file-disk-location: "F:/userdata/"
@@ -57,15 +60,6 @@ project:
   #project-prefix: "http://35.189.24.208:8080/api/images/"
   project-prefix: ""
 
-server:
-  servlet:
-    session:
-      timeout: 3600s
-    #context-path: /api
-  port: 8080
-  tomcat:
-    max-http-form-post-size: -1
-    #max-http-post-size: -1 # idea issue, no problem here,although deprecated
 
 
 
