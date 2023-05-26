@@ -42,5 +42,9 @@ public class JWTUtils {
         return JWT.require(Algorithm.HMAC256(SALT)).build().verify(token);
     }
 
+    public static String getUserName(String token){
+        return JWT.require(Algorithm.HMAC256(SALT)).build().verify(token).getClaim("userName").asString();
+    }
+
 
 }

@@ -1,5 +1,7 @@
 package usyd.mingyi.animalcare.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.github.yulichang.base.MPJBaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
@@ -7,7 +9,7 @@ import usyd.mingyi.animalcare.pojo.Post;
 import java.util.List;
 
 @Mapper
-public interface PostMapper {
+public interface PostMapper extends MPJBaseMapper<Post> {
     /** 
     * @Description: 发布一个朋友圈 
     * @Param: [post] 
@@ -23,7 +25,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int addImage(int imagePostId,String imageUrl);
+    int addImage(long imagePostId,String imageUrl);
     /** 
     * @Description: 获取所有的朋友圈默认基于发布时间排序
     * @Param: [currPage, pageSize] 
@@ -31,7 +33,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    List<Post> getAllPosts(int currPage, int pageSize);
+    List<Post> getAllPosts(long currPage, long pageSize);
     /** 
     * @Description: 获取所有的朋友圈基于点赞数排序 
     * @Param: [currPage, pageSize] 
@@ -39,7 +41,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    List<Post> getAllPostsOrderByLove(int currPage, int pageSize);
+    List<Post> getAllPostsOrderByLove(long currPage, long pageSize);
     /** 
     * @Description: 根据朋友圈的id找到具体的朋友圈信息 
     * @Param: [postId] 
@@ -47,7 +49,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    Post queryPostById(int postId);
+    Post queryPostById(long postId);
     /** 
     * @Description: 检查朋友圈是否已经被登录用户点过赞 
     * @Param: [userId, postId] 
@@ -55,7 +57,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    boolean checkLoved(int userId,int postId);
+    boolean checkLoved(long userId,long postId);
     /** 
     * @Description: 给朋友圈点赞
     * @Param: [userId, postId] 
@@ -63,7 +65,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int love(int userId, int postId);
+    int love(long userId, long postId);
     /** 
     * @Description: 取消朋友圈点赞 
     * @Param: [userId, postId] 
@@ -71,7 +73,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int cancelLove(int userId, int postId);
+    int cancelLove(long userId, long postId);
     /** 
     * @Description: 给朋友圈点赞加1 
     * @Param: [postId] 
@@ -79,7 +81,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int lovePlus(int postId);
+    int lovePlus(long postId);
     /** 
     * @Description: 给朋友圈点赞数减1 
     * @Param: [postId] 
@@ -87,7 +89,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int loveMinus(int postId);
+    int loveMinus(long postId);
     /** 
     * @Description: 删除对应的朋友圈 
     * @Param: [postId, userId] 
@@ -95,7 +97,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int deletePost(int postId, int userId);
+    int deletePost(long postId, long userId);
     /** 
     * @Description: 对朋友圈发表评论 
     * @Param: [comment] 
@@ -111,7 +113,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    List<Post> getPostsByUserId(int userId);
+    List<Post> getPostsByUserId(long userId);
     /** 
     * @Description: 根据朋友圈id获取到其所有评论 
     * @Param: [postId] 
@@ -119,7 +121,7 @@ public interface PostMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    List<Comment> getCommentsByPostId(int postId);
+    List<Comment> getCommentsByPostId(long postId);
     /** 
     * @Description: 根据关键词搜索朋友圈 
     * @Param: [keywords] 

@@ -31,7 +31,7 @@ public interface PetMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    Pet getPet(int petId,long useId);
+    Pet getPet(long petId,long useId);
     /** 
     * @Description: 删除对应宠物id的宠物 
     * @Param: [petId, useId] 
@@ -39,7 +39,7 @@ public interface PetMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int deletePet(int petId,long useId);
+    int deletePet(long petId,long useId);
     /** 
     * @Description: 保存宠物除了头像之外的所有个性化图片 
     * @Param: [imagePetId, imageUrl] 
@@ -47,7 +47,7 @@ public interface PetMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int addImage(int imagePetId,String imageUrl);
+    int addImage(long imagePetId,String imageUrl);
     /** 
     * @Description: 测试而已无意义
     * @Param: [petId, useId] 
@@ -55,6 +55,6 @@ public interface PetMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    Map<String,Object> myTest (int petId,long useId);
+    Map<String,Object> myTest (long petId,long useId);
 
 }

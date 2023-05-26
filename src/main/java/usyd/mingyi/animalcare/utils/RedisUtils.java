@@ -11,12 +11,12 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class RedisUtils {
-    public static Post getPost(RedisTemplate redisTemplate,int id,boolean loved){
+    public static Post getPost(RedisTemplate redisTemplate,long id,boolean loved){
         String postId = "post"+id;
         if (redisTemplate.hasKey(postId)){
             redisTemplate.opsForHash().increment(postId,"visitCount",1);
             Post post = new Post();
-            Integer userId = (Integer) redisTemplate.opsForHash().get(postId,"userId");
+            Long userId = (Long) redisTemplate.opsForHash().get(postId,"userId");
             Integer love = (Integer) redisTemplate.opsForHash().get(postId,"love");
             String postContent = (String) redisTemplate.opsForHash().get(postId,"postContent");
             String tag = (String) redisTemplate.opsForHash().get(postId,"tag");
@@ -32,7 +32,7 @@ public class RedisUtils {
             post.setPostContent(postContent);
             post.setTag(tag);
             post.setTopic(topic);
-            post.setPosTime(posTime);
+            post.setPostTime(posTime);
             post.setImageUrlList(imageUrlList);
             post.setUserAvatar(userAvatar);
             post.setNickName(nickName);
@@ -51,7 +51,7 @@ public class RedisUtils {
         redisTemplate.opsForHash().put(key,"love",post.getLove());
         redisTemplate.opsForHash().put(key,"postContent",post.getPostContent());
         redisTemplate.opsForHash().put(key,"topic",post.getTopic());
-        redisTemplate.opsForHash().put(key,"posTime",post.getPosTime());
+        redisTemplate.opsForHash().put(key,"posTime",post.getPostTime());
         redisTemplate.opsForHash().put(key,"tag",post.getTag());
         redisTemplate.opsForHash().put(key,"imageUrlList",post.getImageUrlList());
         redisTemplate.opsForHash().put(key,"userAvatar",post.getUserAvatar());

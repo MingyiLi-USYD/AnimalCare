@@ -7,7 +7,7 @@ import java.util.List;
 public interface PetService {
     int addPet(Pet pet);
     List<Pet> getPetList(long userId);
-    Pet getPet(int petId,long useId);
-    int deletePet(int petId,long useId);
-    int addImage(int imagePetId,String imageUrl);
+    Pet getPet(long petId,long useId);
+    int deletePet(long petId,long useId);
+    int addImage(long imagePetId,String imageUrl);
 }

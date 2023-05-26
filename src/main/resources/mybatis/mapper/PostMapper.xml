@@ -37,7 +37,7 @@
         <result property="love" column="love"/>
         <result property="postContent" column="post_content"/>
         <result property="topic" column="topic"/>
-        <result property="posTime" column="post_time"/>
+        <result property="postTime" column="post_time"/>
         <result property="tag" column="tag"/>
         <result property="userAvatar" column="avatar"/>
         <result property="totalPosts" column="total"/>

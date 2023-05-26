@@ -17,6 +17,7 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
@@ -60,10 +61,6 @@ public class UserController {
         User user = userService.queryUser(username, encryptedPassword);
 
         if (user != null) {
-    /*        session.setAttribute("id", user.getId());
-            session.setAttribute("userName", user.getUserName());
-            session.setAttribute("nickName", user.getNickName());
-            session.setAttribute("userAvatar", user.getAvatar());*/
 
             return R.success(JWTUtils.generateToken(user));
 
@@ -73,31 +70,29 @@ public class UserController {
     }
 
     @GetMapping("/currentUser")
-    public ResponseEntity<Object> getCurrentUser() {
-        log.info("拦截后的线程ID {}",  Thread.currentThread().getId());
+    public R<User> getCurrentUser() {
         Long currentId = BaseContext.getCurrentId();
         User byId = userService.getById(currentId);
         System.out.println(byId);
         log.info(byId.toString());
         User profile = userService.getProfile(currentId);
         if (profile==null){
-            return new ResponseEntity<>(ResultData.fail(401,"login first"),HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Login first");
         }
-        return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
+        return R.success(profile);
     }
 
     @GetMapping("/logout")
     @ResponseBody
-    public ResponseEntity<Object> logout(HttpSession session, SessionStatus sessionStatus) {
-        session.invalidate();
-        sessionStatus.setComplete();
-        return new ResponseEntity<>(ResultData.success("Success to logout"), HttpStatus.OK);
+    public R<String> logout( ) {
+
+        return  R.success("Log Out");
 
     }
 
     @PostMapping("/signup")
     @ResponseBody
-    public ResponseEntity<Object> signup(@RequestBody User userInfo) {
+    public R<String> signup(@RequestBody User userInfo) {
         if(StringUtil.isNullOrEmpty(userInfo.getAvatar())){
             userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
         }
@@ -105,13 +100,8 @@ public class UserController {
         userInfo.setUuid(UUID.randomUUID().toString());
         String randomNickname = RandomUtils.getRandomNickname(restTemplate);
         userInfo.setNickName(randomNickname);
-        int i = userService.addUser(userInfo);
-        if (i >= 1) {
-            return new ResponseEntity<>(ResultData.success("Signup success"), HttpStatus.OK);
-
-        } else {
-            return new ResponseEntity<>(ResultData.fail(201, "Signup fail"), HttpStatus.CREATED);
-        }
+        userService.save(userInfo);
+        return R.success("Sign up success");
 
     }
 
@@ -129,11 +119,11 @@ public class UserController {
 
     @PostMapping("/email")
     @ResponseBody
-    public ResponseEntity<Object> sendEmailByUsername(@RequestBody Map map) {
+    public R<String> sendEmailByUsername(@RequestBody Map map) {
         String email = (String) map.get("email");
         String userName = (String) map.get("userName");
         userService.sendEmail(email, userName);
-        return new ResponseEntity<>(ResultData.success(null), HttpStatus.OK);
+        return R.success("成功发送邮件");
     }
 
     @PostMapping("/validate")
@@ -161,12 +151,13 @@ public class UserController {
 
     @PostMapping("/edit")
     @ResponseBody
-    public ResponseEntity<Object> updateUserInfo(@RequestBody User userInfo, HttpSession session) {
+    public ResponseEntity<Object> updateUserInfo(@RequestBody User userInfo, HttpServletRequest request) {
+        String auth = request.getHeader("auth");
+        String userName = JWTUtils.getTokenInfo(auth).getClaim("userName").asString();
+
         String fileDiskLocation = projectProperties.fileDiskLocation;
-        ;
         String projectPrefix = projectProperties.projectPrefix;
-        long id = (long) session.getAttribute("id");
-        String userName = (String) session.getAttribute("userName");
+        long id =  BaseContext.getCurrentId();
         userInfo.setId(id);
         String avatarUrl = userInfo.getAvatar();
         if (!StringUtil.isNullOrEmpty(avatarUrl) && ImageUtil.checkImage(avatarUrl)) {
@@ -191,7 +182,7 @@ public class UserController {
         return new ResponseEntity<>(ResultData.success("Update success"), HttpStatus.OK);
     }
 
-    @PostMapping("/android/edit")
+/*    @PostMapping("/android/edit")
     @ResponseBody
     public ResponseEntity<Object> updateUserInfoInAndroid(@RequestParam(value = "avatar",required = false) MultipartFile avatar,
                                                           @RequestParam("nickName") String nickName,
@@ -225,7 +216,7 @@ public class UserController {
         }
         userService.updateUser(userInfo);
         return new ResponseEntity<>(ResultData.success("Update success"), HttpStatus.OK);
-    }
+    }*/
 
 
 }

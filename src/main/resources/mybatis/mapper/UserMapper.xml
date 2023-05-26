@@ -22,7 +22,7 @@
     </select>
 
 
-    <resultMap id="userInfo" type="User">
+    <resultMap id="userInfo" type="UserDto">
         <result property="id" column="id"/>
         <result property="userName" column="username"/>
         <result property="nickName" column="nickname"/>

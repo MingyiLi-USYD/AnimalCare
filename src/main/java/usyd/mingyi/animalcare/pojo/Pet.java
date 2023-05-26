@@ -11,8 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Pet implements Serializable {
-    private Integer petId;
-    private Integer userId;
+    private Long petId;
+    private Long userId;
     private String petName;
     private Integer age;
     private String category;

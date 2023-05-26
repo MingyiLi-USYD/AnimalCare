@@ -49,9 +49,12 @@ spring:
 #mybatis-plus
 mybatis-plus:
   mapper-locations: classpath:mybatis/mapper/*.xml
-  type-aliases-package: usyd.mingyi.animalcare.pojo
+  type-aliases-package: usyd.mingyi.animalcare.pojo,usyd.mingyi.animalcare.dto
   configuration:
     map-underscore-to-camel-case: true
+  #global-config:
+   # db-config:
+    #  id-type: auto
 
 
 project:

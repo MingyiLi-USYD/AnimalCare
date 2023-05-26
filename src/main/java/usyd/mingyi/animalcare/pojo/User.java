@@ -1,14 +1,10 @@
 package usyd.mingyi.animalcare.pojo;
-
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-
 import java.io.Serializable;
-import java.util.List;
 
 //用户信息
 @Data
@@ -28,9 +24,5 @@ public class User implements Serializable {
     private String uuid;
     private String avatar;
     private String Tag;
-    private List<Post> postList;
-    private List<Pet> petList;
-    private List<User> friendRecordList;
-
 
 }
