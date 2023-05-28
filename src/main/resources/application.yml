@@ -52,16 +52,17 @@ mybatis-plus:
   type-aliases-package: usyd.mingyi.animalcare.pojo,usyd.mingyi.animalcare.dto
   configuration:
     map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   #global-config:
    # db-config:
     #  id-type: auto
 
 
 project:
-  file-disk-location: "F:/userdata/"
+  file-disk-location: F:/userdata/
   #file-disk-location: "/userdata/"
   #project-prefix: "http://35.189.24.208:8080/api/images/"
-  project-prefix: ""
+  project-prefix: /common/download/
 
 
 

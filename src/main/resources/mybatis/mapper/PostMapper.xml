@@ -13,11 +13,6 @@
         insert into image(image_post_id,image_url)values (#{imagePostId},#{imageUrl})
     </insert>
 
-    <select id="getAllPosts" resultMap="postsInfo">
-        select *,(SELECT COUNT(*) FROM post)AS total from post AS po left join image AS i on po.post_id=i.image_post_id
-        left join user As u on po.post_user_id=u.id order by po.post_id desc
-        limit #{currPage} , #{pageSize}
-    </select>
     <select id="getAllPostsOrderByLove" resultMap="postsInfo">
         select *,(SELECT COUNT(*) FROM post)AS total from post AS po left join image AS i on po.post_id=i.image_post_id
                                                                      left join user As u on po.post_user_id=u.id order by po.love desc
@@ -39,11 +34,6 @@
         <result property="topic" column="topic"/>
         <result property="postTime" column="post_time"/>
         <result property="tag" column="tag"/>
-        <result property="userAvatar" column="avatar"/>
-        <result property="totalPosts" column="total"/>
-        <collection property="imageUrlList" ofType="String">
-            <result column="image_url"/>
-        </collection>
     </resultMap>
 
     <select id="queryPostById" resultMap="postInfo">
@@ -63,9 +53,6 @@
         <result property="userAvatar" column="avatar"/>
         <result property="nickName" column="nickname"/>
         <result property="userName" column="username"/>
-        <collection property="imageUrlList" ofType="String">
-            <result column="image_url"/>
-        </collection>
     </resultMap>
 
     <select id="checkLoved" resultType="java.lang.Boolean">
@@ -108,9 +95,6 @@
         <result property="userAvatar" column="avatar"/>
         <result property="nickName" column="nickname"/>
         <result property="userName" column="username"/>
-        <collection property="imageUrlList" ofType="String">
-            <result column="image_url"/>
-        </collection>
     </resultMap>
 
     <insert id="addComment" parameterType="Comment">

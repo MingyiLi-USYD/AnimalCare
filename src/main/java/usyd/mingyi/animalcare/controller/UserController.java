@@ -7,9 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.config.ProjectProperties;
@@ -17,10 +15,6 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -149,7 +143,7 @@ public class UserController {
         return new ResponseEntity<>(ResultData.fail(201, "No code in the system"), HttpStatus.CREATED);
     }
 
-    @PostMapping("/edit")
+ /*   @PostMapping("/edit")
     @ResponseBody
     public ResponseEntity<Object> updateUserInfo(@RequestBody User userInfo, HttpServletRequest request) {
         String auth = request.getHeader("auth");
@@ -180,7 +174,7 @@ public class UserController {
             //删掉本地之前的头像（未写）
         }
         return new ResponseEntity<>(ResultData.success("Update success"), HttpStatus.OK);
-    }
+    }*/
 
 /*    @PostMapping("/android/edit")
     @ResponseBody

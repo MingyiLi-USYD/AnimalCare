@@ -24,5 +24,5 @@ public class User implements Serializable {
     private String uuid;
     private String avatar;
     private String Tag;
-
+    private String loveList;
 }

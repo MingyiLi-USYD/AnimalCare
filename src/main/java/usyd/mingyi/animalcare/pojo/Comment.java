@@ -14,9 +14,5 @@ public class Comment implements Serializable {
     private Long postId;
     private Long commentTime;
     private String commentContent;
-    private String userAvatar;
-    private String nickName;
-    private String userName;
-    private Long userId;
 
 }

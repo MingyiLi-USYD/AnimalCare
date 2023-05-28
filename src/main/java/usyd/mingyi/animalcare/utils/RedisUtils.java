@@ -1,3 +1,4 @@
+/*
 package usyd.mingyi.animalcare.utils;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -104,3 +105,4 @@ public class RedisUtils {
     }
 
 }
+*/

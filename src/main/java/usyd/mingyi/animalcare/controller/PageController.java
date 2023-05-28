@@ -201,9 +201,10 @@ public class PageController {
     @ResponseBody
     public ResponseEntity<Object> getTrendingPosts() {
 
-        List<Post> posts = RedisUtils.getHots(redisTemplate);
+      /*  //List<Post> posts = RedisUtils.getHots(redisTemplate);
 
-        return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);
+        return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);*/
+        return  null;
     }
 
 

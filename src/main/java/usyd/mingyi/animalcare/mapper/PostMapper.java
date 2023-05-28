@@ -16,7 +16,9 @@ public interface PostMapper extends MPJBaseMapper<Post> {
     * @return: int 
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
-    */ 
+    */
+ /*   void addPost(Post post,String userName);*/
+
     int addPost(Post post);
     /** 
     * @Description: 保存朋友圈下的图片信息 

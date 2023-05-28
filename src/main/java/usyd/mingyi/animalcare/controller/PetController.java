@@ -1,31 +1,17 @@
 package usyd.mingyi.animalcare.controller;
 
-import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.pojo.Pet;
-import usyd.mingyi.animalcare.service.FriendService;
 import usyd.mingyi.animalcare.service.PetService;
-import usyd.mingyi.animalcare.service.PostService;
-import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.ImageUtil;
-import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.ResultData;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 @RestController
 public class PetController {
@@ -39,7 +25,7 @@ public class PetController {
 
 
 
-    @PostMapping("/pet/newPet")
+/*    @PostMapping("/pet/newPet")
     public ResponseEntity<Object> addPet(@RequestBody Map map,HttpServletRequest request ) {
         String auth = request.getHeader("auth");
         String userName = JWTUtils.getUserName(auth);
@@ -173,7 +159,7 @@ public class PetController {
         }
 
         return new ResponseEntity<>(ResultData.success("OK"), HttpStatus.OK);
-    }
+    }*/
 
     @GetMapping("/getPetList")
     public ResponseEntity<Object> getPetList(HttpSession session) {

@@ -35,9 +35,6 @@
             <result property="topic" column="topic"/>
             <result property="userId" column="post_user_id"/>
             <result property="love" column="love"/>
-            <collection property="imageUrlList" ofType="String">
-                <result column="image_url"/>
-            </collection>
         </collection>
         <collection property="petList" ofType="Pet">
             <result property="petId" column="pet_id"/>
