@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long id;
     @TableField("username")
     private String userName;

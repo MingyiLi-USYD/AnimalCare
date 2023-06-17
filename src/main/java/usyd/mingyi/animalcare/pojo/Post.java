@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.pojo;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +18,10 @@ import java.util.List;
 @TableName("post")
 public class Post implements Serializable {
     @TableId("post_id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long postId;
     @TableField("post_user_id")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long userId;
     private long love;
     private String postContent;
@@ -26,6 +29,7 @@ public class Post implements Serializable {
     private String topic;
     private Long postTime; //sava timestamp
     private String images;
+    private boolean visible;
 
 
 

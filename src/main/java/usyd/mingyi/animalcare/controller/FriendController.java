@@ -1,115 +1,40 @@
 package usyd.mingyi.animalcare.controller;
 
-
-import io.netty.util.internal.StringUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.support.SessionStatus;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
-import usyd.mingyi.animalcare.config.ProjectProperties;
-import usyd.mingyi.animalcare.pojo.Comment;
-import usyd.mingyi.animalcare.pojo.Pet;
-import usyd.mingyi.animalcare.pojo.Post;
+import usyd.mingyi.animalcare.common.CustomException;
+import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendService;
-import usyd.mingyi.animalcare.service.PetService;
-import usyd.mingyi.animalcare.service.PostService;
-import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.utils.*;
+import usyd.mingyi.animalcare.utils.BaseContext;
+import usyd.mingyi.animalcare.utils.ResultData;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-@Slf4j
 @RestController
-public class PageController {
-
-    @Autowired
-    UserService userService;
-    @Autowired
-    PostService postService;
-    @Autowired
-    PetService petService;
+public class FriendController {
     @Autowired
     FriendService friendService;
-    @Autowired
-    RedisTemplate redisTemplate;
-    @Autowired
-    ProjectProperties projectProperties;
-    @Autowired
-    RestTemplate restTemplate;
-
-
-
-
-
-    @GetMapping("/getCommentsByPostId/{postId}")
-    @ResponseBody
-    public ResponseEntity<Object> getCommentsByPostId(@PathVariable("postId") int postId, HttpServletRequest request) {
-
-        if (postService.queryPostById(postId) == null) {
-            return new ResponseEntity<>(ResultData.fail(201, "No such post"), HttpStatus.CREATED);
-        } else {
-            List<Comment> CommentsByPostId = postService.getCommentsByPostId(postId);
-            return new ResponseEntity<>(ResultData.success(CommentsByPostId), HttpStatus.OK);
-        }
-
-
-    }
-
-
-
-
-    @GetMapping("/profile/{userId}")
-    public ResponseEntity<Object> getProfile(@PathVariable("userId") int userId, HttpSession session) {
-
-        User profile = userService.getProfile(userId);
-
-        return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
-    }
-
-    @GetMapping("/profile")
-    public ResponseEntity<Object> getMyProfile() {
-        Long id = BaseContext.getCurrentId();
-        User profile = userService.getProfile(id);
-        return new ResponseEntity<>(ResultData.success(profile), HttpStatus.OK);
-    }
-
-
-    @GetMapping("/search/{keywords}")
-    @ResponseBody
-    public ResponseEntity<Object> getPosts(@PathVariable("keywords") String keywords) {
-        keywords = "*"+ keywords + "*";
-        List<Post> postsByKeywords = postService.getPostsByKeywords(keywords);
-        return new ResponseEntity<>(ResultData.success(postsByKeywords), HttpStatus.OK);
-    }
-
     @GetMapping("/friends/status/{id}")
     @ResponseBody
-    public ResponseEntity<Object> getFriendshipStatus(@PathVariable("id") int toId, HttpSession session) {
-        int fromId = (int) session.getAttribute("id");
+    public R<Integer> getFriendshipStatus(@PathVariable("id") long toId) {
+        long fromId = BaseContext.getCurrentId();
         if (fromId == toId) {
-            return new ResponseEntity<>(ResultData.fail(201, "Do not add yourself"), HttpStatus.CREATED);
+           throw new CustomException("cant not add yourself");
         }
         int result = friendService.checkFriendshipStatus(fromId, toId);
         if (result == 1) {
-            return new ResponseEntity<>(ResultData.success("Friend"), HttpStatus.OK);
+           return R.success(1);
+            //return new ResponseEntity<>(ResultData.success("Friend"), HttpStatus.OK);
         } else if (result == 0) {
-            return new ResponseEntity<>(ResultData.success("Requesting"), HttpStatus.OK);
+            return R.success(2);
+            //return new ResponseEntity<>(ResultData.success("Requesting"), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(ResultData.success("Nothing"), HttpStatus.OK);
+            return R.success(3);
+            //return new ResponseEntity<>(ResultData.success("Nothing"), HttpStatus.OK);
         }
     }
 
@@ -196,16 +121,5 @@ public class PageController {
             return new ResponseEntity<>(ResultData.fail(201, "Fail to delete friend"), HttpStatus.CREATED);
         }
     }
-
-    @GetMapping("/search/trendingPosts")
-    @ResponseBody
-    public ResponseEntity<Object> getTrendingPosts() {
-
-      /*  //List<Post> posts = RedisUtils.getHots(redisTemplate);
-
-        return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);*/
-        return  null;
-    }
-
 
 }

@@ -26,7 +26,7 @@ public class CommonController {
          FileInputStream fileInputStream = null;
         ServletOutputStream outputStream = null;
         try {
-             fileInputStream = new FileInputStream(new File(basePath + fileName));
+             fileInputStream = new FileInputStream(basePath + fileName);
              outputStream = response.getOutputStream();
             byte[] buffer = new byte[1024];
             int len = 0;
@@ -35,7 +35,8 @@ public class CommonController {
                 outputStream.flush();
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.out.println(e);
+            //throw new RuntimeException(e);
         }
         finally {
             try {

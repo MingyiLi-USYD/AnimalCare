@@ -25,4 +25,5 @@ public class PostDto extends Post {
     private String nickName;
     @TableField(exist = false)
     private Integer visitCount;
+    private Long commentCount;
 }

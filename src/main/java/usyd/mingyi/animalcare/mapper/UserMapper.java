@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
+import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 
 import java.util.List;
@@ -50,14 +51,7 @@ public interface UserMapper extends BaseMapper<User> {
     * @Date: 2022/10/5 
     */ 
     User queryUserByUsername(String username);
-    /** 
-    * @Description: 根据用户id查找到对应的用户 
-    * @Param: [userId] 
-    * @return: usyd.mingyi.animalcare.pojo.User 
-    * @Author: Mingyi Li
-    * @Date: 2022/10/5 
-    */ 
-    User queryUserById(long userId);
+
     /** 
     * @Description: 查看对应id的主页
     * @Param: [userId] 
@@ -65,7 +59,7 @@ public interface UserMapper extends BaseMapper<User> {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    User getProfile(long userId);
+    UserDto getProfile(long targetUserId,long currentUserId);
 
     int updatePassword(String username,String password);
 

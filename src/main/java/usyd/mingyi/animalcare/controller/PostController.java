@@ -1,8 +1,6 @@
 package usyd.mingyi.animalcare.controller;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -18,12 +16,14 @@ import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.utils.*;
+import usyd.mingyi.animalcare.utils.BaseContext;
+import usyd.mingyi.animalcare.utils.JWTUtils;
+import usyd.mingyi.animalcare.utils.ResultData;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +35,9 @@ public class PostController {
     @Autowired
     PostService postService;
     @Autowired
+    CommentService commentService;
+
+    @Autowired
     RedisTemplate redisTemplate;
     @Autowired
     ProjectProperties projectProperties;
@@ -45,13 +48,14 @@ public class PostController {
     @PostMapping("/post")
     @ResponseBody
     @Transactional
-    public R<String> upLoadPost(@RequestParam(value = "images",required = false) MultipartFile[] images,
+    public R<String> upLoadPost(@RequestParam(value = "images") MultipartFile[] images,
                                                       @RequestParam("postTopic") String postTopic,
                                                       @RequestParam("postContent") String postContent,
                                                       @RequestParam("postTag") String postTag,
                                                       HttpServletRequest request) {
 
-
+        log.info("上传文件");
+        System.out.println(images);
         String userName = JWTUtils.getUserName(request.getHeader("auth"));
         long id = BaseContext.getCurrentId();
         Post post = new Post();
@@ -72,9 +76,9 @@ public class PostController {
     //采用Restful风格进行一次传参
     @GetMapping("/post/{postId}")
     @ResponseBody
-    public R<Post> getPost(@PathVariable int postId) {
+    public R<Post> getPost(@PathVariable long postId) {
 
-        Post post = postService.queryPostById(postId);
+        Post post = postService.queryPostById(postId,BaseContext.getCurrentId());
 
         return R.success(post);
     }
@@ -87,9 +91,9 @@ public class PostController {
 
     @GetMapping("/post")
     @ResponseBody
-    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") int page, @RequestParam("pageSize") int pageSize) {
+    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") int page, @RequestParam("pageSize") int pageSize,@RequestParam("order") int order) {
 
-        IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize);
+        IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize,order);
         return R.success(allPosts);
     }
 
@@ -109,41 +113,52 @@ public class PostController {
     }
 
 
-
-    @GetMapping("/getPostByUserId/{id}")
+    @GetMapping("/posts")
     @ResponseBody
-    public ResponseEntity<Object> getPostsByUserId(@PathVariable("id") int userId) {
+    public R<List<Post>> getMyPosts() {
+            long userId = BaseContext.getCurrentId();
+            List<Post> myPosts = postService.getPostByUserId(userId);
+            return R.success(myPosts);
+    }
 
-        User user = userService.queryUserById(userId);
-        if (user == null) {
-            return new ResponseEntity<>(ResultData.fail(201, "No such user"), HttpStatus.CREATED);
-        } else {
-            List<Post> PostsByUserId = postService.getPostByUserId(userId);
-            return new ResponseEntity<>(ResultData.success(PostsByUserId), HttpStatus.OK);
+    @PutMapping("/post/{postId}")
+    public R<String> changeVisibility(@PathVariable("postId") long postId,@RequestParam("visibility")Boolean visibility){
+        System.out.println(visibility);
+        Post post = postService.getById(postId);
+        if(post.getUserId()!=BaseContext.getCurrentId()){
+           return R.error("No right to access");
+        }else {
+            Post newPost = new Post();
+            newPost.setPostId(postId);
+            newPost.setVisible(visibility);
+            if( postService.updateById(newPost)){
+                return R.success("Update success");
+            }else {
+                return  R.error("No change happen");
+            }
         }
     }
 
-    @PostMapping("/comment/{postId}")
+
+
+    @GetMapping("/search/{keywords}")
     @ResponseBody
-    public ResponseEntity<Object> addComment(@PathVariable("postId") long postId, @RequestBody Map map) {
-
-
-        String commentContent = (String) map.get("commentContent");
-        Long id = BaseContext.getCurrentId();
-
-        Comment comment = new Comment();
-        comment.setCommentContent(commentContent);
-        comment.setPostId(postId);
-        comment.setCommentTime(System.currentTimeMillis());
-        comment.setUserId(id);
-
-        if (commentContent == null) {
-            return new ResponseEntity<>(ResultData.fail(201, "Comment can not be null"), HttpStatus.CREATED);
-        }
-        if (postService.addComment(comment) != 1) {
-            return new ResponseEntity<>(ResultData.fail(201, "Comment invalid"), HttpStatus.CREATED);
-        }
-
-        return new ResponseEntity<>(ResultData.success("Comment Added"), HttpStatus.OK);
+    public ResponseEntity<Object> getPosts(@PathVariable("keywords") String keywords) {
+        keywords = "*"+ keywords + "*";
+        List<Post> postsByKeywords = postService.getPostsByKeywords(keywords);
+        return new ResponseEntity<>(ResultData.success(postsByKeywords), HttpStatus.OK);
     }
+
+
+    @GetMapping("/search/trendingPosts")
+    @ResponseBody
+    public ResponseEntity<Object> getTrendingPosts() {
+
+      /*  //List<Post> posts = RedisUtils.getHots(redisTemplate);
+
+        return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);*/
+        return  null;
+    }
+
+
 }

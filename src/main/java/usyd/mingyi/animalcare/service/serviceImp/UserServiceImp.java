@@ -1,20 +1,23 @@
-package usyd.mingyi.animalcare.service;
+package usyd.mingyi.animalcare.service.serviceImp;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.service.UserService;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class UserServiceImp extends ServiceImpl<UserMapper,User> implements UserService  {
+public class UserServiceImp extends ServiceImpl<UserMapper,User> implements UserService {
 
     @Autowired
     UserMapper userMapper;
@@ -31,18 +34,8 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     }
 
     @Override
-    public int addUser(User user) {
-        return userMapper.addUser(user);
-    }
-
-    @Override
     public String queryPassword(String username) {
         return userMapper.queryPassword(username);
-    }
-
-    @Override
-    public int updateUser(User user) {
-        return userMapper.updateUser(user);
     }
 
     @Override
@@ -65,13 +58,9 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     }
 
     @Override
-    public User queryUserById(long userId) {
-        return userMapper.queryUserById(userId);
-    }
+    public UserDto getProfile(long targetId,long currentId) {
+        return userMapper.getProfile(targetId,currentId);
 
-    @Override
-    public User getProfile(long userId) {
-        return userMapper.getProfile(userId);
     }
 
     @Override

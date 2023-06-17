@@ -16,7 +16,7 @@ public class JWTUtils {
     public static String generateToken(User user){
         Calendar instance = Calendar.getInstance();
         //默认令牌过期时间7天
-        instance.add(Calendar.DATE, 7);
+        instance.add(Calendar.DATE, 30);
 
         JWTCreator.Builder builder = JWT.create();
         builder.withClaim("userId", user.getId())
@@ -36,6 +36,17 @@ public class JWTUtils {
             throw new CustomException("token error");
         }
          return true;
+    }
+
+    public static boolean verifyInSocket(String token){
+        try {
+            JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(SALT)).build();
+            DecodedJWT verify = jwtVerifier.verify(token);
+
+        }catch (Exception e){
+            return false;
+        }
+        return true;
     }
 
     public static DecodedJWT getTokenInfo(String token){

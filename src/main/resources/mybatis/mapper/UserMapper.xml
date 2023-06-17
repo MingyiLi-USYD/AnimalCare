@@ -16,12 +16,16 @@
         SELECT *
         FROM user AS u
                  LEFT JOIN post AS po ON u.id = po.post_user_id
+                    <if test="targetUserId!=currentUserId">
+                        AND po.visible = true
+                   </if>
                  LEFT JOIN pet AS pe ON u.id = pe.pet_user_id
+                    <if test="targetUserId != currentUserId">
+                        AND pe.pet_visible = true
+                    </if>
                  LEFT JOIN image as im on po.post_id=im.image_post_id
-        WHERE u.id = #{userId}
+        WHERE u.id = #{targetUserId}
     </select>
-
-
     <resultMap id="userInfo" type="UserDto">
         <result property="id" column="id"/>
         <result property="userName" column="username"/>
@@ -30,17 +34,22 @@
         <result property="email" column="email"/>
         <result property="uuid" column="uuid"/>
         <result property="avatar" column="avatar"/>
+        <result property="loveList" column="love_list"/>
         <collection property="postList" ofType="Post">
-            <result property="postId" column="post_id"/>
+            <id property="postId" column="post_id"/>
             <result property="topic" column="topic"/>
             <result property="userId" column="post_user_id"/>
             <result property="love" column="love"/>
+            <result property="postContent" column="post_content"/>
+            <result property="images" column="images"/>
+            <result property="visible" column="visible"/>
         </collection>
         <collection property="petList" ofType="Pet">
-            <result property="petId" column="pet_id"/>
+            <id property="petId" column="pet_id"/>
             <result property="petName" column="name"/>
             <result property="category" column="category"/>
-            <result property="petImageAddress" column="pet_image_address"/>
+            <result property="petAvatar" column="pet_image_address"/>
+            <result property="petVisible" column="pet_visible"/>
         </collection>
     </resultMap>
 
@@ -60,10 +69,6 @@
 
     <select id="queryUserByUsername" resultType="User">
         select * from user where username = #{username}
-    </select>
-
-    <select id="queryUserById" resultType="User">
-        select * from user where id = #{userId}
     </select>
 
     <update id="updatePassword">

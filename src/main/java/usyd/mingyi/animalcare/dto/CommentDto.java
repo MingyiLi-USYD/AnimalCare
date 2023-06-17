@@ -12,6 +12,6 @@ public class CommentDto extends Comment {
     private String userAvatar;
     private String nickName;
     private String userName;
-    private Long userId;
+
 
 }

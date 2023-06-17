@@ -54,7 +54,24 @@ public class ImageUtil {
             e.printStackTrace();
             throw new CustomException("Images uploading error");
         }
+    }
 
+    public static String savePetImage(MultipartFile image,String userName){
+        try {
+            String originalName = image.getOriginalFilename();
+            String suffix = originalName.substring(originalName.lastIndexOf("."));
+            String tempFileName = UUID.randomUUID() + suffix; //文件名
+            String path = fileDiskLocation + userName; //文件路径
+            File newFile = new File(path+ File.separator + tempFileName);
+            if(!newFile.getParentFile().exists()){
+                newFile.getParentFile().mkdirs();
+            }
+            image.transferTo(newFile);
+            return userName + "/" + tempFileName;
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new CustomException("Images uploading error");
+        }
     }
 
 }

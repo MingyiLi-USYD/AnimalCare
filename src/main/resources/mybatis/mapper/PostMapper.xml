@@ -79,22 +79,15 @@
         delete from post where post_id = #{postId} and post_user_id =#{userId}
     </delete>
 
-    <select id="getPostsByUserId" resultMap="postsById">
-        select*from post AS po left join image AS i on po.post_id=i.image_post_id
-               where po.post_user_id = #{userId}
-    </select>
-
     <resultMap id="postsById" type="Post">
         <result property="postId" column="post_id"/>
         <result property="userId" column="post_user_id"/>
         <result property="love" column="love"/>
         <result property="postContent" column="post_content"/>
         <result property="topic" column="topic"/>
-        <result property="posTime" column="post_time"/>
+        <result property="postTime" column="post_time"/>
         <result property="tag" column="tag"/>
-        <result property="userAvatar" column="avatar"/>
-        <result property="nickName" column="nickname"/>
-        <result property="userName" column="username"/>
+        <result property="images" column="images"/>
     </resultMap>
 
     <insert id="addComment" parameterType="Comment">

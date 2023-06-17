@@ -1,15 +1,26 @@
 package usyd.mingyi.animalcare.controller;
 
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import usyd.mingyi.animalcare.common.CustomException;
+import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.config.ProjectProperties;
+import usyd.mingyi.animalcare.pojo.Image;
 import usyd.mingyi.animalcare.pojo.Pet;
+import usyd.mingyi.animalcare.service.ImageService;
 import usyd.mingyi.animalcare.service.PetService;
 import usyd.mingyi.animalcare.utils.BaseContext;
+import usyd.mingyi.animalcare.utils.ImageUtil;
+import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.ResultData;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.List;
 
@@ -22,176 +33,105 @@ public class PetController {
     @Autowired
     ProjectProperties projectProperties;
 
+    @Autowired
+    ImageService imageService;
 
 
 
-/*    @PostMapping("/pet/newPet")
-    public ResponseEntity<Object> addPet(@RequestBody Map map,HttpServletRequest request ) {
-        String auth = request.getHeader("auth");
-        String userName = JWTUtils.getUserName(auth);
-        String fileDiskLocation = projectProperties.fileDiskLocation;
-        ;
-        String projectPrefix = projectProperties.projectPrefix;
-        long id = BaseContext.getCurrentId();
-        String data = "";//实体部分数
-        String suffix = "";//图片后缀，用以识别哪种格式数据
-        String avatarUrl = (String) map.get("avatarUrl");
-        String name = (String) map.get("petName");
-        String category = (String) map.get("category");
-        List<String> list = (List<String>) map.get("petImageListArr");
-        String petDescription = (String) map.get("petDescription");
-        Pet pet = new Pet();
-        pet.setCategory(category);
-        pet.setPetName(name);
-        pet.setUserId(id);
-        pet.setPetDescription(petDescription);
-
-        if (StringUtil.isNullOrEmpty(avatarUrl)) {
-            if (category.equals("dog")) {
-                pet.setPetImageAddress(projectPrefix + "dogDefault.jpg");
-            } else {
-                pet.setPetImageAddress(projectPrefix + "catDefault.jpg");
-            }
 
 
-        } else if (ImageUtil.checkImage(avatarUrl)) {
-            suffix = ImageUtil.getSuffix(avatarUrl);
-            data = ImageUtil.getData(avatarUrl);
-            String tempFileName = UUID.randomUUID().toString() + suffix; //文件名
-            String path = fileDiskLocation + userName; //文件路径
-            try {
-                ImageUtil.convertBase64ToFile(data, path, tempFileName);
-                pet.setPetImageAddress(projectPrefix + userName + "/" + tempFileName);
-
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>(ResultData.fail(201, "File invalid"), HttpStatus.CREATED);
-            }
-        } else {
-            return new ResponseEntity<>(ResultData.fail(201, "File invalid"), HttpStatus.CREATED);
-        }
-        petService.addPet(pet);
-        Long petId = pet.getPetId();
-        if (list == null) return new ResponseEntity<>(ResultData.success("OK"), HttpStatus.OK);
-
-        for (String base64Data : list) {
-            if (ImageUtil.checkImage(base64Data)) {
-                suffix = ImageUtil.getSuffix(base64Data);
-                data = ImageUtil.getData(base64Data);
-            } else {
-                return new ResponseEntity<>(ResultData.fail(201, "File invalid"), HttpStatus.CREATED);
-            }
-
-            String tempFileName = UUID.randomUUID().toString() + suffix; //文件名
-
-            String path = fileDiskLocation + userName; //文件路径
-
-            try {
-                ImageUtil.convertBase64ToFile(data, path, tempFileName);
-                petService.addImage(petId, projectPrefix + userName + "/" + tempFileName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                return new ResponseEntity<>(ResultData.fail(201, "File invalid"), HttpStatus.CREATED);
-
-            }
-        }
-
-        return new ResponseEntity<>(ResultData.success("OK"), HttpStatus.OK);
-    }
-
-    @PostMapping("/pet/android/newPet")
-    public ResponseEntity<Object> addPetInAndroid(@RequestParam(value = "images",required = false) MultipartFile[] images,
-                                                  @RequestParam(value = "avatar",required = false) MultipartFile avatar,
+    @PostMapping("/pet")
+    public R<String> addPet(@RequestParam(value = "avatar") MultipartFile avatar,
                                                   @RequestParam("petName") String petName,
                                                   @RequestParam("category") String category,
                                                   @RequestParam("petDescription") String petDescription,
-                                                  HttpServletRequest request, HttpSession session) {
-        String fileDiskLocation = projectProperties.fileDiskLocation;
-        ;
-        String projectPrefix = projectProperties.projectPrefix;
-        long id = BaseContext.getCurrentId();
-        String userName = (String) session.getAttribute("userName");
+                                                  HttpServletRequest request) {
+        String userName = JWTUtils.getUserName(request.getHeader("auth"));
+        String avatarUrl= ImageUtil.savePetImage(avatar, userName);
         Pet pet = new Pet();
-        pet.setUserId(id);
-        pet.setCategory(category);
-        pet.setPetName(petName);
+        pet.setPetAvatar(avatarUrl);
         pet.setPetDescription(petDescription);
+        pet.setPetName(petName);
+        pet.setCategory(category);
+        pet.setUserId(BaseContext.getCurrentId());
+        petService.save(pet);
+        return R.success("成功了");
 
-        try {
-            //存入宠物头像
-            String originalName = avatar.getOriginalFilename();
-            System.out.println(originalName);
-            String suffix = originalName.substring(originalName.lastIndexOf("."));
-            String tempFileName = UUID.randomUUID().toString() + suffix; //文件名
-            String path = fileDiskLocation + userName; //文件路径
-            File newFile = new File(path+ File.separator + tempFileName);
-            if(!newFile.getParentFile().exists()){
-                newFile.getParentFile().mkdirs();
-            }
-            avatar.transferTo(newFile);
-            pet.setPetImageAddress(projectPrefix + userName + "/" + tempFileName);
-        }catch (NullPointerException | IOException e) {
-            e.printStackTrace();
-        }
-
-
-        petService.addPet(pet);
-        long petId = pet.getPetId();
-        try {
-            for(int i=0;i<images.length;i++){
-
-                String originalName = images[i].getOriginalFilename();
-                System.out.println(originalName);
-                String suffix = originalName.substring(originalName.lastIndexOf("."));
-                String tempFileName = UUID.randomUUID().toString() + suffix; //文件名
-                String path = fileDiskLocation + userName; //文件路径
-                petService.addImage(petId, projectPrefix + userName + "/" + tempFileName);
-                File newFile = new File(path+ File.separator + tempFileName);
-                if(!newFile.getParentFile().exists()){
-                    newFile.getParentFile().mkdirs();
-                }
-                images[i].transferTo(newFile);
-            }
-
-        }catch (NullPointerException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return new ResponseEntity<>(ResultData.success("OK"), HttpStatus.OK);
-    }*/
+    }
 
     @GetMapping("/getPetList")
-    public ResponseEntity<Object> getPetList(HttpSession session) {
-        int id = (int) session.getAttribute("id");
+    public R<List<Pet>> getPetList() {
+        long id = BaseContext.getCurrentId();
         List<Pet> petList = petService.getPetList(id);
-        return new ResponseEntity<>(ResultData.success(petList), HttpStatus.OK);
+        return R.success(petList);
     }
 
     @GetMapping("/pet/{petId}")
-    public ResponseEntity<Object> getPet(@PathVariable("petId") int petId) {
+    public R<Pet> getPet(@PathVariable("petId") long petId) {
         Long id = BaseContext.getCurrentId();
         Pet pet = petService.getPet(petId, id);
 
         if (pet != null) {
-            return new ResponseEntity<>(ResultData.success(pet), HttpStatus.OK);
+            return R.success(pet);
         } else {
-            return new ResponseEntity<>(ResultData.fail(201, "No such pet found"), HttpStatus.CREATED);
+            throw new CustomException("no pet found");
         }
     }
 
     @DeleteMapping("/pet/{petId}")
-    public ResponseEntity<Object> deletePet(@PathVariable("petId") int petId, HttpSession session) {
-        int id = (int) session.getAttribute("id");
+    public R<String> deletePet(@PathVariable("petId") long petId) {
+        long id = BaseContext.getCurrentId();
         int i = petService.deletePet(petId, id);
-        if (i == 0) return new ResponseEntity<>(ResultData.fail(201, "Fail to delete for no such pet"), HttpStatus.CREATED);
-        return new ResponseEntity<>(ResultData.success("OK"), HttpStatus.OK);
+        if (i == 0) return R.error("Fail to delete for no such pet");
+        return R.success("Delete success");
     }
 
     @PutMapping("/pet/{petId}")
-    public ResponseEntity<Object> updatePet(@PathVariable("petId") int petId, HttpSession session) {
-
-        return null;
+    public R<String> updatePet(@PathVariable("petId") long petId,@RequestBody Pet pet) {
+        Pet targetPet = petService.getById(petId);
+        if(targetPet==null) return R.error("No such pet");
+        if(targetPet.getUserId()!=BaseContext.getCurrentId()){
+            return R.error("No right to update this pet");
+        }
+        pet.setPetId(petId);
+        pet.setUserId(BaseContext.getCurrentId());
+        System.out.println(pet);
+    /*    petService.update(pet,new MPJLambdaWrapper<Pet>().eq(Pet::getUserId,BaseContext.getCurrentId()));
+        return null;*/
+       if(petService.updateById(pet)){
+           return R.success("Update Success");
+       }else {
+           return R.error("Fail to update");
+       }
     }
 
+    @PostMapping("/pet/image/{petId}")
+    public R<Image> uploadImage(@RequestParam(value = "image")MultipartFile image,@PathVariable("petId") Long petId, HttpServletRequest request){
+        String userName = JWTUtils.getUserName(request.getHeader("auth"));
+        String imageName = ImageUtil.savePetImage(image, userName);
+        Image imageObj = new Image();
+        imageObj.setUrl(imageName);
+        imageObj.setPetId(petId);
+        imageService.save(imageObj);
+        return R.success(imageObj);
+    }
+
+    @DeleteMapping ("/pet/image")
+    public R<String> deleteImage(@RequestBody Image image){
+        long petId = image.getPetId();
+        Pet pet = petService.getById(petId);
+        System.out.println(pet);
+        if(pet==null)return R.error("No such pet");
+        if(pet.getUserId()!=BaseContext.getCurrentId()){
+            return R.error("No right to delete");
+        }else {
+            if(imageService.removeById(image.getId())){
+                return R.success("Success");
+            }else {
+                return R.success("No change");
+            }
+        }
+
+
+    }
 }

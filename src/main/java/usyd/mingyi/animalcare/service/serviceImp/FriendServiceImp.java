@@ -1,10 +1,11 @@
-package usyd.mingyi.animalcare.service;
+package usyd.mingyi.animalcare.service.serviceImp;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.mapper.FriendMapper;
 import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.service.FriendService;
 
 import java.util.List;
 
