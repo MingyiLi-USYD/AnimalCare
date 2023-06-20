@@ -45,14 +45,8 @@ public class EventListenner {
      */
     @OnConnect
     public void onConnect(SocketIOClient client) {
-       /* HttpHeaders headers = client.getHandshakeData().getHttpHeaders();
-        String token = headers.get("auth");*/
-
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
         String token = client.getHandshakeData().getSingleUrlParam("token");
-
-        System.out.println(token);
-        System.out.println(userId);
          if(token!=null&&JWTUtils.verifyInSocket(token)){
              DecodedJWT tokenInfo = JWTUtils.getTokenInfo(token);
              Long tokenUserId = tokenInfo.getClaim("userId").asLong();
@@ -152,7 +146,6 @@ public class EventListenner {
             Map.Entry<UUID, SocketIOClient> next = iterator.next();
             next.getValue().sendEvent("friendEvent",new ResponseMessage(true,type,null,me));
         }
-
     }
 
     public void disconnectClient(SocketIOClient client, String reason) {

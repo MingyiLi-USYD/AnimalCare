@@ -30,7 +30,7 @@ public interface FriendMapper {
     * @Author: Mingyi Li
     * @Date: 2022/10/5 
     */ 
-    int sendFriendRequest(long fromId,long toId);
+    int sendFriendRequest(long fromId,long toId,String msg);
     /** 
     * @Description:  在请求列表中删除请求
     * @Param: [fromId, toId] 

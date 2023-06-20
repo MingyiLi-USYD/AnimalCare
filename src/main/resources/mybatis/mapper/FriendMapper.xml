@@ -19,7 +19,7 @@
     </select>
 
     <insert id="sendFriendRequest">
-        insert into requestlist(user_id_from,user_id_to)values (#{fromId},#{toId})
+        insert into requestlist(user_id_from,user_id_to,msg)values (#{fromId},#{toId},#{msg})
     </insert>
 
     <delete id="deleteFriendRequest">
@@ -46,6 +46,7 @@
         <result property="nickName" column="nickname"/>
         <result property="description" column="description"/>
         <result property="avatar" column="avatar"/>
+        <result property="userName" column="username"/>
     </resultMap>
 
     <select id="getAllRequests" resultMap="requestsInfo">

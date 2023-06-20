@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import usyd.mingyi.animalcare.pojo.User;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -11,8 +12,7 @@ import lombok.NoArgsConstructor;
 public class ResponseMessage {
     private boolean isSystem;
     private String type;
-    //@JsonFormat(shape = JsonFormat.Shape.STRING)
-    private String fromId;
+    private User fromUser;
     private Object message;
 
 }

@@ -28,39 +28,35 @@ public class FriendController {
         int result = friendService.checkFriendshipStatus(fromId, toId);
         if (result == 1) {
            return R.success(1);
-            //return new ResponseEntity<>(ResultData.success("Friend"), HttpStatus.OK);
         } else if (result == 0) {
             return R.success(2);
-            //return new ResponseEntity<>(ResultData.success("Requesting"), HttpStatus.OK);
         } else {
             return R.success(3);
-            //return new ResponseEntity<>(ResultData.success("Nothing"), HttpStatus.OK);
+        }
+    }
+
+    @PostMapping ("/friends/{id}")
+    @ResponseBody
+    public R<String> sendFriendRequest(@PathVariable("id") int toId,@RequestParam("msg")String msg ) {
+
+        long fromId = BaseContext.getCurrentId();
+        if (fromId == toId)
+            return R.error("Do not add yourself");
+
+        int result = friendService.sendFriendRequest(fromId, toId,msg);
+
+        if (result == 2) {
+            return R.success("Directly be friends");
+        } else if (result == 1) {
+            return R.success("Request have been sent");
+        } else if (result == 0) {
+            return R.error("Do not add again");
+        } else {
+            return R.error("You are already friends");
         }
     }
 
     @GetMapping("/friends/{id}")
-    @ResponseBody
-    public ResponseEntity<Object> sendFriendRequest(@PathVariable("id") int toId, HttpSession session) {
-        int fromId = (int) session.getAttribute("id");
-        if (fromId == toId)
-            return new ResponseEntity<>(ResultData.fail(201, "Do not add yourself"), HttpStatus.CREATED);
-
-        int result = friendService.sendFriendRequest(fromId, toId);
-
-        if (result == 2) {
-            return new ResponseEntity<>(ResultData.success("Directly be friends"), HttpStatus.OK);
-
-        } else if (result == 1) {
-            return new ResponseEntity<>(ResultData.success("Request have been sent"), HttpStatus.OK);
-
-        } else if (result == 0) {
-            return new ResponseEntity<>(ResultData.fail(201, "Do not add again"), HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>(ResultData.fail(201, "You are already friends"), HttpStatus.CREATED);
-        }
-    }
-
-    @PostMapping("/friends/{id}")
     @ResponseBody
     public ResponseEntity<Object> acceptFriendRequest(@PathVariable("id") int toId, HttpSession session) {
         int fromId = (int) session.getAttribute("id");
@@ -93,7 +89,7 @@ public class FriendController {
 
     @GetMapping("/friends")
     @ResponseBody
-    public ResponseEntity<Object> getFriendsList(HttpSession session) {
+    public ResponseEntity<Object> getFriendsList() {
         long id = BaseContext.getCurrentId();
         List<User> allFriends = friendService.getAllFriends(id);
         return new ResponseEntity<>(ResultData.success(allFriends), HttpStatus.OK);

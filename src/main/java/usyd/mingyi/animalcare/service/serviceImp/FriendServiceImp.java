@@ -16,7 +16,7 @@ public class FriendServiceImp implements FriendService {
 
     @Override
     @Transactional
-    public int sendFriendRequest(long fromId, long toId) {
+    public int sendFriendRequest(long fromId, long toId,String msg) {
         // 返回值 0失败 1成功 2之前已经收到过对方请求直接互为好友
         int i = friendMapper.checkRequestReverse(fromId, toId);
         if (i > 0) {
@@ -31,8 +31,7 @@ public class FriendServiceImp implements FriendService {
         //确定是否已经是朋友
         if (friendMapper.isFriend(fromId, toId)) return -1;
         //当没有重复请求时
-        if (friendMapper.checkExistRequest(fromId, toId) == 0 && friendMapper.sendFriendRequest(fromId, toId) > 0) {//发出好友申请
-
+        if (friendMapper.checkExistRequest(fromId, toId) == 0 && friendMapper.sendFriendRequest(fromId, toId,msg) > 0) {//发出好友申请
             return 1;
         } else {
             return 0;
