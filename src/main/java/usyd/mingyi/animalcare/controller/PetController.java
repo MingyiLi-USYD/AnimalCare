@@ -45,6 +45,7 @@ public class PetController {
                                                   @RequestParam("petName") String petName,
                                                   @RequestParam("category") String category,
                                                   @RequestParam("petDescription") String petDescription,
+                                                  @RequestParam("petVisible") boolean petVisible,
                                                   HttpServletRequest request) {
         String userName = JWTUtils.getUserName(request.getHeader("auth"));
         String avatarUrl= ImageUtil.savePetImage(avatar, userName);
@@ -54,6 +55,7 @@ public class PetController {
         pet.setPetName(petName);
         pet.setCategory(category);
         pet.setUserId(BaseContext.getCurrentId());
+        pet.setPetVisible(petVisible);
         petService.save(pet);
         return R.success("成功了");
 

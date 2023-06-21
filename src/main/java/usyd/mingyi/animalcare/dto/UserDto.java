@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.dto;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,7 @@ import java.util.List;
 public class UserDto extends User {
     private List<Post> postList;
     private List<Pet> petList;
+    @TableField(exist = false)
+    private String msg;
 
 }

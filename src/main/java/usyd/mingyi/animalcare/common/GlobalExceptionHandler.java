@@ -14,7 +14,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
+/*    @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public R<String> sqlExceptionHandler(SQLIntegrityConstraintViolationException exception){
         log.info("存在SQL异常");
         if(exception.getMessage().contains("Duplicate entry")){
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
             return R.error(split[2]+"已经存在");
         }
         return R.error("未知错误");
-    }
+    }*/
 
     @ExceptionHandler(CustomException.class)
     public R<String> customExceptionHandler(CustomException exception){

@@ -51,14 +51,15 @@ public class PostController {
     public R<String> upLoadPost(@RequestParam(value = "images") MultipartFile[] images,
                                                       @RequestParam("postTopic") String postTopic,
                                                       @RequestParam("postContent") String postContent,
-                                                      @RequestParam("postTag") String postTag,
-                                                      HttpServletRequest request) {
+                                                      @RequestParam("postTag") String postTag,@RequestParam("visible") boolean visible,
+                                HttpServletRequest request) {
 
         log.info("上传文件");
         System.out.println(images);
         String userName = JWTUtils.getUserName(request.getHeader("auth"));
         long id = BaseContext.getCurrentId();
         Post post = new Post();
+        post.setVisible(visible);
         post.setUserId(id);
         post.setLove(0);
         post.setPostTime(System.currentTimeMillis());

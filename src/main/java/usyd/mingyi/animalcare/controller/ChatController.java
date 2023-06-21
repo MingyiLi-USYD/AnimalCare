@@ -30,8 +30,6 @@ public class ChatController {
     @Resource
     private UserService userService;
 
-    @Resource
-    private FriendService friendService;
 
     @PostMapping("/chat/message")
     public R<String> pushTuUser(@RequestBody RequestMessage message){
