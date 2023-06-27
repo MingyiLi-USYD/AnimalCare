@@ -30,7 +30,7 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
         IPage<CommentDto> commentDtoIPage = new Page<>(currPage,pageSize);
         MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Comment.class)
-                .selectAs(User::getNickName,CommentDto::getNickName)
+                .selectAs(User::getNickname,CommentDto::getNickName)
                 .selectAs(User::getAvatar,CommentDto::getUserAvatar)
                 .leftJoin(User.class,User::getId,Comment::getUserId)
                 .eq(Comment::getPostId,postId);

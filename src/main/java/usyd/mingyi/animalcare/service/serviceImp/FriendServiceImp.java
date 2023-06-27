@@ -46,9 +46,9 @@ public class FriendServiceImp implements FriendService {
                 return res;
             }else {
                 MPJLambdaWrapper<User> wrapperTwo = new MPJLambdaWrapper<>();
-                wrapperTwo.select(User::getNickName).select(User::getAvatar)
+                wrapperTwo.select(User::getNickname).select(User::getAvatar)
                         .select(User::getId).select(User::getDescription)
-                .in(User::getId,FriendRequestServiceImp.convertToLongSet(set));
+                        .in(User::getId,FriendRequestServiceImp.convertToLongSet(set));
                 return userMapper.selectList(wrapperTwo);
             }
         }catch (IOException e) {
@@ -64,27 +64,27 @@ public class FriendServiceImp implements FriendService {
     public int checkFriendshipStatus(long fromId, long toId) {
 
         try {
-        User user = userMapper.selectById(toId);
-        String friendList = user.getFriendList();
-        if(friendList!=null){
-            Set<String> map = objectMapper.readValue(friendList, new TypeReference<Set<String>>() {});
-            if(map.contains(String.valueOf(fromId))){
-                return 1;
+            User user = userMapper.selectById(toId);
+            String friendList = user.getFriendList();
+            if(friendList!=null){
+                Set<String> map = objectMapper.readValue(friendList, new TypeReference<Set<String>>() {});
+                if(map.contains(String.valueOf(fromId))){
+                    return 1;
+                }
             }
-        }
-        MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(FriendRequest::getUserId, toId);
-        FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
-        if(friendRequest==null){
-           return 3;
-        }
+            MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
+            wrapper.eq(FriendRequest::getUserId, toId);
+            FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
+            if(friendRequest==null){
+                return 3;
+            }
 
-        String requestList = friendRequest.getRequestList();
-        Map<String, String> mapTwo = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
-        });
-        if (mapTwo.containsKey(String.valueOf(fromId))) {
-            return 2;
-        }
+            String requestList = friendRequest.getRequestList();
+            Map<String, String> mapTwo = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
+            });
+            if (mapTwo.containsKey(String.valueOf(fromId))) {
+                return 2;
+            }
         }catch (IOException e) {
             throw new CustomException("System error");
         }

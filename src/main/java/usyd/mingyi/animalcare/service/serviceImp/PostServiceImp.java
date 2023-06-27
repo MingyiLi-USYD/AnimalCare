@@ -43,9 +43,8 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Autowired
     ObjectMapper mapper;
     @Override
-    public void addPost(Post post, String userName, MultipartFile[] images) {
-        String imagesString= ImageUtil.saveBatchToLocal(userName, images, mapper);
-        post.setImages(imagesString);
+    public void addPost(Post post) {
+
         postMapper.insert(post);
 
     }
@@ -59,14 +58,14 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         wrapper.selectAll(Post.class)
                 //.selectAs(" COUNT(comment.comment_id)",PostDto::getCommentList)
                 .selectAs(User::getAvatar,PostDto::getUserAvatar)
-                .selectAs(User::getNickName,PostDto::getNickName)
+                .selectAs(User::getNickname,PostDto::getNickName)
                 .leftJoin(User.class,User::getId,Post::getUserId)
                 .eq(Post::isVisible,true);
-         if(order==1){
-             wrapper.orderByDesc(Post::getPostTime);
-         }else {
-           wrapper.orderByDesc(Post::getLove);
-         }
+        if(order==1){
+            wrapper.orderByDesc(Post::getPostTime);
+        }else {
+            wrapper.orderByDesc(Post::getLove);
+        }
         IPage<PostDto> postDtoIPage = postMapper.selectJoinPage(postDtoPage, PostDto.class, wrapper);
  /*       List<PostDto> records = postDtoIPage.getRecords();
         List<PostDto> newRecords = records.stream().map(item -> {
@@ -85,19 +84,19 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     public Post queryPostById(long postId,long currentUserId) {
 
         MPJLambdaWrapper<Post> wrapper = new MPJLambdaWrapper<>();
-         wrapper.selectAll(Post.class).selectAs(User::getAvatar,PostDto::getUserAvatar)
-                 .selectAs(User::getNickName,PostDto::getNickName)
-                 .leftJoin(User.class,User::getId,Post::getUserId).eq(PostDto::getPostId,postId);
+        wrapper.selectAll(Post.class).selectAs(User::getAvatar,PostDto::getUserAvatar)
+                .selectAs(User::getNickname,PostDto::getNickName)
+                .leftJoin(User.class,User::getId,Post::getUserId).eq(PostDto::getPostId,postId);
         PostDto postDto = postMapper.selectJoinOne(PostDto.class, wrapper);
-             if(postDto.isVisible()){
-                 return postDto;
-             }else if(postDto.getUserId()==currentUserId){
-                 return postDto;
-             }else {
-                 throw new CustomException("No right to access");
-             }
+        if(postDto.isVisible()){
+            return postDto;
+        }else if(postDto.getUserId()==currentUserId){
+            return postDto;
+        }else {
+            throw new CustomException("No right to access");
+        }
     }
-    
+
     @Override
     @Transactional
     public void love(long userId, long postId) {
@@ -160,7 +159,7 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     public List<Post> getPostByUserId(long userId) {
         MPJLambdaWrapper<Post> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Post.class).eq(Post::getUserId,userId);
-       return postMapper.selectList(wrapper);
+        return postMapper.selectList(wrapper);
     }
 
 

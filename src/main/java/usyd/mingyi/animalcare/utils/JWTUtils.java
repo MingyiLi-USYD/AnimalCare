@@ -5,6 +5,8 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.pojo.User;
 
@@ -57,5 +59,15 @@ public class JWTUtils {
         return JWT.require(Algorithm.HMAC256(SALT)).build().verify(token).getClaim("userName").asString();
     }
 
+    public static String generateFirebaseToken(String userId)   {
+
+        try {
+
+            return FirebaseAuth.getInstance().createCustomToken(userId);
+        } catch (FirebaseAuthException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 
 }

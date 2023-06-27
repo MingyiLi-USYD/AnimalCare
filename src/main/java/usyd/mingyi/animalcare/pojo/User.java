@@ -21,7 +21,7 @@ public class User implements Serializable {
     private String email;
     @JsonProperty(value = "nickname")
     @TableField("nickname")
-    private String nickName;
+    private String nickname;
     private String description;
     private String uuid;
     private String avatar;

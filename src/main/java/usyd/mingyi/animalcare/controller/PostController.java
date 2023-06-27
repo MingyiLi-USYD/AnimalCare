@@ -48,26 +48,10 @@ public class PostController {
     @PostMapping("/post")
     @ResponseBody
     @Transactional
-    public R<String> upLoadPost(@RequestParam(value = "images") MultipartFile[] images,
-                                                      @RequestParam("postTopic") String postTopic,
-                                                      @RequestParam("postContent") String postContent,
-                                                      @RequestParam("postTag") String postTag,@RequestParam("visible") boolean visible,
-                                HttpServletRequest request) {
-
+    public R<String> upLoadPost(@RequestBody Post post) {
+        post.setUserId(BaseContext.getCurrentId());
+        postService.addPost(post);
         log.info("上传文件");
-        System.out.println(images);
-        String userName = JWTUtils.getUserName(request.getHeader("auth"));
-        long id = BaseContext.getCurrentId();
-        Post post = new Post();
-        post.setVisible(visible);
-        post.setUserId(id);
-        post.setLove(0);
-        post.setPostTime(System.currentTimeMillis());
-        post.setPostContent(postContent);
-        post.setTopic(postTopic);
-        post.setTag(postTag);
-        postService.addPost(post,userName,images);
-
         return R.success("Successfully upload");
 
     }
@@ -117,9 +101,9 @@ public class PostController {
     @GetMapping("/posts")
     @ResponseBody
     public R<List<Post>> getMyPosts() {
-            long userId = BaseContext.getCurrentId();
-            List<Post> myPosts = postService.getPostByUserId(userId);
-            return R.success(myPosts);
+        long userId = BaseContext.getCurrentId();
+        List<Post> myPosts = postService.getPostByUserId(userId);
+        return R.success(myPosts);
     }
 
     @PutMapping("/post/{postId}")
@@ -127,7 +111,7 @@ public class PostController {
         System.out.println(visibility);
         Post post = postService.getById(postId);
         if(post.getUserId()!=BaseContext.getCurrentId()){
-           return R.error("No right to access");
+            return R.error("No right to access");
         }else {
             Post newPost = new Post();
             newPost.setPostId(postId);

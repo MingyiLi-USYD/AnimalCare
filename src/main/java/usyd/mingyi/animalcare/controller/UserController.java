@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.controller;
 
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -37,7 +39,7 @@ public class UserController {
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
     @ResponseBody
-    public R<String> login(@RequestBody User userInfo) {
+    public R<Map> login(@RequestBody User userInfo) {
 
         log.info("登录");
         String username = userInfo.getUserName();
@@ -56,13 +58,17 @@ public class UserController {
         User user = userService.queryUser(username, encryptedPassword);
 
         if (user != null) {
-
-            return R.success(JWTUtils.generateToken(user));
+            Map<String, String> map = new HashMap<>();
+            map.put("serverToken",JWTUtils.generateToken(user));
+            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getId())));
+            return R.success(map);
 
         } else {
             throw new CustomException("Password Error");
         }
     }
+
+
 
     @GetMapping("/currentUser")
     public R<User> getCurrentUser() {
@@ -74,6 +80,8 @@ public class UserController {
         user.setPassword(null);
         return R.success(user);
     }
+
+
 
     @GetMapping("/logout")
     @ResponseBody
@@ -89,23 +97,23 @@ public class UserController {
         }
         userInfo.setPassword(JasyptEncryptorUtils.encode(userInfo.getPassword()));
         userInfo.setUuid(UUID.randomUUID().toString());
-        String randomNickname = RandomUtils.getRandomNickname(restTemplate);
-        userInfo.setNickName(randomNickname);
-        userService.save(userInfo);
+        System.out.println(userInfo);
+        //userService.save(userInfo);
         return R.success("Sign up success");
 
     }
 
     @GetMapping("/username")
     @ResponseBody
-    public ResponseEntity<Object> usernameCheck(@RequestParam("userName") String userName) {
+    public R<String> usernameCheck(@RequestParam("userName") String userName) {
 
-        User user = userService.queryUserByUsername(userName);
+        MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
+        wrapper.eq(User::getUserName,userName);
+        User user = userService.getOne(wrapper);
         if (user == null) {
-            return new ResponseEntity<>(ResultData.success(null), HttpStatus.OK);
+            return R.success("username is valid");
         }
-        return new ResponseEntity<>(ResultData.fail(201, "Fail"), HttpStatus.CREATED);
-
+        return R.error("username exist");
     }
 
     @PostMapping("/email")
@@ -146,7 +154,7 @@ public class UserController {
     public ResponseEntity<Object> updateUserInfoInAndroid(@RequestParam(value = "avatar",required = false) MultipartFile avatar,
                                                           @RequestParam("nickName") String nickName,
                                                           @RequestParam("description") String description
-                                                          ) {
+    ) {
 
         return null;
     }
@@ -161,9 +169,9 @@ public class UserController {
 
     @PutMapping("/profile")
     public R<String> updateProfile(@RequestBody User user) {
-         if(user.getId()!=BaseContext.getCurrentId()){
-             throw new CustomException("No right to access");
-         }
+        if(user.getId()!=BaseContext.getCurrentId()){
+            throw new CustomException("No right to access");
+        }
      /*   long currentUserId = BaseContext.getCurrentId();
         UserDto profile = userService.getProfile(userId,currentUserId);*/
         return R.success("成功");
