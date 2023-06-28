@@ -21,12 +21,12 @@ public class FirebaseConfig {
 
         InputStream serviceAccount = resource.getInputStream();
 
-        FirebaseOptions options = FirebaseOptions.builder()
+        FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl("https://animalcare-c23a7-default-rtdb.asia-southeast1.firebasedatabase.app")
+                .setDatabaseUrl("https://petbook-react-springboot-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .build();
 
-        return FirebaseApp.initializeApp(options);
+       return FirebaseApp.initializeApp(options);
     }
 
 

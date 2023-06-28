@@ -16,23 +16,23 @@ import java.util.List;
 @Service
 public class ChatServiceImp implements ChatService {
 
-    private final DatabaseReference database;
+   // private final DatabaseReference database;
 
     @Autowired
     public ChatServiceImp(FirebaseApp firebaseApp) {
-        this.database = FirebaseDatabase.getInstance(firebaseApp).getReference();
+       // this.database = FirebaseDatabase.getInstance(firebaseApp).getReference();
     }
 
     @Override
     public void sendMsgToFirebase(String currentId,String toId, ResponseMessage responseMessage) {
 
-        DatabaseReference chatRef = database.child("users").child(String.valueOf(currentId)).child(toId);
+/*        DatabaseReference chatRef = database.child("users").child(String.valueOf(currentId)).child(toId);
         DatabaseReference newMessageRef = chatRef.child("messages").push();
         newMessageRef.setValue(responseMessage, null);
 
         DatabaseReference chatRef2 = database.child("users").child(toId).child(String.valueOf(currentId));
         DatabaseReference newMessageRef2 = chatRef2.child("messages").push();
-        newMessageRef2.setValue(responseMessage, null);
+        newMessageRef2.setValue(responseMessage, null);*/
 
     }
 

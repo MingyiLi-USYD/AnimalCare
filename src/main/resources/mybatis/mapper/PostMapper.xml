@@ -51,7 +51,7 @@
         <result property="posTime" column="post_time"/>
         <result property="tag" column="tag"/>
         <result property="userAvatar" column="avatar"/>
-        <result property="nickName" column="nickname"/>
+        <result property="nickname" column="nickname"/>
         <result property="userName" column="username"/>
     </resultMap>
 
@@ -106,7 +106,7 @@
         <result property="postId" column="comment_post_id" />
         <result property="commentTime" column="comment_time" />
         <result property="commentContent" column="comment_content" />
-        <result property="nickName" column="nickname" />
+        <result property="nickname" column="nickname" />
         <result property="userAvatar" column="avatar" />
         <result property="userId" column="id" />
     </resultMap>

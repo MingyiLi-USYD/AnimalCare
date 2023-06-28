@@ -41,16 +41,14 @@ public class PetController {
 
 
     @PostMapping("/pet")
-    public R<String> addPet(@RequestParam(value = "avatar") MultipartFile avatar,
-                                                  @RequestParam("petName") String petName,
-                                                  @RequestParam("category") String category,
-                                                  @RequestParam("petDescription") String petDescription,
-                                                  @RequestParam("petVisible") boolean petVisible,
-                                                  HttpServletRequest request) {
-        String userName = JWTUtils.getUserName(request.getHeader("auth"));
-        String avatarUrl= ImageUtil.savePetImage(avatar, userName);
+    public R<String> addPet(@RequestParam("petName") String petName,
+                            @RequestParam("category") String category,
+                            @RequestParam("petDescription") String petDescription,
+                            @RequestParam("petVisible") boolean petVisible,
+                            @RequestParam("image") String avatar,
+                            HttpServletRequest request) {
         Pet pet = new Pet();
-        pet.setPetAvatar(avatarUrl);
+        pet.setPetAvatar(avatar);
         pet.setPetDescription(petDescription);
         pet.setPetName(petName);
         pet.setCategory(category);
@@ -100,11 +98,11 @@ public class PetController {
         System.out.println(pet);
     /*    petService.update(pet,new MPJLambdaWrapper<Pet>().eq(Pet::getUserId,BaseContext.getCurrentId()));
         return null;*/
-       if(petService.updateById(pet)){
-           return R.success("Update Success");
-       }else {
-           return R.error("Fail to update");
-       }
+        if(petService.updateById(pet)){
+            return R.success("Update Success");
+        }else {
+            return R.error("Fail to update");
+        }
     }
 
     @PostMapping("/pet/image/{petId}")

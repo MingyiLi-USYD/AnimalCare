@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.controller;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +68,28 @@ public class UserController {
             throw new CustomException("Password Error");
         }
     }
+
+    @PostMapping("/login/thirdPart")
+    @ResponseBody
+    public R<Map> thirdPartLogin(@RequestBody User userInfo) {
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
+         wrapper.eq(User::getUuid,userInfo.getUuid());
+        User user = userService.getOne(wrapper);
+        if(user==null){
+            userService.save(userInfo);
+            Map<String, String> map = new HashMap<>();
+            map.put("serverToken",JWTUtils.generateToken(userInfo));
+            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(userInfo.getId())));
+            return R.success(map);
+        }else {
+            Map<String, String> map = new HashMap<>();
+            map.put("serverToken",JWTUtils.generateToken(user));
+            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getId())));
+            return R.success(map);
+        }
+
+    }
+
 
 
 

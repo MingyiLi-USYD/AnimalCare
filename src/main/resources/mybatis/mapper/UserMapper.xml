@@ -29,7 +29,7 @@
     <resultMap id="userInfo" type="UserDto">
         <result property="id" column="id"/>
         <result property="userName" column="username"/>
-        <result property="nickName" column="nickname"/>
+        <result property="nickname" column="nickname"/>
         <result property="description" column="description"/>
         <result property="email" column="email"/>
         <result property="uuid" column="uuid"/>
@@ -54,7 +54,7 @@
     </resultMap>
 
     <insert id="addUser" parameterType="User">
-          insert into user (username,password,uuid,email,avatar,nickname) values (#{userName},#{password},#{uuid},#{email},#{avatar},#{nickName})
+          insert into user (username,password,uuid,email,avatar,nickname) values (#{userName},#{password},#{uuid},#{email},#{avatar},#{nickname})
     </insert>
 
     <select id="queryPassword" parameterType="String" resultType="String">
@@ -63,7 +63,7 @@
 
     <update id="updateUser" parameterType="User">
         update user
-        set  <if test="email !=null and email !=''">email = #{email},</if> nickname = #{nickName}, description = #{description}<if test="avatar !=null and avatar !=''">,avatar = #{avatar}</if>
+        set  <if test="email !=null and email !=''">email = #{email},</if> nickname = #{nickname}, description = #{description}<if test="avatar !=null and avatar !=''">,avatar = #{avatar}</if>
         where id = #{id};
     </update>
 
