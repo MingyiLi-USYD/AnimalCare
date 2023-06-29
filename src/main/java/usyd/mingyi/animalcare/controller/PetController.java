@@ -90,14 +90,9 @@ public class PetController {
     public R<String> updatePet(@PathVariable("petId") long petId,@RequestBody Pet pet) {
         Pet targetPet = petService.getById(petId);
         if(targetPet==null) return R.error("No such pet");
-        if(targetPet.getUserId()!=BaseContext.getCurrentId()){
+        if(!targetPet.getUserId().equals(BaseContext.getCurrentId())){
             return R.error("No right to update this pet");
         }
-        pet.setPetId(petId);
-        pet.setUserId(BaseContext.getCurrentId());
-        System.out.println(pet);
-    /*    petService.update(pet,new MPJLambdaWrapper<Pet>().eq(Pet::getUserId,BaseContext.getCurrentId()));
-        return null;*/
         if(petService.updateById(pet)){
             return R.success("Update Success");
         }else {
@@ -106,11 +101,10 @@ public class PetController {
     }
 
     @PostMapping("/pet/image/{petId}")
-    public R<Image> uploadImage(@RequestParam(value = "image")MultipartFile image,@PathVariable("petId") Long petId, HttpServletRequest request){
-        String userName = JWTUtils.getUserName(request.getHeader("auth"));
-        String imageName = ImageUtil.savePetImage(image, userName);
+    public R<Image> uploadImage(@PathVariable("petId") Long petId,@RequestParam String imageUrl){
+        System.out.println(imageUrl);
         Image imageObj = new Image();
-        imageObj.setUrl(imageName);
+        imageObj.setUrl(imageUrl);
         imageObj.setPetId(petId);
         imageService.save(imageObj);
         return R.success(imageObj);

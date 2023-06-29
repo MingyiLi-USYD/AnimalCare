@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
@@ -18,7 +19,10 @@ public class PetServiceImp extends ServiceImpl<PetMapper,Pet> implements PetServ
 
     @Override
     public List<Pet> getPetList(long userId) {
-        return petMapper.getPetList(userId);
+        MPJLambdaWrapper<Pet> wrapper = new MPJLambdaWrapper<>();
+        wrapper.eq(Pet::getUserId,userId);
+        return petMapper.selectList(wrapper);
+
     }
 
     @Override

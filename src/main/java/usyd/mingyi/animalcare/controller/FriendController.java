@@ -2,9 +2,11 @@ package usyd.mingyi.animalcare.controller;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
@@ -34,6 +36,7 @@ public class FriendController {
     FriendService friendService;
     @Autowired
     FriendRequestService friendRequestService;
+
 
 
     @GetMapping("/friends/status/{id}")
@@ -109,5 +112,6 @@ public class FriendController {
         friendService.deleteUser(currentId,toId);
         return R.success("Successfully delete");
     }
+
 
 }

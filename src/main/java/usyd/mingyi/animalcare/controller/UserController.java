@@ -6,6 +6,7 @@ import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,6 +77,9 @@ public class UserController {
          wrapper.eq(User::getUuid,userInfo.getUuid());
         User user = userService.getOne(wrapper);
         if(user==null){
+            if(userInfo.getNickname()==null){
+                userInfo.setNickname("anonymous");
+            }
             userService.save(userInfo);
             Map<String, String> map = new HashMap<>();
             map.put("serverToken",JWTUtils.generateToken(userInfo));
@@ -200,18 +204,12 @@ public class UserController {
         return R.success("成功");
     }
 
-/*    @GetMapping("/profile")
-    public R<UserDto> getMyProfile() {
-        Long id = BaseContext.getCurrentId();
-        UserDto profile = userService.getProfile(id);
-        return R.success(profile);
-    }*/
-
     @GetMapping("/loves")
     public R<String> getUserLovedPosts(){
         User user = userService.getById(BaseContext.getCurrentId());
         return R.success( user.getLoveList());
     }
+
 
 
 }

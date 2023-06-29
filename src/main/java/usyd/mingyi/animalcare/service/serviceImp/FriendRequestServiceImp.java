@@ -7,9 +7,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.mapper.FriendRequestMapper;
@@ -31,6 +35,7 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     UserMapper userMapper;
     @Autowired
     ObjectMapper objectMapper;
+
 
     @Override
     @Transactional
@@ -78,22 +83,19 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
 
     @Override
     public void addUserToFriendList(Long userId, Long approvedUserId) {
-        System.out.println("add");
+
         User user = userMapper.selectById(userId);
-        System.out.println(user);
+
         String friendList = user.getFriendList();
 
         log.info(friendList);
         try {
-            Set<String> map = objectMapper.readValue(friendList==null?"{}":friendList, new TypeReference<Set<String>>() {});
+            Set<String> map = objectMapper.readValue(friendList==null?"[]":friendList, new TypeReference<Set<String>>() {});
             map.add(String.valueOf(approvedUserId));
             String newFriendList = objectMapper.writeValueAsString(map);
+            log.info(newFriendList);
             user.setFriendList(newFriendList);
             userMapper.updateById(user);
-/*            LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(User::getFriendList,newFriendList).eq(User::getId,user.getId());
-            // 执行更新操作
-            userMapper.update(null, updateWrapper);*/
         } catch (IOException e) {
             throw new CustomException("System error");
         }
@@ -177,6 +179,9 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
                 .map(Long::valueOf)
                 .collect(Collectors.toSet());
     }
+
+
+
 
 
 }

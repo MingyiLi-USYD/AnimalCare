@@ -2,6 +2,9 @@ package usyd.mingyi.animalcare.config;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.FirebaseToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -24,7 +27,9 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
 
         log.info("拦截前的线程ID {}和URI {}",  Thread.currentThread().getId(),request.getRequestURI());
         String token = request.getHeader("auth");
-         if(token!=null&&JWTUtils.verify(token)){
+        String test = request.getHeader("auth2");
+        System.out.println(isValidToken(test));
+        if(token!=null&&JWTUtils.verify(token)){
              //log.info("Thread id is: {}",Thread.currentThread().getId());
              DecodedJWT tokenInfo = JWTUtils.getTokenInfo(token);
              Long userId = tokenInfo.getClaim("userId").asLong();
@@ -37,24 +42,6 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
              response.getWriter().println(resp);
              return false;
          }
-
- /*       log.info("被拦截的路径: " + request.getRequestURI());
-
-        HttpSession session = request.getSession(false);
-
-        if (session != null && session.getAttribute("id") != null) {
-            Long id = (Long) request.getSession().getAttribute("id");
-            log.info("Thread id is: {}",Thread.currentThread().getId());
-            BaseContext.setCurrentId(id);
-            return true;
-        } else {
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType("application/json; charset=utf-8");
-            response.setStatus(401);
-            PrintWriter out = response.getWriter();
-            out.append(ResultData.fail(401, "Please login first").toString());
-            return false;
-        }*/
         return true;
 
     }
@@ -67,5 +54,16 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
 
+    }
+
+    private boolean isValidToken(String accessToken) {
+        try {
+            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(accessToken);
+            // 验证成功，返回 true
+            return true;
+        } catch (FirebaseAuthException e) {
+            // 验证失败，返回 false
+            return false;
+        }
     }
 }
