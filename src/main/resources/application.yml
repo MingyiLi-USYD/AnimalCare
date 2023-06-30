@@ -10,7 +10,11 @@ spring:
     multipart:
       max-request-size: 100MB
       max-file-size: 100MB
-
+  rabbitmq:
+    port: 5672
+    host: localhost
+    username: root
+    password: 123456
 
   mail:
     port: 587

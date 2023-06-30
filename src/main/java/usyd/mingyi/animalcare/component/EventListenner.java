@@ -54,7 +54,7 @@ public class EventListenner {
                  System.out.println(userId);
                  System.out.println(tokenUserId);
 
-                 client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null, "tokenId is not equal userId"));
+                 client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null, null,"tokenId is not equal userId"));
                  disconnectClient(client,TOKEN_ISSUE);
                  System.out.println("连接请求被拒绝");
                  return;
@@ -65,7 +65,7 @@ public class EventListenner {
              broadcastAllUsers(Long.valueOf(userId),ON);
              System.out.println("建立连接");
          }else {
-             client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null, "invalid token"));
+             client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null,null, "invalid token"));
              disconnectClient(client,TOKEN_ISSUE);
              System.out.println("连接请求被拒绝");
          }

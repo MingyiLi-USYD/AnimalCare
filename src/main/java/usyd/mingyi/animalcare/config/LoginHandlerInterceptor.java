@@ -27,8 +27,6 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
 
         log.info("拦截前的线程ID {}和URI {}",  Thread.currentThread().getId(),request.getRequestURI());
         String token = request.getHeader("auth");
-        String test = request.getHeader("auth2");
-        System.out.println(isValidToken(test));
         if(token!=null&&JWTUtils.verify(token)){
              //log.info("Thread id is: {}",Thread.currentThread().getId());
              DecodedJWT tokenInfo = JWTUtils.getTokenInfo(token);
@@ -56,14 +54,5 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
 
     }
 
-    private boolean isValidToken(String accessToken) {
-        try {
-            FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(accessToken);
-            // 验证成功，返回 true
-            return true;
-        } catch (FirebaseAuthException e) {
-            // 验证失败，返回 false
-            return false;
-        }
-    }
+
 }

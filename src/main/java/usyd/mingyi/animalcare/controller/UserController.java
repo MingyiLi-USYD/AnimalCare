@@ -2,6 +2,8 @@ package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,18 +85,27 @@ public class UserController {
             userService.save(userInfo);
             Map<String, String> map = new HashMap<>();
             map.put("serverToken",JWTUtils.generateToken(userInfo));
-            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(userInfo.getId())));
             return R.success(map);
         }else {
             Map<String, String> map = new HashMap<>();
             map.put("serverToken",JWTUtils.generateToken(user));
-            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getId())));
             return R.success(map);
         }
 
     }
 
 
+    @GetMapping("/token")
+    public R<String> requestToken(){
+        Long currentId = BaseContext.getCurrentId();
+        User user = userService.getById(currentId);
+        try {
+            return R.success(FirebaseAuth.getInstance().createCustomToken(user.getUuid())) ;
+        } catch (FirebaseAuthException e) {
+            throw new CustomException("System error");
+        }
+
+    }
 
 
     @GetMapping("/currentUser")

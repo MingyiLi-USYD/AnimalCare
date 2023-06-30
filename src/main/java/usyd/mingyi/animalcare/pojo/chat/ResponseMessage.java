@@ -9,10 +9,11 @@ import usyd.mingyi.animalcare.pojo.User;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ResponseMessage {
+public class ResponseMessage<T> {
     private boolean isSystem;
     private String type;
     private User fromUser;
-    private Object message;
+    private String toUser;
+    private T message;
 
 }
