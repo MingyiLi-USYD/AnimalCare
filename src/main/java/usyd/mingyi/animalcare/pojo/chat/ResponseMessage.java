@@ -1,6 +1,5 @@
 package usyd.mingyi.animalcare.pojo.chat;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +14,4 @@ public class ResponseMessage<T> {
     private User fromUser;
     private String toUser;
     private T message;
-
 }

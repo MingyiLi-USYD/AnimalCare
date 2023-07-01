@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.corundumstudio.socketio.SocketIOClient;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -16,16 +17,15 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
+import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -39,6 +39,8 @@ public class UserController {
     RestTemplate restTemplate;
     @Autowired
     ProjectProperties projectProperties;
+    @Autowired
+    ClientCache clientCache;
 
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
@@ -221,6 +223,18 @@ public class UserController {
         return R.success( user.getLoveList());
     }
 
+
+    @GetMapping("/test/onlineUsers")
+    public R<Map<String, List<UUID>>> getOnlineUsers(){
+        Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
+        Map<String, List<UUID>> modifiedChatServer = chatServer.entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> new ArrayList<>(entry.getValue().keySet())
+                ));
+      return R.success(modifiedChatServer);
+    }
 
 
 }

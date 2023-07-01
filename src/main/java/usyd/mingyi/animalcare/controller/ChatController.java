@@ -1,14 +1,8 @@
 package usyd.mingyi.animalcare.controller;
 
-import com.corundumstudio.socketio.SocketIOClient;
-import com.google.firebase.database.DatabaseReference;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.component.ClientCache;
-import usyd.mingyi.animalcare.config.MQConfig;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.pojo.chat.Message;
 import usyd.mingyi.animalcare.pojo.chat.RequestMessage;
@@ -18,10 +12,7 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -44,7 +35,7 @@ public class ChatController {
         Long currentId = BaseContext.getCurrentId();
         //还需要检查朋友的关系
         User me = userService.getById(currentId);
-        ResponseMessage responseMessage = new ResponseMessage(false, "CHAT", me,message.getToId(), message.getMessage());
+        ResponseMessage<Message> responseMessage = new ResponseMessage<>(false, "CHAT", me,message.getToId(), message.getMessage());
          chatService.sendMsgToQueue(responseMessage);
         return R.success("成功发送");
     }

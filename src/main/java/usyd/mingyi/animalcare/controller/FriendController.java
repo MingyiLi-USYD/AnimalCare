@@ -62,7 +62,7 @@ public class FriendController {
         if (userClient==null||userClient.size()==0){
             return R.success("对方不在线 后面再发给他");
         }
-        ResponseMessage responseMessage = new ResponseMessage(false, "request", null, null);
+        ResponseMessage responseMessage = new ResponseMessage(false, "request", null, null,null);
         userClient.forEach((uuid, socketIOClient) -> {
             //向客户端推送消息
             //System.out.println("发消息中");

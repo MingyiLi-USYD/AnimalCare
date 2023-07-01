@@ -33,10 +33,10 @@ public class MQConfig {
         return BindingBuilder.bind(QA).to(topicExchange).with("#");
     }
 
-/*    @Bean
+    @Bean
     public Binding binding2(@Qualifier(QUEUE_B) Queue QB,@Qualifier(MESSAGE_EXCHANGE) TopicExchange topicExchange) {
         return BindingBuilder.bind(QB).to(topicExchange).with("#");
-    }*/
+    }
 }
 
 

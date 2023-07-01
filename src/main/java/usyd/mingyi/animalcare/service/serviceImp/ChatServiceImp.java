@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.amqp.core.Message;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.*;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,7 +36,7 @@ public class ChatServiceImp implements ChatService {
     public ChatServiceImp(FirebaseApp firebaseApp,RabbitTemplate rabbitTemplate) {
         this.database = FirebaseDatabase.getInstance(firebaseApp).getReference();
         this.rabbitTemplate = rabbitTemplate;
-        //rabbitTemplate.setConfirmCallback(confirmCallback());
+        rabbitTemplate.setConfirmCallback(confirmCallback());
     }
 
     @Override
@@ -83,23 +85,26 @@ public class ChatServiceImp implements ChatService {
 
     public void sendMsgToQueue(ResponseMessage responseMessage){
         try {
-            System.out.println("正在发送");
-            rabbitTemplate.convertAndSend(MQConfig.MESSAGE_EXCHANGE,"#",objectMapper.writeValueAsString(responseMessage));
+            rabbitTemplate.convertAndSend(MQConfig.MESSAGE_EXCHANGE,"#",objectMapper.writeValueAsString(responseMessage),message -> {
+                MessageProperties properties = message.getMessageProperties();
+                properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                return message;
+            });
         } catch (JsonProcessingException e) {
             throw new CustomException("System Error");
         }
     }
 
-/*    private RabbitTemplate.ConfirmCallback confirmCallback() {
+    private RabbitTemplate.ConfirmCallback confirmCallback() {
         return (correlationData, ack, cause) -> {
             if (ack) {
                 System.out.println("Message successfully published.");
             } else {
                 System.out.println("Failed to publish message: " + cause);
-                requeueMessage(correlationData.getReturnedMessage());
+                //requeueMessage(correlationData.getReturnedMessage());
             }
         };
-    }*/
+    }
 
     private void requeueMessage(Message returnedMessage) {
         rabbitTemplate.send(returnedMessage.getMessageProperties().getReceivedExchange(),

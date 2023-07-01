@@ -48,8 +48,12 @@ public class ClientCache {
      * @param sessionId
      */
     public void deleteSessionClient(String userId,UUID sessionId){
-        if(chatServer.get(userId)!=null)
+        if(chatServer.get(userId)!=null){
             chatServer.get(userId).remove(sessionId);
+            if(chatServer.get(userId).size()==0){
+                chatServer.remove(userId);
+            }
+        }
     }
 
     public Map<String, HashMap<UUID, SocketIOClient>> getChatServer(){

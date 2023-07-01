@@ -56,18 +56,18 @@ public class EventListenner {
 
                  client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null, null,"tokenId is not equal userId"));
                  disconnectClient(client,TOKEN_ISSUE);
-                 System.out.println("连接请求被拒绝");
+                 log.info("连接请求被拒绝");
                  return;
              }
              UUID sessionId = client.getSessionId();
              log.info(sessionId.toString());
              clientCache.saveClient(String.valueOf(userId), sessionId, client);
-             broadcastAllUsers(Long.valueOf(userId),ON);
-             System.out.println("建立连接");
+             //broadcastAllUsers(Long.valueOf(userId),ON);
+                 log.info("成功建立连接");
          }else {
              client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null,null, "invalid token"));
              disconnectClient(client,TOKEN_ISSUE);
-             System.out.println("连接请求被拒绝");
+             log.info("连接请求被拒绝");
          }
 
 
@@ -83,44 +83,21 @@ public class EventListenner {
     public void onDisconnect(SocketIOClient client) {
         String reason = client.get("disconnectReason");
         if(!StringUtils.isEmpty(reason)&&reason.equals(TOKEN_ISSUE)){
-            System.out.println("因为token原因导致关闭连接");
             return;
         }
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
         if (!StringUtils.isEmpty(userId)) {
-            broadcastAllUsers(Long.valueOf(userId),OFF);
+            //broadcastAllUsers(Long.valueOf(userId),OFF);
             clientCache.deleteSessionClient(userId, client.getSessionId());
-            System.out.println("关闭连接");
         }
 
 
     }
-
-    //消息接收入口，当接收到消息后，查找发送目标客户端，并且向该客户端发送消息，且给自己发送消息
-    // 暂未使用
-/*    @OnEvent("chatEvent")
-    public void onEvent(SocketIOClient client, AckRequest request, RequestMessage requestMessage) {
-        System.out.println("收到event");
-        String userId = client.getHandshakeData().getSingleUrlParam("userId");
-        ResponseMessage responseMessage = new ResponseMessage(false, "CHAT", userId, requestMessage);
-        System.out.println(responseMessage);
-        client.sendEvent("responseMessage",responseMessage);
-
-        //System.out.println(data.getClass());
-        //System.out.println(data.toString());
-        //objectMapper.readValue(data,);
-
-    }
-    @OnEvent("friendOnEvent")
-    public void onFriend(SocketIOClient client, AckRequest request){
-
-    }*/
 
     private void broadcastAllUsers(Long id,String type){
 
         List<User> allFriends = friendService.getAllFriends(id);
         if(allFriends==null) return;
-
         log.info("我有{}个朋友",allFriends.size());
         log.info("系统现在有{}个人在线",clientCache.getChatServer().size());
         Map<String, HashMap<UUID, SocketIOClient>> concurrentHashMap = clientCache.getChatServer();
@@ -134,7 +111,6 @@ public class EventListenner {
             }
 
         });
-
     }
 
     private void remindFriend(Long friend,Long me,String type)  {
@@ -144,7 +120,7 @@ public class EventListenner {
         while(iterator.hasNext()){
             log.info("正在发消息");
             Map.Entry<UUID, SocketIOClient> next = iterator.next();
-            next.getValue().sendEvent("friendEvent",new ResponseMessage(true,type,null,me));
+            next.getValue().sendEvent("friendEvent",new ResponseMessage(true,type,null,null,me));
         }
     }
 
@@ -154,7 +130,6 @@ public class EventListenner {
         // Disconnect the client
         client.disconnect();
     }
-
 
 
 }

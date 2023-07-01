@@ -15,6 +15,7 @@ spring:
     host: localhost
     username: root
     password: 123456
+    publisher-confirm-type: correlated
 
   mail:
     port: 587
