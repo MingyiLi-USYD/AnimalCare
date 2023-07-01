@@ -31,8 +31,7 @@ public class QueueConsumer {
     @Resource
     private ChatMapper chatMapper;
 
-
-    @RabbitListener(queues = MQConfig.QUEUE_A)
+    @RabbitListener(queues = "QA")
     public void receiveD(Message message, Channel channel)  {
 
           try {
@@ -40,7 +39,7 @@ public class QueueConsumer {
               ResponseMessage<usyd.mingyi.animalcare.pojo.chat.Message> responseMessage = objectMapper.readValue(receivedBytes, new TypeReference<ResponseMessage<usyd.mingyi.animalcare.pojo.chat.Message>>() {});
               Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
               HashMap<UUID, SocketIOClient> userClient = chatServer.get(responseMessage.getToUser());
-              chatMapper.sendMsgToFirebase(String.valueOf(responseMessage.getFromUser().getId()), responseMessage.getToUser(),responseMessage);
+              //chatMapper.sendMsgToFirebase(String.valueOf(responseMessage.getFromUser().getId()), responseMessage.getToUser(),responseMessage);
               if (userClient==null||userClient.size()==0){
                    log.info("not found in this server");
               }else {
@@ -49,6 +48,7 @@ public class QueueConsumer {
                   });
               }
           }catch (Exception e){
+              //requeue
               e.printStackTrace();
           }
 

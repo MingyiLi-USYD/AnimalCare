@@ -2,6 +2,7 @@ package usyd.mingyi.animalcare.component;
 
 import com.alibaba.druid.util.StringUtils;
 import com.corundumstudio.socketio.SocketIOClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * kcm
  */
 @Component
+@Slf4j
 public class ClientCache {
 
     //本地缓存
@@ -50,6 +52,7 @@ public class ClientCache {
     public void deleteSessionClient(String userId,UUID sessionId){
         if(chatServer.get(userId)!=null){
             chatServer.get(userId).remove(sessionId);
+            log.info("移除用户: {}" ,sessionId);
             if(chatServer.get(userId).size()==0){
                 chatServer.remove(userId);
             }

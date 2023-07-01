@@ -1,27 +1,16 @@
 package usyd.mingyi.animalcare.controller;
 
-import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.pojo.Image;
 import usyd.mingyi.animalcare.pojo.Pet;
 import usyd.mingyi.animalcare.service.ImageService;
 import usyd.mingyi.animalcare.service.PetService;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.ImageUtil;
-import usyd.mingyi.animalcare.utils.JWTUtils;
-import usyd.mingyi.animalcare.utils.ResultData;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -30,8 +19,6 @@ public class PetController {
     @Autowired
     PetService petService;
 
-    @Autowired
-    ProjectProperties projectProperties;
 
     @Autowired
     ImageService imageService;

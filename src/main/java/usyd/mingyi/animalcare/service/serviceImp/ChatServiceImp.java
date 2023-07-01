@@ -1,6 +1,8 @@
 package usyd.mingyi.animalcare.service.serviceImp;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.core.MessageProperties;
@@ -19,9 +21,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Service
+@Slf4j
 public class ChatServiceImp implements ChatService {
     @Resource
     private ObjectMapper objectMapper;
@@ -51,12 +53,13 @@ public class ChatServiceImp implements ChatService {
     public void sendMsgToQueue(ResponseMessage responseMessage){
         try {
             String correlationId = UUID.randomUUID().toString();
+            //log.info("入队消息ID: {}",correlationId);
             messages.put(correlationId,responseMessage);
             rabbitTemplate.convertAndSend(MQConfig.MESSAGE_EXCHANGE,"#",objectMapper.writeValueAsString(responseMessage), message -> {
                 MessageProperties properties = message.getMessageProperties();
                 properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                 return message;
-            },new CorrelationData());
+            },new CorrelationData(correlationId));
         } catch (JsonProcessingException e) {
             throw new CustomException("System Error");
         }
@@ -64,13 +67,17 @@ public class ChatServiceImp implements ChatService {
 
     private RabbitTemplate.ConfirmCallback confirmCallback() {
         return (correlationData, ack, cause) -> {
-            correlationData.getId();
-            System.out.println(correlationData);
+            //log.info("成功入队消息ID: {}",correlationData.getId());
             if (ack) {
-                //System.out.println("Message successfully published.");
+                if(messages.contains(correlationData.getId())){
+                    messages.remove(correlationData.getId());
+                }
+
             } else {
-                System.out.println("Failed to publish message: " + cause);
-                //requeueMessage(correlationData.getReturnedMessage());
+                if(messages.contains(correlationData.getId())){
+                    sendMsgToQueue(messages.get(correlationData.getId()));
+                   messages.remove(correlationData.getId());
+                }
             }
         };
     }

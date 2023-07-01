@@ -60,10 +60,11 @@ public class EventListenner {
                  return;
              }
              UUID sessionId = client.getSessionId();
-             log.info(sessionId.toString());
-             clientCache.saveClient(String.valueOf(userId), sessionId, client);
+
+             clientCache.saveClient(userId, sessionId, client);
              //broadcastAllUsers(Long.valueOf(userId),ON);
-                 log.info("成功建立连接");
+                 //log.info("成功建立连接");
+             log.info("登录用户: {}",String.valueOf(sessionId));
          }else {
              client.sendEvent("invalidTokenEvent", new ResponseMessage(true, "Invalid token", null,null, "invalid token"));
              disconnectClient(client,TOKEN_ISSUE);

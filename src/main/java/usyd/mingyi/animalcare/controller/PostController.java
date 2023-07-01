@@ -9,23 +9,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.config.ProjectProperties;
 import usyd.mingyi.animalcare.dto.PostDto;
-import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.ResultData;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
@@ -39,8 +32,6 @@ public class PostController {
 
     @Autowired
     RedisTemplate redisTemplate;
-    @Autowired
-    ProjectProperties projectProperties;
     @Autowired
     RestTemplate restTemplate;
 
