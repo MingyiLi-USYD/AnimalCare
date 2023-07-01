@@ -3,8 +3,8 @@ spring:
     username: root
     #password: LMY741917776!
     password: 123456
-    url: jdbc:mysql://localhost:3306/db01?useUnicode=true&characterEncoding=utf-8
-    #url: jdbc:mysql://mysql:3306/db01?useUnicode=true&characterEncoding=utf-8
+    #url: jdbc:mysql://localhost:3306/db01?useUnicode=true&characterEncoding=utf-8
+    url: jdbc:mysql://192.168.184.102:3306/db01?useUnicode=true&characterEncoding=utf-8
     driver-class-name: com.mysql.cj.jdbc.Driver
   servlet:
     multipart:
@@ -12,7 +12,8 @@ spring:
       max-file-size: 100MB
   rabbitmq:
     port: 5672
-    host: localhost
+    #host: localhost
+    host: 192.168.184.102
     username: root
     password: 123456
     publisher-confirm-type: correlated
@@ -91,4 +92,6 @@ firebase:
   config:
     file: classpath:animalcare-firebase.json
 
-
+mq:
+  queue-a: QUEUE_A
+  queue-b: QUEUE_B

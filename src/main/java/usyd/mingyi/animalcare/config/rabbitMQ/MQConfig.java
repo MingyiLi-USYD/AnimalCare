@@ -1,4 +1,4 @@
-package usyd.mingyi.animalcare.config;
+package usyd.mingyi.animalcare.config.rabbitMQ;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
