@@ -24,8 +24,6 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
 
     @Override
     public IPage<CommentDto> getCommentsByPostId(long currPage, long pageSize,long postId) {
-        //
-        //
         log.info("进来了");
         IPage<CommentDto> commentDtoIPage = new Page<>(currPage,pageSize);
         MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
@@ -34,9 +32,6 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
                 .selectAs(User::getAvatar,CommentDto::getUserAvatar)
                 .leftJoin(User.class,User::getId,Comment::getUserId)
                 .eq(Comment::getPostId,postId);
-
-        //List<CommentDto> commentDtoList = commentMapper.selectJoinList(CommentDto.class, wrapper);
-
         return commentMapper.selectJoinPage(commentDtoIPage, CommentDto.class, wrapper);
 
     }

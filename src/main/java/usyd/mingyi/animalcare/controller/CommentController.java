@@ -25,20 +25,13 @@ public class CommentController {
     CommentService commentService;
 
     @PostMapping("/comment/{postId}")
-    public R<String> addComment(@PathVariable("postId") long postId, @RequestBody Map map) {
-
-
-        String commentContent = (String) map.get("commentContent");
+    public R<String> addComment(@PathVariable("postId") long postId, @RequestBody Comment comment) {
         Long id = BaseContext.getCurrentId();
-
-        Comment comment = new Comment();
-        comment.setCommentContent(commentContent);
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
         comment.setUserId(id);
-        System.out.println(comment);
+        log.info(comment.toString());
         commentService.save(comment);
-
         return R.success(" Comment post successfully");
     }
 
@@ -49,6 +42,15 @@ public class CommentController {
         IPage<CommentDto> commentsByPostId = commentService.getCommentsByPostId(currPage,pageSize,postId);
         return R.success(commentsByPostId);
     }
+
+    @GetMapping("/comment/love/{commentId}")
+    @ResponseBody
+    public R<String> loveComment(@PathVariable("commentId") long commentId) {
+        Comment byId = commentService.getById(commentId);
+        System.out.println(byId);
+        return null;
+    }
+
 
 
 }

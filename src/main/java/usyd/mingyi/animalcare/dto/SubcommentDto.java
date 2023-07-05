@@ -3,16 +3,12 @@ package usyd.mingyi.animalcare.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import usyd.mingyi.animalcare.pojo.Comment;
-
-import java.util.List;
+import usyd.mingyi.animalcare.pojo.Subcomment;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDto extends Comment {
+public class SubcommentDto extends Subcomment {
     private String userAvatar;
     private String nickName;
-    private String userName;
-    private List<SubcommentDto> subcommentDtos;
 }

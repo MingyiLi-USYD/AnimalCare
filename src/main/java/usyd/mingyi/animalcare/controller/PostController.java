@@ -101,7 +101,7 @@ public class PostController {
     public R<String> changeVisibility(@PathVariable("postId") long postId,@RequestParam("visibility")Boolean visibility){
         System.out.println(visibility);
         Post post = postService.getById(postId);
-        if(post.getUserId()!=BaseContext.getCurrentId()){
+        if(!post.getUserId().equals(BaseContext.getCurrentId())){
             return R.error("No right to access");
         }else {
             Post newPost = new Post();

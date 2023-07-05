@@ -8,24 +8,22 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("comment")
-public class Comment implements Serializable {
-    @TableId("comment_id")
+@TableName("subcomment")
+public class Subcomment {
+    @TableId("subcomment_id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private Long id;
+    private Long subcommentId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    @TableField("comment_post_id")
-    private Long postId;
-    @TableField("comment_user_id")
+    @TableField("subcomment_comment_id")
+    private Long commentId;
+    @TableField("subcomment_user_id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long userId;
-    private Long commentTime;
-    private String commentContent;
-    private Long commentLove;
-
+    private Long subcommentTime;
+    private String subcommentContent;
+    private Long subcommentLove;
+    private String targetNickname;
 }
