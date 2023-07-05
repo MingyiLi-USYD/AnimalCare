@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.dto.CommentDto;
+import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.service.CommentService;
+import usyd.mingyi.animalcare.service.SubcommentService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.ResultData;
 
@@ -23,6 +25,8 @@ import java.util.Map;
 public class CommentController {
     @Autowired
     CommentService commentService;
+    @Autowired
+    SubcommentService subcommentService;
 
     @PostMapping("/comment/{postId}")
     public R<String> addComment(@PathVariable("postId") long postId, @RequestBody Comment comment) {
@@ -50,7 +54,17 @@ public class CommentController {
         System.out.println(byId);
         return null;
     }
-
-
+    @GetMapping("/test/subcomment/{commentId}")
+    public R<List<SubcommentDto>> test(@PathVariable("commentId") long commentId){
+        List<SubcommentDto> subcommentDtos = subcommentService.getSubcommentDtos(commentId,false);
+        System.out.println(subcommentService.getSubcommentsSize(commentId));
+        return R.success(subcommentDtos);
+    }
+    @GetMapping("/comment/subcomments/{commentId}")
+    @ResponseBody
+    public R<List<SubcommentDto>> getSubcommentsByCommentId(@PathVariable("commentId") long commentId){
+        List<SubcommentDto> subcommentDtos = subcommentService.getSubcommentDtos(commentId,false);
+        return R.success(subcommentDtos);
+    }
 
 }
