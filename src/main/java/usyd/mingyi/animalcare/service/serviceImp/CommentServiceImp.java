@@ -15,6 +15,8 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.SubcommentService;
 
+import java.util.ArrayList;
+
 @Service
 @Slf4j
 public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implements CommentService {
@@ -44,5 +46,19 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
          });
          return res;
 
+    }
+    public CommentDto saveAndSync(Comment comment){
+         commentMapper.insert(comment);
+
+        MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
+        wrapper.selectAll(Comment.class)
+                .selectAs(User::getNickname,CommentDto::getNickName)
+                .selectAs(User::getAvatar,CommentDto::getUserAvatar)
+                .leftJoin(User.class,User::getId,Comment::getUserId)
+                .eq(Comment::getId,comment.getId());
+        CommentDto commentDto = commentMapper.selectJoinOne(CommentDto.class, wrapper);
+        commentDto.setSubcommentDtos(new ArrayList<>());
+        commentDto.setSubcommentsLength(0);
+        return commentDto;
     }
 }

@@ -57,12 +57,12 @@ public class FriendController {
         friendRequestService.sendRequest(currentId,toId,msg);
         //还需要检查朋友的关系
         Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
-        User me = userService.getById(currentId);
+        User me = userService.getBasicUserInfoById(currentId);
         HashMap<UUID, SocketIOClient> userClient = chatServer.get(String.valueOf(toId));
         if (userClient==null||userClient.size()==0){
             return R.success("对方不在线 后面再发给他");
         }
-        ResponseMessage responseMessage = new ResponseMessage(false, "request", null, null,null);
+        ResponseMessage<Object> responseMessage = new ResponseMessage<>(false, "request", me, null,null);
         userClient.forEach((uuid, socketIOClient) -> {
             //向客户端推送消息
             //System.out.println("发消息中");
@@ -81,10 +81,10 @@ public class FriendController {
 
     @GetMapping("/friendRequest/{id}")
     @ResponseBody
-    public R<String> approveFriendRequest(@PathVariable("id") long toId) {
+    public R<User> approveFriendRequest(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
         friendRequestService.approveRequest(currentId,toId);
-        return R.success("Successfully approve");
+        return R.success(friendService.getFriendSync(toId));
     }
 
     @DeleteMapping("/friendRequest/{id}")
@@ -112,6 +112,5 @@ public class FriendController {
         friendService.deleteUser(currentId,toId);
         return R.success("Successfully delete");
     }
-
 
 }

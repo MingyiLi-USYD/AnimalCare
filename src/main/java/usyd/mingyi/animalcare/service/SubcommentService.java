@@ -9,4 +9,5 @@ import java.util.List;
 public interface SubcommentService extends IService<Subcomment> {
     List<SubcommentDto> getSubcommentDtos(Long commentId,Boolean limit);
     Integer getSubcommentsSize(Long commentId);
+    SubcommentDto saveAndSync(Subcomment subcomment);
 }

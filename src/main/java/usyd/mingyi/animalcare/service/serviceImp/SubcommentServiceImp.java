@@ -35,5 +35,15 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
 
     }
 
+    public SubcommentDto saveAndSync(Subcomment subcomment){
+        subcommentMapper.insert(subcomment);
+        MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
+        wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
+                .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
+                .leftJoin(User.class,User::getId, Subcomment::getUserId)
+                .eq(Subcomment::getSubcommentId,subcomment.getSubcommentId());
+       return subcommentMapper.selectJoinOne(SubcommentDto.class,wrapper);
+    }
+
 
 }

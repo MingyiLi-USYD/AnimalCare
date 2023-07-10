@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -8,6 +9,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.dto.UserDto;
+import usyd.mingyi.animalcare.mapper.FriendMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
@@ -26,6 +28,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
 
     @Autowired
     RedisTemplate redisTemplate;
+
 
     @Override
     public User queryUser(String username, String password) {
@@ -65,6 +68,14 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     @Override
     public int updatePassword(String username, String password) {
         return userMapper.updatePassword(username, password);
+    }
+
+    @Override
+    public User getBasicUserInfoById(Long id) {
+        MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
+        wrapper.select(User::getNickname).select(User::getAvatar)
+                .select(User::getId).select(User::getDescription).eq(User::getId,id);
+        return userMapper.selectOne(wrapper);
     }
 
 }

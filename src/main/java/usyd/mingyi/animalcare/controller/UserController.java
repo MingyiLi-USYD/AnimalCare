@@ -2,6 +2,9 @@ package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.corundumstudio.socketio.SocketIOClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
@@ -37,6 +40,8 @@ public class UserController {
     RestTemplate restTemplate;
     @Autowired
     ClientCache clientCache;
+    @Autowired
+    ObjectMapper objectMapper;
 
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
@@ -214,9 +219,16 @@ public class UserController {
     }
 
     @GetMapping("/loves")
-    public R<String> getUserLovedPosts(){
+    public R<List<String>> getUserLovedPosts(){
         User user = userService.getById(BaseContext.getCurrentId());
-        return R.success( user.getLoveList());
+        String loveList = user.getLoveList();
+        try {
+            List<String> res = objectMapper.readValue(loveList==null?"[]":loveList, new TypeReference<>() {
+            });
+            return R.success(res);
+        } catch (JsonProcessingException e) {
+            throw new CustomException("System error");
+        }
     }
 
 

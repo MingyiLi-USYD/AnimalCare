@@ -99,6 +99,14 @@ public class FriendServiceImp implements FriendService {
         deleteUserInFriendList(toId,fromId);
     }
 
+    @Override
+    public User getFriendSync(long id) {
+        MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
+        wrapper.select(User::getNickname).select(User::getAvatar)
+                .select(User::getId).select(User::getDescription).eq(User::getId,id);
+        return userMapper.selectOne(wrapper);
+    }
+
     public void deleteUserInFriendList(Long userId, Long deleteUserId) {
         User user = userMapper.selectById(userId);
         String friendList = user.getFriendList();

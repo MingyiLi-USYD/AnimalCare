@@ -20,4 +20,6 @@ public interface UserService extends IService<User> {
     UserDto getProfile(long targetUserId,long currentUserId);
 
     int updatePassword(String username,String password);
+
+    User getBasicUserInfoById(Long id);
 }

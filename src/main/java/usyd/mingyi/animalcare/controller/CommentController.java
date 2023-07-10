@@ -11,6 +11,7 @@ import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.dto.CommentDto;
 import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.pojo.Comment;
+import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.SubcommentService;
 import usyd.mingyi.animalcare.utils.BaseContext;
@@ -29,14 +30,15 @@ public class CommentController {
     SubcommentService subcommentService;
 
     @PostMapping("/comment/{postId}")
-    public R<String> addComment(@PathVariable("postId") long postId, @RequestBody Comment comment) {
+    public R<Comment> addComment(@PathVariable("postId") long postId, @RequestBody Comment comment) {
         Long id = BaseContext.getCurrentId();
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
         comment.setUserId(id);
-        log.info(comment.toString());
-        commentService.save(comment);
-        return R.success(" Comment post successfully");
+        //commentService.save(comment);
+        CommentDto commentDto = commentService.saveAndSync(comment);
+        System.out.println(commentDto);
+        return R.success( commentDto);
     }
 
 
@@ -60,6 +62,18 @@ public class CommentController {
         System.out.println(subcommentService.getSubcommentsSize(commentId));
         return R.success(subcommentDtos);
     }
+    @PostMapping("/comment/subcomment/{commentId}")
+    @ResponseBody
+    public R<Subcomment> addSubcomment(@PathVariable("commentId") long commentId,@RequestBody Subcomment subcomment){
+        System.out.println(subcomment);
+        Long id = BaseContext.getCurrentId();
+        subcomment.setCommentId(commentId);
+        subcomment.setUserId(id);
+        subcomment.setSubcommentTime(System.currentTimeMillis());
+       // subcommentService.save(subcomment);
+        return R.success(subcommentService.saveAndSync(subcomment));
+    }
+
     @GetMapping("/comment/subcomments/{commentId}")
     @ResponseBody
     public R<List<SubcommentDto>> getSubcommentsByCommentId(@PathVariable("commentId") long commentId){
