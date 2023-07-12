@@ -13,7 +13,8 @@ import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
 import usyd.mingyi.animalcare.mapper.ChatMapper;
-import usyd.mingyi.animalcare.pojo.chat.ResponseMessage;
+import usyd.mingyi.animalcare.socketEntity.ChatMessage;
+import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.service.ChatService;
 
 import javax.annotation.Resource;
@@ -32,7 +33,7 @@ public class ChatServiceImp implements ChatService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    private static final ConcurrentHashMap<String,ResponseMessage> messages = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String,ChatMessage> messages = new ConcurrentHashMap<>();
     @Autowired
     public ChatServiceImp(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
@@ -40,22 +41,22 @@ public class ChatServiceImp implements ChatService {
     }
 
     @Override
-    public void sendMsgToFirebase(String currentId,String toId, ResponseMessage responseMessage) {
-        chatMapper.sendMsgToFirebase(currentId,toId,responseMessage);
+    public void sendMsgToFirebase(String currentId,String toId, ChatMessage chatMessage) {
+        chatMapper.sendMsgToFirebase(currentId,toId,chatMessage);
     }
 
 
-    public CompletableFuture<List<usyd.mingyi.animalcare.pojo.chat.Message>> retrieveDataFromFirebase(String fromId, String toId) {
+    public CompletableFuture<List<ChatMessage>> retrieveDataFromFirebase(String fromId, String toId) {
            return chatMapper.retrieveDataFromFirebase(fromId,toId);
     }
     // 生成聊天ID
 
-    public void sendMsgToQueue(ResponseMessage responseMessage){
+    public void sendMsgToQueue(ChatMessage chatMessage){
         try {
             String correlationId = UUID.randomUUID().toString();
             //log.info("入队消息ID: {}",correlationId);
-            messages.put(correlationId,responseMessage);
-            rabbitTemplate.convertAndSend(MQConfig.MESSAGE_EXCHANGE,"#",objectMapper.writeValueAsString(responseMessage), message -> {
+            messages.put(correlationId,chatMessage);
+            rabbitTemplate.convertAndSend(MQConfig.MESSAGE_EXCHANGE,"#",objectMapper.writeValueAsString(chatMessage), message -> {
                 MessageProperties properties = message.getMessageProperties();
                 properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
                 return message;
@@ -68,6 +69,9 @@ public class ChatServiceImp implements ChatService {
     private RabbitTemplate.ConfirmCallback confirmCallback() {
         return (correlationData, ack, cause) -> {
             //log.info("成功入队消息ID: {}",correlationData.getId());
+            if(correlationData==null){
+                return;
+            }
             if (ack) {
                 if(messages.contains(correlationData.getId())){
                     messages.remove(correlationData.getId());

@@ -21,6 +21,9 @@ import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.FriendRequest;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
+import usyd.mingyi.animalcare.service.RealTimeService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,6 +38,8 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     UserMapper userMapper;
     @Autowired
     ObjectMapper objectMapper;
+    @Autowired
+    RealTimeService realTimeService;
 
 
     @Override
@@ -53,9 +58,8 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
             newFriendRequest.setUserId(toId);
             newFriendRequest.setRequestList(stringRequestList);
             friendRequestMapper.insert(newFriendRequest);
-            return;
-        }
-           String requestList = friendRequest.getRequestList();
+        }else {
+            String requestList = friendRequest.getRequestList();
             Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
             if(map.containsKey(String.valueOf(fromId))){
                 throw new CustomException("Already sent request");
@@ -65,6 +69,9 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
                 friendRequest.setRequestList(newRequestList);
                 friendRequestMapper.updateById(friendRequest);
             }
+        }
+            realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId),1));
+
         } catch (IOException e) {
             throw new CustomException("System error");
         }
@@ -160,6 +167,35 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
                         userDto.setMsg(map.get(String.valueOf(userDto.getId())));
                     });
                     return res;
+                }
+            }catch (IOException e) {
+                throw new CustomException("System error");
+            }
+
+        }
+
+    }
+
+    @Override
+    public UserDto getRequestById(Long userId, Long target) {
+        MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
+        wrapper.eq(FriendRequest::getUserId, userId);
+        FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
+        
+        if(friendRequest==null){
+            return null;
+        }else {
+            try {
+                String requestList = friendRequest.getRequestList();
+                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
+                if(map.keySet().size()==0||!map.containsKey(String.valueOf(target))){
+                    return null;
+                }else {
+                    MPJLambdaWrapper<User> wrapperTwo = new MPJLambdaWrapper<>();
+                    wrapperTwo.selectAll(User.class).eq(User::getId, target);
+                    UserDto userDto = userMapper.selectJoinOne(UserDto.class, wrapperTwo);
+                    userDto.setMsg(map.get(String.valueOf(target)));
+                    return userDto;
                 }
             }catch (IOException e) {
                 throw new CustomException("System error");

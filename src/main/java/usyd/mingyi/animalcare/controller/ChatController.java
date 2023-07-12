@@ -4,9 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.pojo.User;
-import usyd.mingyi.animalcare.pojo.chat.Message;
-import usyd.mingyi.animalcare.pojo.chat.RequestMessage;
-import usyd.mingyi.animalcare.pojo.chat.ResponseMessage;
+import usyd.mingyi.animalcare.socketEntity.ChatMessage;
+import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.service.ChatService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
@@ -22,31 +21,25 @@ public class ChatController {
 
     @Resource
     private UserService userService;
-
     @Resource
     private ChatService chatService;
 
-
-
-
-
     @PostMapping("/chat/message")
-    public R<String> pushTuUser(@RequestBody RequestMessage message){
+    public R<String> pushToUser(@RequestBody ChatMessage message){
         Long currentId = BaseContext.getCurrentId();
         //还需要检查朋友的关系
         User me = userService.getById(currentId);
-        ResponseMessage<Message> responseMessage = new ResponseMessage<>(false, "CHAT", me,message.getToId(), message.getMessage());
-         chatService.sendMsgToQueue(responseMessage);
+         chatService.sendMsgToQueue(message);
         return R.success("成功发送");
     }
 
     @GetMapping("/chat/retrieve/{id}")
-    public R<List<Message>> getMessage(@PathVariable("id") String toId){
+    public R<List<ChatMessage>> getMessage(@PathVariable("id") String toId){
         Long currentId = BaseContext.getCurrentId();
-        CompletableFuture<List<Message>> future = chatService.retrieveDataFromFirebase(String.valueOf(currentId), toId);
+        CompletableFuture<List<ChatMessage>> future = chatService.retrieveDataFromFirebase(String.valueOf(currentId), toId);
 
         try {
-            List<Message> responseMessages = future.get();
+            List<ChatMessage> responseMessages = future.get();
             return R.success(responseMessages);
         } catch (InterruptedException | ExecutionException e) {
             // 处理异常情况

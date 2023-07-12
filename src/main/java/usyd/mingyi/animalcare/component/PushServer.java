@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class PushServer implements InitializingBean {
 
     @Autowired
-    private EventListenner eventListenner;
+    private EventListener eventListenner;
 
     @Value("${socketio.port}")
     private int serverPort;

@@ -2,25 +2,19 @@ package usyd.mingyi.animalcare.controller;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
-import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
-import usyd.mingyi.animalcare.pojo.chat.ResponseMessage;
+import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.service.FriendRequestService;
 import usyd.mingyi.animalcare.service.FriendService;
 import usyd.mingyi.animalcare.service.UserService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.ResultData;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,17 +46,14 @@ public class FriendController {
 
     @PostMapping ("/friendRequest/{id}")
     @ResponseBody
-    public R<String> sendFriendRequest(@PathVariable("id") long toId,@RequestParam("msg")String msg ) {
+    public R<String> sendFriendRequest(@PathVariable("id") Long toId,@RequestParam("msg")String msg ) {
         Long currentId = BaseContext.getCurrentId();
         friendRequestService.sendRequest(currentId,toId,msg);
-        //还需要检查朋友的关系
         Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
         User me = userService.getBasicUserInfoById(currentId);
         HashMap<UUID, SocketIOClient> userClient = chatServer.get(String.valueOf(toId));
-        if (userClient==null||userClient.size()==0){
-            return R.success("对方不在线 后面再发给他");
-        }
-        ResponseMessage<Object> responseMessage = new ResponseMessage<>(false, "request", me, null,null);
+        ServiceMessage serviceMessage = new ServiceMessage(String.valueOf(currentId), System.currentTimeMillis(), String.valueOf(toId), 1);
+        ResponseMessage<ServiceMessage> responseMessage = new ResponseMessage<>(2, serviceMessage,me);
         userClient.forEach((uuid, socketIOClient) -> {
             //向客户端推送消息
             //System.out.println("发消息中");
