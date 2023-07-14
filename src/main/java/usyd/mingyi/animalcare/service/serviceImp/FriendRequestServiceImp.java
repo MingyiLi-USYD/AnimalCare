@@ -7,13 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.mapper.FriendRequestMapper;
@@ -21,8 +17,6 @@ import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.FriendRequest;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
-import usyd.mingyi.animalcare.service.RealTimeService;
-import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -38,8 +32,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     UserMapper userMapper;
     @Autowired
     ObjectMapper objectMapper;
-    @Autowired
-    RealTimeService realTimeService;
 
 
     @Override
@@ -50,41 +42,41 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         wrapper.eq(FriendRequest::getUserId, toId);
         FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
         try {
-        if(friendRequest==null){
-            Map<String, String> requestList = new HashMap<>();
-            requestList.put(String.valueOf(fromId),msg);
-            FriendRequest newFriendRequest = new FriendRequest();
-            String stringRequestList = objectMapper.writeValueAsString(requestList);
-            newFriendRequest.setUserId(toId);
-            newFriendRequest.setRequestList(stringRequestList);
-            friendRequestMapper.insert(newFriendRequest);
-        }else {
-            String requestList = friendRequest.getRequestList();
-            Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
-            if(map.containsKey(String.valueOf(fromId))){
-                throw new CustomException("Already sent request");
-            }else {
-                map.put(String.valueOf(fromId),msg);
-                String newRequestList = objectMapper.writeValueAsString(map);
-                friendRequest.setRequestList(newRequestList);
-                friendRequestMapper.updateById(friendRequest);
+            if (friendRequest == null) {
+                Map<String, String> requestList = new HashMap<>();
+                requestList.put(String.valueOf(fromId), msg);
+                FriendRequest newFriendRequest = new FriendRequest();
+                String stringRequestList = objectMapper.writeValueAsString(requestList);
+                newFriendRequest.setUserId(toId);
+                newFriendRequest.setRequestList(stringRequestList);
+                friendRequestMapper.insert(newFriendRequest);
+            } else {
+                String requestList = friendRequest.getRequestList();
+                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
+                });
+                if (map.containsKey(String.valueOf(fromId))) {
+                    throw new CustomException("Already sent request");
+                } else {
+                    map.put(String.valueOf(fromId), msg);
+                    String newRequestList = objectMapper.writeValueAsString(map);
+                    friendRequest.setRequestList(newRequestList);
+                    friendRequestMapper.updateById(friendRequest);
+                }
             }
-        }
-            realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId),1));
+
 
         } catch (IOException e) {
             throw new CustomException("System error");
         }
     }
 
-
     @Override
     @Transactional
     public void approveRequest(Long userId, Long approvedUserId) {
-        deleteRequestInList(userId,approvedUserId);
+        deleteRequestInList(userId, approvedUserId);
         //add in both friend list
-        addUserToFriendList(userId,approvedUserId);
-        addUserToFriendList(approvedUserId,userId);
+        addUserToFriendList(userId, approvedUserId);
+        addUserToFriendList(approvedUserId, userId);
 
     }
 
@@ -94,10 +86,9 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         User user = userMapper.selectById(userId);
 
         String friendList = user.getFriendList();
-
-        log.info(friendList);
         try {
-            Set<String> map = objectMapper.readValue(friendList==null?"[]":friendList, new TypeReference<Set<String>>() {});
+            Set<String> map = objectMapper.readValue(friendList == null ? "[]" : friendList, new TypeReference<Set<String>>() {
+            });
             map.add(String.valueOf(approvedUserId));
             String newFriendList = objectMapper.writeValueAsString(map);
             log.info(newFriendList);
@@ -111,9 +102,8 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Override
     @Transactional
     public void rejectRequest(Long userId, Long approvedUserId) {
-        deleteRequestInList(userId,approvedUserId);
+        deleteRequestInList(userId, approvedUserId);
     }
-
 
 
     @Override
@@ -123,14 +113,15 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         wrapper.eq(FriendRequest::getUserId, userId);
         FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
         try {
-            if(friendRequest==null){
+            if (friendRequest == null) {
                 throw new CustomException("No Request found");
             }
             String requestList = friendRequest.getRequestList();
-            Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
-            if(!map.containsKey(String.valueOf(rejectUserId))){
+            Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
+            });
+            if (!map.containsKey(String.valueOf(rejectUserId))) {
                 throw new CustomException("No Request found");
-            }else {
+            } else {
                 map.remove(String.valueOf(rejectUserId));
                 String newRequestList = objectMapper.writeValueAsString(map);
                 friendRequest.setRequestList(newRequestList);
@@ -142,8 +133,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     }
 
 
-
-
     @Override
     @Transactional
     public List<UserDto> getAllRequest(Long userId) {
@@ -151,24 +140,25 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
         wrapper.eq(FriendRequest::getUserId, userId);
         FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
-        if(friendRequest==null){
-           return res;
-        }else {
+        if (friendRequest == null) {
+            return res;
+        } else {
             try {
                 String requestList = friendRequest.getRequestList();
-                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
-                if(map.keySet().size()==0){
+                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
+                });
+                if (map.keySet().size() == 0) {
                     return res;
-                }else {
+                } else {
                     MPJLambdaWrapper<User> wrapperTwo = new MPJLambdaWrapper<>();
-                    wrapperTwo.selectAll(User.class).in(User::getId,convertToLongSet(map.keySet()));
+                    wrapperTwo.selectAll(User.class).in(User::getId, convertToLongSet(map.keySet()));
                     res = userMapper.selectJoinList(UserDto.class, wrapperTwo);
                     res.forEach(userDto -> {
                         userDto.setMsg(map.get(String.valueOf(userDto.getId())));
                     });
                     return res;
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 throw new CustomException("System error");
             }
 
@@ -181,23 +171,23 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
         wrapper.eq(FriendRequest::getUserId, userId);
         FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
-        
-        if(friendRequest==null){
+        if (friendRequest == null) {
             return null;
-        }else {
+        } else {
             try {
                 String requestList = friendRequest.getRequestList();
-                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {});
-                if(map.keySet().size()==0||!map.containsKey(String.valueOf(target))){
+                Map<String, String> map = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
+                });
+                if (map.keySet().size() == 0 || !map.containsKey(String.valueOf(target))) {
                     return null;
-                }else {
+                } else {
                     MPJLambdaWrapper<User> wrapperTwo = new MPJLambdaWrapper<>();
                     wrapperTwo.selectAll(User.class).eq(User::getId, target);
                     UserDto userDto = userMapper.selectJoinOne(UserDto.class, wrapperTwo);
                     userDto.setMsg(map.get(String.valueOf(target)));
                     return userDto;
                 }
-            }catch (IOException e) {
+            } catch (IOException e) {
                 throw new CustomException("System error");
             }
 
@@ -215,9 +205,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
                 .map(Long::valueOf)
                 .collect(Collectors.toSet());
     }
-
-
-
 
 
 }

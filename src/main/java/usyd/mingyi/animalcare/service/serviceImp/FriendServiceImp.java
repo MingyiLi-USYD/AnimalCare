@@ -36,7 +36,6 @@ public class FriendServiceImp implements FriendService {
         List<User> res = new ArrayList<>();
         User user = userMapper.selectById(id);
         String friendList = user.getFriendList();
-        System.out.println(friendList);
         if(friendList==null){
             return res;
         }

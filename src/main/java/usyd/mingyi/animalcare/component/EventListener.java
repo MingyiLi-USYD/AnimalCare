@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+import usyd.mingyi.animalcare.socketEntity.SystemMessage;
 import usyd.mingyi.animalcare.utils.JWTUtils;
 
 import javax.annotation.Resource;
-import java.util.*;
 
 @Component
 @Slf4j
 public class EventListener {
     @Resource
     private ClientCache clientCache;
-    public final static String TOKEN_ISSUE = "TOKEN_ISSUE";
+
     public final RealTimeService realTimeService;
 
     @Autowired
@@ -38,31 +38,16 @@ public class EventListener {
     public void onConnect(SocketIOClient client) {
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
         String token = client.getHandshakeData().getSingleUrlParam("token");
-         if(token!=null&&JWTUtils.verifyInSocket(token)){
-             DecodedJWT tokenInfo = JWTUtils.getTokenInfo(token);
-             Long tokenUserId = tokenInfo.getClaim("userId").asLong();
-             if(!userId.equals(String.valueOf(tokenUserId))){
-                 System.out.println(userId);
-                 System.out.println(tokenUserId);
-                 client.sendEvent("invalidTokenEvent", new ResponseMessage<>(0, "invalidToken",null));
-                 disconnectClient(client,TOKEN_ISSUE);
-                 log.info("连接请求被拒绝");
-                 return;
-             }
-             UUID sessionId = client.getSessionId();
-             clientCache.saveClient(userId, sessionId, client);
-             ServiceMessage serviceMessage = new ServiceMessage(userId,System.currentTimeMillis(),null,3);
-             realTimeService.remindFriends(serviceMessage);
-             log.info("登录用户: {}",String.valueOf(sessionId));
-         }else {
-             client.sendEvent("invalidTokenEvent", new ResponseMessage<>(0, "invalidToken",null));
-             disconnectClient(client,TOKEN_ISSUE);
-             log.info("连接请求被拒绝");
-         }
-
-
+        if(!validate(client,userId,token)){
+            return;
+        }
+        beforeSaveToCache(userId);
+        processSavingToCache(client,userId);
+        afterSaveToCache(userId);
 
     }
+
+
 
     /**
      * 客户端断开
@@ -72,25 +57,77 @@ public class EventListener {
     @OnDisconnect
     public void onDisconnect(SocketIOClient client) {
         String reason = client.get("disconnectReason");
-        if(!StringUtils.isEmpty(reason)&&reason.equals(TOKEN_ISSUE)){
+        //未成功连接
+        if (!StringUtils.isEmpty(reason) && reason.equals(ClientCache.TOKEN_ISSUE)) {
+            //本身就没有保持到cache里面 不需要删除
+            log.info("token有问题");
+            return;
+        }
+
+        if (!StringUtils.isEmpty(reason) && reason.equals(ClientCache.RE_LOGIN)) {
+            //用户再次登录 检查到本地已经有了 在进入次方法前已经删除了之前的
+            log.info("本地再次登录下线");
             return;
         }
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
-        if (!StringUtils.isEmpty(userId)) {
-            ServiceMessage serviceMessage = new ServiceMessage(userId,System.currentTimeMillis(),null,4);
-            realTimeService.remindFriends(serviceMessage);
-            clientCache.deleteSessionClient(userId, client.getSessionId());
-        }
 
+        if (!StringUtils.isEmpty(reason) && reason.equals(ClientCache.OTHER_LOGIN)) {
+
+            log.info("异地再次登录下线");
+            //需要从本地cache移除
+            clientCache.deleteUserClient(userId);
+            return;
+        }
+        //主动下线
+        if (!StringUtils.isEmpty(userId)) {
+            log.info("主动下线");
+            ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, 5);
+            realTimeService.remindFriends(serviceMessage);
+            clientCache.deleteUserClient(userId);
+        }
     }
 
 
 
-    public void disconnectClient(SocketIOClient client, String reason) {
-        // Store the reason for disconnection
-        client.set("disconnectReason", reason);
-        // Disconnect the client
-        client.disconnect();
+    public boolean validate(SocketIOClient client,String userId,String token){
+        if (token != null && JWTUtils.verifyInSocket(token)) {
+            DecodedJWT tokenInfo = JWTUtils.getTokenInfo(token);
+            Long tokenUserId = tokenInfo.getClaim("userId").asLong();
+            if (!userId.equals(String.valueOf(tokenUserId))) {
+                client.sendEvent("invalidTokenEvent", new ResponseMessage<>(0, "invalidToken", null));
+                clientCache.disconnectClient(client,ClientCache.TOKEN_ISSUE);
+                log.info("连接请求被拒绝");
+                return false;
+            }
+        } else {
+            client.sendEvent("invalidTokenEvent", new ResponseMessage<>(0, "invalidToken", null));
+            clientCache.disconnectClient(client,ClientCache.TOKEN_ISSUE);
+            log.info("连接请求被拒绝");
+            return false;
+        }
+        return true;
+    }
+
+    public void beforeSaveToCache (String userId){
+        log.info("在保存之前");
+        //删除本地已经有的连接
+        if(clientCache.hasUserClient(userId)){
+            SocketIOClient userClient = clientCache.getUserClient(userId);
+            clientCache.disconnectClient(userClient,ClientCache.RE_LOGIN);
+            clientCache.deleteUserClient(userId);
+        }
+        //通知其他服务器让此用户下线
+        realTimeService.remindOtherServers(new SystemMessage(userId,System.currentTimeMillis(),null,"ServerA"));
+    }
+
+    public void processSavingToCache(SocketIOClient client,String userId){
+        clientCache.saveClient(userId,client);
+    }
+
+    public void afterSaveToCache(String userId){
+        //通知好友上线
+        ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, 4);
+        realTimeService.remindFriends(serviceMessage);
     }
 
 

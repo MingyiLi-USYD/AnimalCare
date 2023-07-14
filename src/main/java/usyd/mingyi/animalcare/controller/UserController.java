@@ -10,6 +10,10 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.MessageDeliveryMode;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
+import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
@@ -36,6 +41,9 @@ public class UserController {
     UserService userService;
     @Autowired
     RedisTemplate redisTemplate;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
     @Autowired
     RestTemplate restTemplate;
     @Autowired
@@ -232,16 +240,11 @@ public class UserController {
     }
 
 
-    @GetMapping("/test/onlineUsers")
-    public R<Map<String, List<UUID>>> getOnlineUsers(){
-        Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
-        Map<String, List<UUID>> modifiedChatServer = chatServer.entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> new ArrayList<>(entry.getValue().keySet())
-                ));
-      return R.success(modifiedChatServer);
+    @GetMapping("/test/MQ")
+    public R<String> getOnlineUsers(){
+        log.info("111");
+        rabbitTemplate.convertAndSend(MQConfig.SYSTEM_EXCHANGE,"C","111");
+      return  null;
     }
 
 

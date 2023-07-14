@@ -86,6 +86,4 @@ firebase:
   config:
     file: classpath:animalcare-firebase.json
 
-mq:
-  queue: QA
-
+serverId: A

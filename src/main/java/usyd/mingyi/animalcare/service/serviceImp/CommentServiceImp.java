@@ -28,7 +28,6 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
 
     @Override
     public IPage<CommentDto> getCommentsByPostId(long currPage, long pageSize,long postId) {
-        log.info("进来了");
         IPage<CommentDto> commentDtoIPage = new Page<>(currPage,pageSize);
         MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Comment.class)

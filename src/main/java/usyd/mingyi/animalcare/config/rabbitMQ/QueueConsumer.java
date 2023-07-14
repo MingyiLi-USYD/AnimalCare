@@ -1,17 +1,16 @@
 package usyd.mingyi.animalcare.config.rabbitMQ;
 
 import com.corundumstudio.socketio.SocketIOClient;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.component.ClientCache;
-
 import usyd.mingyi.animalcare.dto.UserDto;
-import usyd.mingyi.animalcare.mapper.ChatMapper;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
 import usyd.mingyi.animalcare.service.FriendService;
@@ -19,18 +18,17 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
-
+import usyd.mingyi.animalcare.socketEntity.SystemMessage;
 import javax.annotation.Resource;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-
 
 
 @Component
 @Slf4j
 public class QueueConsumer {
+    @Value("${serverId}")
+    private String serverId;
     @Resource
     private ClientCache clientCache;
     @Resource
@@ -44,95 +42,107 @@ public class QueueConsumer {
 
     @Resource
     private FriendRequestService friendRequestService;
-    @Resource
-    private ChatMapper chatMapper;
 
-    @RabbitListener(queues = "QA")
-    public void receiveD(Message message, Channel channel)  {
-
-          try {
-              String receivedBytes  = new String(message.getBody());
-              ChatMessage chatMessage = objectMapper.readValue(receivedBytes, ChatMessage.class);
-              User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(chatMessage.getFromId()));
-              Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
-              HashMap<UUID, SocketIOClient> userClient = chatServer.get(chatMessage.getToId());
-              ResponseMessage<ChatMessage> res = new ResponseMessage<>(1,chatMessage,basicUserInfoById);
-              //chatMapper.sendMsgToFirebase(String.valueOf(responseMessage.getFromUser().getId()), responseMessage.getToUser(),responseMessage);
-              if (userClient==null||userClient.size()==0){
-                   log.info("not found in this server");
-              }else {
-                  userClient.forEach((uuid, socketIOClient) -> {
-                      socketIOClient.sendEvent("responseMessage",res);
-                  });
-              }
-          }catch (Exception e){
-              //requeue
-              e.printStackTrace();
-          }
-
-    }
-    @RabbitListener(queues = "QC")
-    public void receiveServiceMessage(Message message, Channel channel)  {
+    @RabbitListener(queues = MQConfig.MESSAGE+"${serverId}")
+    public void receiveD(Message message, Channel channel) {
 
         try {
-            String receivedBytes  = new String(message.getBody());
-           ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes,ServiceMessage.class);
-           if(serviceMessage.getType().equals(1)){
-               syncFriendRequestToClient(serviceMessage);
-           }else {
-               syncToClient(serviceMessage);
-           }
+            String receivedBytes = new String(message.getBody());
+            ChatMessage chatMessage = objectMapper.readValue(receivedBytes, ChatMessage.class);
+            User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(chatMessage.getFromId()));
+            Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
 
-        }catch (Exception e){
+            ResponseMessage<ChatMessage> res = new ResponseMessage<>(1, chatMessage, basicUserInfoById);
+            if (!chatServer.containsKey(chatMessage.getToId())) {
+                log.info("not found in this server");
+            } else {
+                SocketIOClient userClient = chatServer.get(chatMessage.getToId());
+                userClient.sendEvent("responseMessage", res);
+            }
+        } catch (Exception e) {
             //requeue
             e.printStackTrace();
         }
 
     }
 
-    public void syncToClient(ServiceMessage serviceMessage){
+    @RabbitListener(queues = MQConfig.SERVICE+"${serverId}")
+    public void receiveServiceMessage(Message message, Channel channel) {
+
+        try {
+            String receivedBytes = new String(message.getBody());
+            ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes, ServiceMessage.class);
+            if (serviceMessage.getType() == 1) {
+                syncFriendRequestToClient(serviceMessage);
+            } else if (serviceMessage.getType()==2||serviceMessage.getType()==3||serviceMessage.getType()==0) {
+                syncFriendOperationToClient(serviceMessage);
+            }
+           else {
+                syncOnAndOffToClient(serviceMessage);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @RabbitListener(queues = MQConfig.SYSTEM+"${serverId}")
+    public void receiveSystemMessage(Message message, Channel channel) {
+        MessageProperties messageProperties = message.getMessageProperties();
+        String clusterId = messageProperties.getClusterId();
+        if(clusterId.equals(serverId)){
+            log.info("收到自己服务器的通知");
+            return;
+        }
+        try {
+            String receivedBytes = new String(message.getBody());
+            SystemMessage systemMessage = objectMapper.readValue(receivedBytes, SystemMessage.class);
+            log.info("收到其他服务器的通知");
+            clientCache.receiveDisconnectMsg(systemMessage.getFromId());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public void syncOnAndOffToClient(ServiceMessage serviceMessage) {
         User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(serviceMessage.getFromId()));
-        Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
+        Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
         Long id = basicUserInfoById.getId();
         //找到所有好友
         List<User> allFriends = friendService.getAllFriends(id);
-        ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2,serviceMessage,basicUserInfoById);
-        log.info("现在正在被QC处理中");
-        System.out.println(res);
-        allFriends.forEach(friend->{
-
-            HashMap<UUID, SocketIOClient> userClient = chatServer.get(String.valueOf(friend.getId()));
-            if(userClient!=null){
-                userClient.forEach((uuid, socketIOClient) -> {
-                    res.getMessage().setToId(String.valueOf(friend.getId()));
-                    socketIOClient.sendEvent("friendEvent",res);
-                });
+        ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2, serviceMessage, basicUserInfoById);
+        allFriends.forEach(friend -> {
+            String friendId = String.valueOf(friend.getId());
+            if (chatServer.containsKey(friendId)) {
+                SocketIOClient userClient = chatServer.get(friendId);
+                res.getMessage().setToId(String.valueOf(friend.getId()));
+                userClient.sendEvent("friendEvent", res);
             }
 
         });
     }
 
-    public void syncFriendRequestToClient(ServiceMessage serviceMessage){
+    public void syncFriendRequestToClient(ServiceMessage serviceMessage) {
         UserDto userDto = friendRequestService.getRequestById(Long.valueOf(serviceMessage.getToId()), Long.valueOf(serviceMessage.getFromId()));
-        if(userDto==null)return;
-        Long id = userDto.getId();
-        Map<String, HashMap<UUID, SocketIOClient>> chatServer = clientCache.getChatServer();
+        if (userDto == null) return;
+        socketSendMsg(serviceMessage,userDto);
+    }
 
-        //找到所有好友
-        List<User> allFriends = friendService.getAllFriends(id);
-        ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2,serviceMessage,userDto);
-        log.info("现在正在被QC处理中");
-        System.out.println(res);
-        allFriends.forEach(friend->{
+    public void syncFriendOperationToClient(ServiceMessage serviceMessage) {
+        User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(serviceMessage.getFromId()));
+        if (basicUserInfoById == null) {
+            return;
+        }
+        socketSendMsg(serviceMessage,basicUserInfoById);
 
-            HashMap<UUID, SocketIOClient> userClient = chatServer.get(String.valueOf(friend.getId()));
-            if(userClient!=null){
-                userClient.forEach((uuid, socketIOClient) -> {
-                    res.getMessage().setToId(String.valueOf(friend.getId()));
-                    socketIOClient.sendEvent("friendEvent",res);
-                });
-            }
+    }
 
-        });
+    public void socketSendMsg(ServiceMessage serviceMessage,User user){
+        Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
+        ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2, serviceMessage, user);
+        if (chatServer.containsKey(serviceMessage.getToId())) {
+            SocketIOClient userClient = chatServer.get(serviceMessage.getToId());
+            userClient.sendEvent("friendEvent", res);
+        }
     }
 }
