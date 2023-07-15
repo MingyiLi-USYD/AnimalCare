@@ -4,13 +4,14 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.database.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import usyd.mingyi.animalcare.mapper.ChatMapper;
+import usyd.mingyi.animalcare.pojo.CloudMessage;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
-import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Component
 public class ChatMapperImp implements ChatMapper {
@@ -24,14 +25,42 @@ public class ChatMapperImp implements ChatMapper {
 
     @Override
     public void sendMsgToFirebase(String currentId,String toId, ChatMessage chatMessage) {
+        String[] ids = {currentId, toId};
+        Arrays.sort(ids);
+        String combinedId = String.join("_", ids);
 
-        DatabaseReference chatRef = database.child("users").child(String.valueOf(currentId)).child(toId);
-        DatabaseReference newMessageRef = chatRef.child("messages").push();
-        newMessageRef.setValue(chatMessage, null);
+        DatabaseReference chatRef = database.child("chat").child(combinedId);
+        // 获取当前的 CloudMessage 对象
+        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    CloudMessage cloudMessage = dataSnapshot.getValue(CloudMessage.class);
+                    // 更新 lastTime 字段为当前时间
+                    cloudMessage.setLastTime(System.currentTimeMillis());
 
-        DatabaseReference chatRef2 = database.child("users").child(toId).child(String.valueOf(currentId));
-        DatabaseReference newMessageRef2 = chatRef2.child("messages").push();
-        newMessageRef2.setValue(chatMessage, null);
+                    // 将 ChatMessage 添加到 chatHistory 列表的末尾
+                    cloudMessage.getChatHistory().add(chatMessage);
+
+                    // 更新 CloudMessage 对象到 Firebase 数据库
+                    chatRef.setValue(cloudMessage,null);
+                }else {
+
+                    List<ChatMessage> chatMessages = new ArrayList<>(1);
+                    chatMessages.add(chatMessage);
+                    CloudMessage cloudMessage = new CloudMessage();
+                    cloudMessage.setLastTime(System.currentTimeMillis());
+                    cloudMessage.setChatHistory(chatMessages);
+                    cloudMessage.setParticipates(Arrays.stream(ids).collect(Collectors.toList()));
+                    chatRef.setValue(cloudMessage,null);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // 处理取消事件
+            }
+        });
     }
 
 
@@ -41,6 +70,7 @@ public class ChatMapperImp implements ChatMapper {
         Query query = database.child("users")
                 .child(fromId).child(toId).child("messages")
                 .orderByChild("message/date");
+
 
         query.addValueEventListener(new ValueEventListener() {
             @Override
@@ -63,5 +93,11 @@ public class ChatMapperImp implements ChatMapper {
         });
 
         return future;
+    }
+
+    @Override
+    public CompletableFuture<Object> retrieveAllDataFromFirebase(String userId) {
+
+        return null;
     }
 }

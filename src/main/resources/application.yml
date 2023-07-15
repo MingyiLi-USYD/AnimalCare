@@ -1,4 +1,8 @@
 spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://lmy741917776:520569@petbookdb.brkjt0d.mongodb.net/?retryWrites=true&w=majority
+      database: db01
   datasource:
     username: root
     #password: LMY741917776!
@@ -87,3 +91,4 @@ firebase:
     file: classpath:animalcare-firebase.json
 
 serverId: A
+

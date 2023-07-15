@@ -12,9 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
-import usyd.mingyi.animalcare.mapper.ChatMapper;
+import usyd.mingyi.animalcare.mapper.mapperImpFirebase.ChatMapper;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
-import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.service.ChatService;
 
 import javax.annotation.Resource;

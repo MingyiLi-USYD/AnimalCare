@@ -3,9 +3,10 @@ package usyd.mingyi.animalcare.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
+import usyd.mingyi.animalcare.mapper.mapperImpFirebase.ChatMapper;
+import usyd.mingyi.animalcare.mongodb.service.CloudMessageService;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
-import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.service.ChatService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
@@ -24,12 +25,19 @@ public class ChatController {
     @Resource
     private ChatService chatService;
 
+    @Resource
+    private CloudMessageService cloudMessageService;
+
+
+
     @PostMapping("/chat/message")
     public R<String> pushToUser(@RequestBody ChatMessage message){
         Long currentId = BaseContext.getCurrentId();
         //还需要检查朋友的关系
         User me = userService.getById(currentId);
-         chatService.sendMsgToQueue(message);
+        chatService.sendMsgToQueue(message);
+        cloudMessageService.insertMsg(message.getFromId(),message.getToId(),message);
+        //chatMapper.sendMsgToFirebase(message.getFromId(),message.getToId(),message);
         return R.success("成功发送");
     }
 
