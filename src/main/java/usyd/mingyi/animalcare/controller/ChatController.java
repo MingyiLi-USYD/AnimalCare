@@ -1,61 +1,63 @@
 package usyd.mingyi.animalcare.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.mapper.mapperImpFirebase.ChatMapper;
-import usyd.mingyi.animalcare.mongodb.service.CloudMessageService;
+import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 import usyd.mingyi.animalcare.pojo.User;
-import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.service.ChatService;
 import usyd.mingyi.animalcare.service.UserService;
+import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @Slf4j
 public class ChatController {
 
-    @Resource
-    private UserService userService;
-    @Resource
-    private ChatService chatService;
 
-    @Resource
-    private CloudMessageService cloudMessageService;
+    private final UserService userService;
+    private final ChatService chatService;
+
+    @Autowired
+    public ChatController(UserService userService, ChatService chatService) {
+        this.userService = userService;
+        this.chatService = chatService;
+    }
 
 
 
     @PostMapping("/chat/message")
     public R<String> pushToUser(@RequestBody ChatMessage message){
         Long currentId = BaseContext.getCurrentId();
+        if(!message.getFromId().equals(String.valueOf(currentId))){
+            throw new CustomException("no right");
+        }
         //还需要检查朋友的关系
         User me = userService.getById(currentId);
         chatService.sendMsgToQueue(message);
-        cloudMessageService.insertMsg(message.getFromId(),message.getToId(),message);
-        //chatMapper.sendMsgToFirebase(message.getFromId(),message.getToId(),message);
+        chatService.saveMsgInCloud(message);
         return R.success("成功发送");
     }
 
     @GetMapping("/chat/retrieve/{id}")
-    public R<List<ChatMessage>> getMessage(@PathVariable("id") String toId){
+    public R<CloudMessage> getMessages(@PathVariable("id") Long toId){
         Long currentId = BaseContext.getCurrentId();
-        CompletableFuture<List<ChatMessage>> future = chatService.retrieveDataFromFirebase(String.valueOf(currentId), toId);
-
-        try {
-            List<ChatMessage> responseMessages = future.get();
-            return R.success(responseMessages);
-        } catch (InterruptedException | ExecutionException e) {
-            // 处理异常情况
-            e.printStackTrace();
-            return R.error("System error");
-        }
+       return R.success(chatService.retrieveDataFromMongoDB(currentId,toId)) ;
 
     }
+
+    @GetMapping("/chat/retrieve")
+    public R<List<CloudMessage>> getAllMessages(){
+        Long currentId = BaseContext.getCurrentId();
+        return  R.success(chatService.retrieveAllDataFromMongoDB(String.valueOf(currentId)));
+
+    }
+
 
 
 }

@@ -3,14 +3,12 @@ package usyd.mingyi.animalcare.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.util.RamUsageEstimator;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.repository.Query;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
-import usyd.mingyi.animalcare.pojo.CloudMessage;
+import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 
 import javax.annotation.Resource;
 

@@ -1,10 +1,11 @@
-package usyd.mingyi.animalcare.pojo;
+package usyd.mingyi.animalcare.mongodb.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
+import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 
 import java.util.List;
@@ -17,6 +18,6 @@ public class CloudMessage {
     private String id;
     private Long lastTime;
     private List<String> participates;
-
     private List<ChatMessage> chatHistory;
+    private User user;
 }

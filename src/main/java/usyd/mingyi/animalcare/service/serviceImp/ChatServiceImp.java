@@ -12,11 +12,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
-import usyd.mingyi.animalcare.mapper.mapperImpFirebase.ChatMapper;
+
+import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
+import usyd.mingyi.animalcare.mongodb.service.CloudMessageService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.service.ChatService;
+import usyd.mingyi.animalcare.utils.CommonUtils;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -27,10 +31,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatServiceImp implements ChatService {
     @Resource
     private ObjectMapper objectMapper;
-    @Resource
-    private ChatMapper chatMapper;
 
     private final RabbitTemplate rabbitTemplate;
+
+    @Resource
+    private CloudMessageService cloudMessageService;
 
     private static final ConcurrentHashMap<String,ChatMessage> messages = new ConcurrentHashMap<>();
     @Autowired
@@ -39,16 +44,24 @@ public class ChatServiceImp implements ChatService {
         rabbitTemplate.setConfirmCallback(confirmCallback());
     }
 
-    @Override
-    public void sendMsgToFirebase(String currentId,String toId, ChatMessage chatMessage) {
-        chatMapper.sendMsgToFirebase(currentId,toId,chatMessage);
-    }
 
-
-    public CompletableFuture<List<ChatMessage>> retrieveDataFromFirebase(String fromId, String toId) {
-           return chatMapper.retrieveDataFromFirebase(fromId,toId);
-    }
     // 生成聊天ID
+
+
+    @Override
+    public CloudMessage retrieveDataFromMongoDB(String fromId, String toId) {
+        return cloudMessageService.getCloudMessageById(CommonUtils.combineId(fromId,toId));
+    }
+
+    @Override
+    public CloudMessage retrieveDataFromMongoDB(Long fromId, Long toId) {
+       return retrieveDataFromMongoDB(String.valueOf(fromId),String.valueOf(toId));
+    }
+
+    @Override
+    public List<CloudMessage> retrieveAllDataFromMongoDB(String userId) {
+        return cloudMessageService.getChatRecords(userId);
+    }
 
     public void sendMsgToQueue(ChatMessage chatMessage){
         try {
@@ -63,6 +76,11 @@ public class ChatServiceImp implements ChatService {
         } catch (JsonProcessingException e) {
             throw new CustomException("System Error");
         }
+    }
+
+    @Override
+    public void saveMsgInCloud(ChatMessage chatMessage) {
+        cloudMessageService.insertMsg(chatMessage);
     }
 
     private RabbitTemplate.ConfirmCallback confirmCallback() {

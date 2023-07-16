@@ -1,14 +1,16 @@
 package usyd.mingyi.animalcare.service;
 
-import org.springframework.amqp.core.Message;
+import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
-import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface ChatService {
-    void sendMsgToFirebase(String currentId,String toId,  ChatMessage chatMessage);
-    CompletableFuture<List<ChatMessage>> retrieveDataFromFirebase(String fromId, String toId);
+    CloudMessage retrieveDataFromMongoDB(String fromId, String toId);
+    CloudMessage retrieveDataFromMongoDB(Long fromId, Long toId);
+    List<CloudMessage>  retrieveAllDataFromMongoDB(String userId);
      void sendMsgToQueue(ChatMessage chatMessage);
+
+     void saveMsgInCloud(ChatMessage chatMessage);
 }
