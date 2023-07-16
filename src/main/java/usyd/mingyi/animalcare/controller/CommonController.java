@@ -32,7 +32,7 @@ public class CommonController {
     @GetMapping("/mongo")
     public R<Long> testDb(){
         CloudMessage cloudMessage = new CloudMessage();
-        cloudMessage.setLastTime(System.currentTimeMillis());
+        cloudMessage.setLatestTime(System.currentTimeMillis());
         mongoTemplate.insert(cloudMessage);
         mongoTemplate.insert(cloudMessage);
         mongoTemplate.insert(cloudMessage);

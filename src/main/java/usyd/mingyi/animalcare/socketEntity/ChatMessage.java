@@ -3,7 +3,6 @@ package usyd.mingyi.animalcare.socketEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import usyd.mingyi.animalcare.pojo.User;
 
 @Data
 @NoArgsConstructor

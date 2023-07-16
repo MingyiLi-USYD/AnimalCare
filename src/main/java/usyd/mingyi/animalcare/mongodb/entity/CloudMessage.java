@@ -16,8 +16,9 @@ import java.util.List;
 public class CloudMessage {
     @MongoId
     private String id;
-    private Long lastTime;
+    private Long latestTime;
     private List<String> participates;
-    private List<ChatMessage> chatHistory;
-    private User user;
+    private List<ChatMessage> chatList;
+    private User chatUser;
+    private Long unRead;
 }
