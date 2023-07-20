@@ -11,8 +11,6 @@ import usyd.mingyi.animalcare.service.ChatService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.utils.BaseContext;
-
-import javax.annotation.Resource;
 import java.util.List;
 
 @RestController

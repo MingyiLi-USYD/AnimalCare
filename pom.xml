@@ -14,9 +14,15 @@
     <name>animalcare</name>
     <description>Demo project for Spring Boot</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>com.github.oshi</groupId>
+            <artifactId>oshi-core</artifactId>
+            <version>5.7.4</version>
+        </dependency>
+
         <!-- MongoDB driver -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
