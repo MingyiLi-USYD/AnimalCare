@@ -103,7 +103,8 @@ public class PetController {
         Pet pet = petService.getById(petId);
         System.out.println(pet);
         if(pet==null)return R.error("No such pet");
-        if(pet.getUserId()!=BaseContext.getCurrentId()){
+
+        if(!pet.getUserId().equals(BaseContext.getCurrentId())){
             return R.error("No right to delete");
         }else {
             if(imageService.removeById(image.getId())){
