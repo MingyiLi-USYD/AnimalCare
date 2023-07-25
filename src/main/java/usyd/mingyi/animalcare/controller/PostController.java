@@ -1,14 +1,17 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Post;
@@ -18,6 +21,9 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.ResultData;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -29,7 +35,6 @@ public class PostController {
     PostService postService;
     @Autowired
     CommentService commentService;
-
     @Autowired
     RedisTemplate redisTemplate;
     @Autowired
@@ -39,14 +44,20 @@ public class PostController {
     @PostMapping("/post")
     @ResponseBody
     @Transactional
-    public R<String> upLoadPost(@RequestBody Post post) {
+    public R<String> upLoadPost(@RequestBody Post post, @RequestParam(value = "date",required = false)@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")Date date) {
+        System.out.println(date);
+        // 获取日期时间戳
+        long timestamp = date.getTime();
+
+        // 在这里使用 'dateObject' 和 'timestamp'
+        System.out.println("Received date: " + date);
+        System.out.println("Timestamp: " + timestamp);
+
         post.setUserId(BaseContext.getCurrentId());
         postService.addPost(post);
         log.info("上传文件");
         return R.success("Successfully upload");
-
     }
-
 
 
     //采用Restful风格进行一次传参

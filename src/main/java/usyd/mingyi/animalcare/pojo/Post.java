@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Data
@@ -22,11 +23,15 @@ public class Post implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long userId;
     private long love;
+    @NotBlank
     private String postContent;
     private String tag;
+    @NotBlank
     private String topic;
     private Long postTime; //sava timestamp
+    @NotBlank
     private String images;
+    @NotBlank
     private boolean visible;
 
 
