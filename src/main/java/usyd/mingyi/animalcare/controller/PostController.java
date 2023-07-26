@@ -45,16 +45,19 @@ public class PostController {
     @ResponseBody
     @Transactional
     public R<String> upLoadPost(@RequestBody Post post, @RequestParam(value = "date",required = false)@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")Date date) {
-        System.out.println(date);
-        // 获取日期时间戳
-        long timestamp = date.getTime();
 
-        // 在这里使用 'dateObject' 和 'timestamp'
-        System.out.println("Received date: " + date);
-        System.out.println("Timestamp: " + timestamp);
+        if(date==null){
+            //立刻上传Post
+            post.setUserId(BaseContext.getCurrentId());
+            postService.addPost(post);
+        }else {
+            // 获取日期时间戳
+            long targetTime = date.getTime();
+            //放入MQ死信队列 设置TTL
+            long currentTimeMillis = System.currentTimeMillis();
+            long TTL = targetTime-currentTimeMillis;
 
-        post.setUserId(BaseContext.getCurrentId());
-        postService.addPost(post);
+        }
         log.info("上传文件");
         return R.success("Successfully upload");
     }

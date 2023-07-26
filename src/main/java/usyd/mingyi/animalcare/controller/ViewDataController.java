@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import oshi.SystemInfo;
 import oshi.hardware.*;
+import usyd.mingyi.animalcare.annotation.HasPermission;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.pojo.ServerInfo;
 
@@ -22,7 +23,8 @@ import java.util.List;
 public class ViewDataController {
 
     @GetMapping("/data")
-    public R<String> getSystemData() {
+    @HasPermission({"Root","Admin"})
+    public R<ServerInfo> getSystemData() {
         OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
         ServerInfo serverInfo = new ServerInfo();
         SystemInfo systemInfo = new SystemInfo();
@@ -48,7 +50,7 @@ public class ViewDataController {
         System.out.println(serverInfo);
 
         // 获取其他系统信息...
-        return null;
+        return R.success(serverInfo);
     }
 
     public static double calculateAverageFrequency(long[] frequencies, int coreCount) {

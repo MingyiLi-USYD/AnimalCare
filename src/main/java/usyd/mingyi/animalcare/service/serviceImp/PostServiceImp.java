@@ -44,9 +44,8 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     ObjectMapper mapper;
     @Override
     public void addPost(Post post) {
-
         postMapper.insert(post);
-
+        //然后通知需要分享的人和关注的人
     }
 
 

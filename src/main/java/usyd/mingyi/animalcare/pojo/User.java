@@ -17,6 +17,7 @@ public class User implements Serializable {
     private Long id;
     @TableField("username")
     private String userName;
+    private String role;
     private String password;
     private String email;
     @JsonProperty(value = "nickname")
