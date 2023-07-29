@@ -18,11 +18,12 @@ public class JWTUtils {
     public static String generateToken(User user){
         Calendar instance = Calendar.getInstance();
         //默认令牌过期时间7天
-        instance.add(Calendar.DATE, 30);
+        instance.add(Calendar.DATE, 90);
 
         JWTCreator.Builder builder = JWT.create();
-        builder.withClaim("userId", user.getId())
-                .withClaim("userName", user.getUserName());
+        builder.withClaim("userId", user.getUserId())
+                .withClaim("username", user.getUsername())
+                .withClaim("role",user.getRole());
 
         String token = builder.withExpiresAt(instance.getTime())
                 .sign(Algorithm.HMAC256(SALT));
@@ -56,7 +57,7 @@ public class JWTUtils {
     }
 
     public static String getUserName(String token){
-        return JWT.require(Algorithm.HMAC256(SALT)).build().verify(token).getClaim("userName").asString();
+        return JWT.require(Algorithm.HMAC256(SALT)).build().verify(token).getClaim("username").asString();
     }
 
     public static String generateFirebaseToken(String userId)   {

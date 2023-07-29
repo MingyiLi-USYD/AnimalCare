@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.service.FriendRequestService;
 import usyd.mingyi.animalcare.service.FriendRequestServiceSync;
-import usyd.mingyi.animalcare.service.FriendService;
+
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 

@@ -16,7 +16,9 @@ import java.util.List;
 public class UserDto extends User {
     private List<Post> postList;
     private List<Pet> petList;
-    @TableField(exist = false)
-    private String msg;
+    private List<Post> loveList;
+    private List<FriendshipDto> friendList;
+    private List<RequestUserDto> requestUserDtoList;
+
 
 }

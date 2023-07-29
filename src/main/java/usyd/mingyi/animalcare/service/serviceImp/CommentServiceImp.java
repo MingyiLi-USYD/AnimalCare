@@ -34,7 +34,7 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
                 .selectAs(User::getNickname,CommentDto::getNickName)
                 .selectAs(User::getAvatar,CommentDto::getUserAvatar)
                 //.selectCollection(Subcomment.class,CommentDto::getSubcomments)
-                .leftJoin(User.class,User::getId,Comment::getUserId)
+                .leftJoin(User.class,User::getUserId,Comment::getUserId)
                 //.leftJoin(Subcomment.class,Subcomment::getSubcommentId, Comment::getId)
                 .eq(Comment::getPostId,postId);
 
@@ -53,7 +53,7 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
         wrapper.selectAll(Comment.class)
                 .selectAs(User::getNickname,CommentDto::getNickName)
                 .selectAs(User::getAvatar,CommentDto::getUserAvatar)
-                .leftJoin(User.class,User::getId,Comment::getUserId)
+                .leftJoin(User.class,User::getUserId,Comment::getUserId)
                 .eq(Comment::getId,comment.getId());
         CommentDto commentDto = commentMapper.selectJoinOne(CommentDto.class, wrapper);
         commentDto.setSubcommentDtos(new ArrayList<>());

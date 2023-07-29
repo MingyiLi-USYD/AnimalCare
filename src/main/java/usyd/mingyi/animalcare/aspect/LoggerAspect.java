@@ -14,6 +14,7 @@ import usyd.mingyi.animalcare.utils.BaseContext;
 @Slf4j
 public class LoggerAspect {
 
+/*
     @Pointcut("execution( * usyd.mingyi.animalcare.controller.*.*(..))")
     public void pointCut(){
 
@@ -34,5 +35,6 @@ public class LoggerAspect {
         log.info("结束日志");
         return object;
     }
+*/
 
 }

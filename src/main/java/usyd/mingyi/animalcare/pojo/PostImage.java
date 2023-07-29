@@ -1,4 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -6,17 +8,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@TableName("post_image")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("request")
-public class FriendRequest {
-    @TableId
+
+public class PostImage {
+    @TableId("image_id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    Long requestId;
+    Long imageId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    Long myId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    Long friendId;
-    String msg;
+    Long postId;
+    String imageUrl;
 }

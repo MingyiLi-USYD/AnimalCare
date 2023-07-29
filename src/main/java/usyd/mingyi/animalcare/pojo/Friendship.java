@@ -1,4 +1,5 @@
 package usyd.mingyi.animalcare.pojo;
+
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -9,14 +10,13 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("request")
-public class FriendRequest {
+@TableName("friendship")
+public class Friendship {
     @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    Long requestId;
+    Long friendshipId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long myId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long friendId;
-    String msg;
 }

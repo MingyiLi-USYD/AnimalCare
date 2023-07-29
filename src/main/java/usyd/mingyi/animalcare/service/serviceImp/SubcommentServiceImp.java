@@ -22,7 +22,7 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
         MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
                 .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
-                .leftJoin(User.class,User::getId, Subcomment::getUserId)
+                .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
                 .eq(Subcomment::getCommentId,commentId).last(limit,"LIMIT 3");
         return subcommentMapper.selectJoinList(SubcommentDto.class, wrapper);
     }
@@ -40,7 +40,7 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
         MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
                 .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
-                .leftJoin(User.class,User::getId, Subcomment::getUserId)
+                .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
                 .eq(Subcomment::getSubcommentId,subcomment.getSubcommentId());
        return subcommentMapper.selectJoinOne(SubcommentDto.class,wrapper);
     }

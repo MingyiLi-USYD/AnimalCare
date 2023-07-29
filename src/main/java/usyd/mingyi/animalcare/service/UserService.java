@@ -8,16 +8,14 @@ import usyd.mingyi.animalcare.pojo.User;
 
 
 public interface UserService extends IService<User> {
-    User queryUser(String username, String password);
+    User getUserByUsername(String username);
 
 
     String queryPassword(String username);
 
-    User queryUserByUsername(String username);
-
     void sendEmail(String email,String userName);
 
-    UserDto getProfile(long targetUserId,long currentUserId);
+    UserDto getProfile(Long targetUserId);
 
     int updatePassword(String username,String password);
 

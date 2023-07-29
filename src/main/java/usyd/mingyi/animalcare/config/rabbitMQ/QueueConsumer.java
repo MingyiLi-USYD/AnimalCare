@@ -1,3 +1,4 @@
+/*
 package usyd.mingyi.animalcare.config.rabbitMQ;
 
 import com.corundumstudio.socketio.SocketIOClient;
@@ -107,15 +108,15 @@ public class QueueConsumer {
     public void syncOnAndOffToClient(ServiceMessage serviceMessage) {
         User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(serviceMessage.getFromId()));
         Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
-        Long id = basicUserInfoById.getId();
+        Long id = basicUserInfoById.getUserId();
         //找到所有好友
         List<User> allFriends = friendService.getAllFriends(id);
         ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2, serviceMessage, basicUserInfoById);
         allFriends.forEach(friend -> {
-            String friendId = String.valueOf(friend.getId());
+            String friendId = String.valueOf(friend.getUserId());
             if (chatServer.containsKey(friendId)) {
                 SocketIOClient userClient = chatServer.get(friendId);
-                res.getMessage().setToId(String.valueOf(friend.getId()));
+                res.getMessage().setToId(String.valueOf(friend.getUserId()));
                 userClient.sendEvent("friendEvent", res);
             }
 
@@ -146,3 +147,4 @@ public class QueueConsumer {
         }
     }
 }
+*/

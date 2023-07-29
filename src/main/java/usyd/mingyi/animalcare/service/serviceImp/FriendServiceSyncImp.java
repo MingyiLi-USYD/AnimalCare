@@ -3,15 +3,16 @@ package usyd.mingyi.animalcare.service.serviceImp;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import usyd.mingyi.animalcare.service.FriendService;
+
 import usyd.mingyi.animalcare.service.FriendServiceSync;
+import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 
 @Service
 public class FriendServiceSyncImp implements FriendServiceSync {
     @Autowired
-    FriendService friendService;
+    FriendshipService friendService;
     @Autowired
     RealTimeService realTimeService;
     @Override

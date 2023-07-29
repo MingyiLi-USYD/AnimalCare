@@ -6,7 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
+import usyd.mingyi.animalcare.pojo.PostImage;
+import usyd.mingyi.animalcare.pojo.User;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 @Data
@@ -14,16 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class PostDto extends Post {
 
+    private List<PostImage> images;
     @TableField(exist = false)
     private List<Comment> commentList;
-    @TableField(exist = false)
-    private List<String> videoUrlList;
-    @TableField(value = "avatar" )
-    private String userAvatar;
-    @TableField(exist = false)
-    private boolean loved;
-    private String nickName;
-    @TableField(exist = false)
-    private Integer visitCount;
-    private Long commentCount;
+    private User postUser;
 }

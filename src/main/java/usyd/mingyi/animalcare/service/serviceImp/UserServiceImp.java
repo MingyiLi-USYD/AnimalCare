@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,8 +10,10 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.dto.UserDto;
-import usyd.mingyi.animalcare.mapper.FriendMapper;
+
 import usyd.mingyi.animalcare.mapper.UserMapper;
+import usyd.mingyi.animalcare.pojo.Pet;
+import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 
@@ -31,8 +34,10 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
 
 
     @Override
-    public User queryUser(String username, String password) {
-        return userMapper.queryUser(username, password);
+    public User getUserByUsername(String username) {
+        MPJLambdaWrapper<User> query = new MPJLambdaWrapper<>();
+        query.selectAll(User.class).eq(User::getUsername,username);
+        return userMapper.selectOne(query);
     }
 
     @Override
@@ -40,10 +45,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         return userMapper.queryPassword(username);
     }
 
-    @Override
-    public User queryUserByUsername(String username) {
-        return userMapper.queryUserByUsername(username);
-    }
+
 
     @Async
     public void sendEmail(String email, String userName) {
@@ -60,8 +62,17 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     }
 
     @Override
-    public UserDto getProfile(long targetId,long currentId) {
-        return userMapper.getProfile(targetId,currentId);
+    public UserDto getProfile(Long targetId) {
+        MPJLambdaWrapper<User> query = new MPJLambdaWrapper<>();
+        query.selectAll(User.class)
+                .selectCollection(Post.class,UserDto::getPostList)
+                .leftJoin(Post.class,Post::getUserId,User::getUserId)
+                .selectCollection(Pet.class,UserDto::getPetList)
+                .leftJoin(Pet.class,Pet::getUserId,User::getUserId)
+                .eq(User::getUserId,targetId);
+        UserDto userDto = userMapper.selectJoinOne(UserDto.class, query);
+        System.out.println(userDto);
+        return userDto;
 
     }
 
@@ -74,7 +85,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     public User getBasicUserInfoById(Long id) {
         MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
         wrapper.select(User::getNickname).select(User::getAvatar)
-                .select(User::getId).select(User::getDescription).eq(User::getId,id);
+                .select(User::getUserId).select(User::getDescription).eq(User::getUserId,id);
         return userMapper.selectOne(wrapper);
     }
 

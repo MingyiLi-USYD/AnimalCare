@@ -4,10 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.pojo.Image;
 import usyd.mingyi.animalcare.pojo.Pet;
-import usyd.mingyi.animalcare.service.ImageService;
+import usyd.mingyi.animalcare.pojo.PetImage;
+import usyd.mingyi.animalcare.service.PetImageService;
 import usyd.mingyi.animalcare.service.PetService;
+import usyd.mingyi.animalcare.service.PostImageService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ public class PetController {
 
 
     @Autowired
-    ImageService imageService;
+    PetImageService petImageService;
 
 
 
@@ -57,11 +58,10 @@ public class PetController {
     public R<Pet> getPet(@PathVariable("petId") long petId) {
         Long id = BaseContext.getCurrentId();
         Pet pet = petService.getPet(petId, id);
-
-        if (pet != null) {
+        if(pet.getUserId().equals(BaseContext.getCurrentId())||pet.getPetVisible()){
             return R.success(pet);
-        } else {
-            throw new CustomException("no pet found");
+        }else {
+            return R.error("No pet found");
         }
     }
 
@@ -88,17 +88,17 @@ public class PetController {
     }
 
     @PostMapping("/pet/image/{petId}")
-    public R<Image> uploadImage(@PathVariable("petId") Long petId,@RequestParam String imageUrl){
+    public R<PetImage> uploadImage(@PathVariable("petId") Long petId, @RequestParam String imageUrl){
         System.out.println(imageUrl);
-        Image imageObj = new Image();
-        imageObj.setUrl(imageUrl);
+        PetImage imageObj = new PetImage();
+       // imageObj.setUrl(imageUrl);
         imageObj.setPetId(petId);
-        imageService.save(imageObj);
+        petImageService.save(imageObj);
         return R.success(imageObj);
     }
 
     @DeleteMapping ("/pet/image")
-    public R<String> deleteImage(@RequestBody Image image){
+    public R<String> deleteImage(@RequestBody PetImage image){
         long petId = image.getPetId();
         Pet pet = petService.getById(petId);
         System.out.println(pet);
@@ -107,7 +107,7 @@ public class PetController {
         if(!pet.getUserId().equals(BaseContext.getCurrentId())){
             return R.error("No right to delete");
         }else {
-            if(imageService.removeById(image.getId())){
+            if(petImageService.removeById(image.getImageId())){
                 return R.success("Success");
             }else {
                 return R.success("No change");

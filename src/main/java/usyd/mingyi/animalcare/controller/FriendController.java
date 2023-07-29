@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
+import usyd.mingyi.animalcare.dto.FriendRequestDto;
+import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.*;
@@ -17,7 +19,7 @@ import java.util.List;
 public class FriendController {
 
     @Autowired
-    FriendService friendService;
+    FriendshipService friendService;
     @Autowired
     FriendServiceSync friendServiceSync;
     @Autowired
@@ -48,13 +50,7 @@ public class FriendController {
         return R.success("request have been sent");
     }
 
-    @GetMapping("/friendRequests")
-    @ResponseBody
-    public R<List<UserDto>> getRequestList() {
-        Long currentId = BaseContext.getCurrentId();
-        List<UserDto> allRequest = friendRequestService.getAllRequest(currentId);
-        return R.success(allRequest);
-    }
+
 
     @GetMapping("/friendRequest/{id}")
     @ResponseBody
@@ -74,9 +70,9 @@ public class FriendController {
 
     @GetMapping("/friends")
     @ResponseBody
-    public R<List<User>> getFriendsList() {
+    public R<List<FriendshipDto>> getFriendsList() {
         Long currentId = BaseContext.getCurrentId();
-        List<User> allFriends = friendService.getAllFriends(currentId);
+        List<FriendshipDto> allFriends = friendService.getAllFriends(currentId);
         return R.success(allFriends);
     }
 

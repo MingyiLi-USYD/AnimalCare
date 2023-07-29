@@ -46,9 +46,10 @@ public class PostController {
     @Transactional
     public R<String> upLoadPost(@RequestBody Post post, @RequestParam(value = "date",required = false)@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")Date date) {
 
+        post.setUserId(BaseContext.getCurrentId());
+
         if(date==null){
             //立刻上传Post
-            post.setUserId(BaseContext.getCurrentId());
             postService.addPost(post);
         }else {
             // 获取日期时间戳
@@ -67,22 +68,19 @@ public class PostController {
     @GetMapping("/post/{postId}")
     @ResponseBody
     public R<Post> getPost(@PathVariable long postId) {
-
-        Post post = postService.queryPostById(postId,BaseContext.getCurrentId());
-
+        Post post = postService.getPostById(postId,BaseContext.getCurrentId());
         return R.success(post);
     }
     @DeleteMapping("/post/{postId}")
     public R<String> deletePost(@PathVariable("postId") long postId) {
-        int i = postService.deletePost(postId, BaseContext.getCurrentId());
-        return i>0?R.success("删除成功"):R.error("删除失败");
+        postService.deletePost(postId, BaseContext.getCurrentId());
+        return R.success("Successfully delete post");
     }
 
 
     @GetMapping("/post")
     @ResponseBody
-    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") int page, @RequestParam("pageSize") int pageSize,@RequestParam("order") int order) {
-
+    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") Long page, @RequestParam("pageSize") Integer pageSize,@RequestParam("order") Integer order) {
         IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize,order);
         return R.success(allPosts);
     }
@@ -105,9 +103,9 @@ public class PostController {
 
     @GetMapping("/posts")
     @ResponseBody
-    public R<List<Post>> getMyPosts() {
+    public R<List<PostDto>> getMyPosts() {
         long userId = BaseContext.getCurrentId();
-        List<Post> myPosts = postService.getPostByUserId(userId);
+        List<PostDto> myPosts = postService.getPostByUserId(userId);
         return R.success(myPosts);
     }
 

@@ -11,12 +11,12 @@ import java.util.List;
 
 public interface PostService extends IService<Post> {
     void addPost(Post post);
-    IPage<PostDto> getAllPosts(long currPage, long pageSize,int order);
-    Post queryPostById(long postId,long currentUserId);
-    void love(long userId, long postId);
-    void cancelLove(long userId, long postId);
-    int deletePost(long postId, long userId);
-    List<Post> getPostByUserId(long userId);
+    IPage<PostDto> getAllPosts(Long currPage, Integer pageSize,Integer order);
+    Post getPostById(Long postId,Long currentUserId);
+    void love(Long userId, Long postId);
+    void cancelLove(Long userId, Long postId);
+    void deletePost(Long postId, Long userId);
+    List<PostDto> getPostByUserId(Long userId);
     List<Post> getPostsByKeywords(String keywords);
 
 

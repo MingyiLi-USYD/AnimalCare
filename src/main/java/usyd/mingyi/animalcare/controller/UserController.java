@@ -57,30 +57,22 @@ public class UserController {
     public R<Map> login(@RequestBody User userInfo) {
 
         log.info("登录");
-        String username = userInfo.getUserName();
+        String username = userInfo.getUsername();
         String password = userInfo.getPassword();
-        String encryptedPassword = userService.queryPassword(username);
-
-        if (encryptedPassword == null) {
+        User user = userService.getUserByUsername(username);
+        if (user == null) {
             throw new CustomException("No such user");
         } else {
-            String decode = JasyptEncryptorUtils.decode(encryptedPassword);
-            if (!decode.equals(password)) {
+            if (!PasswordUtils.verifyPassword(password,user.getPassword())) {
                 throw new CustomException("Password Error");
             }
         }
 
-        User user = userService.queryUser(username, encryptedPassword);
-
-        if (user != null) {
             Map<String, String> map = new HashMap<>();
             map.put("serverToken",JWTUtils.generateToken(user));
-            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getId())));
+            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getUserId())));
             return R.success(map);
 
-        } else {
-            throw new CustomException("Password Error");
-        }
     }
 
     @PostMapping("/login/thirdPart")
@@ -144,10 +136,9 @@ public class UserController {
         if(StringUtil.isNullOrEmpty(userInfo.getAvatar())){
             userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
         }
-        userInfo.setPassword(JasyptEncryptorUtils.encode(userInfo.getPassword()));
+        userInfo.setPassword(PasswordUtils.hashPassword(userInfo.getPassword()));
         userInfo.setUuid(UUID.randomUUID().toString());
-        System.out.println(userInfo);
-        //userService.save(userInfo);
+        userService.save(userInfo);
         return R.success("Sign up success");
 
     }
@@ -157,7 +148,7 @@ public class UserController {
     public R<String> usernameCheck(@RequestParam("userName") String userName) {
 
         MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(User::getUserName,userName);
+        wrapper.eq(User::getUsername,userName);
         User user = userService.getOne(wrapper);
         if (user == null) {
             return R.success("username is valid");
@@ -198,27 +189,18 @@ public class UserController {
     }
 
 
-    @PostMapping("/edit")
-    @ResponseBody
-    public ResponseEntity<Object> updateUserInfoInAndroid(@RequestParam(value = "avatar",required = false) MultipartFile avatar,
-                                                          @RequestParam("nickName") String nickName,
-                                                          @RequestParam("description") String description
-    ) {
-
-        return null;
-    }
 
 
     @GetMapping("/profile/{userId}")
-    public R<UserDto> getProfile(@PathVariable("userId") long userId) {
-        long currentUserId = BaseContext.getCurrentId();
-        UserDto profile = userService.getProfile(userId,currentUserId);
+    public R<UserDto> getProfile(@PathVariable("userId") Long userId) {
+        Long currentUserId = BaseContext.getCurrentId();
+        UserDto profile = userService.getProfile(userId);
         return R.success(profile);
     }
 
     @PutMapping("/profile")
     public R<String> updateProfile(@RequestBody User user) {
-        if(user.getId()!=BaseContext.getCurrentId()){
+        if(user.getUserId()!=BaseContext.getCurrentId()){
             throw new CustomException("No right to access");
         }
      /*   long currentUserId = BaseContext.getCurrentId();
@@ -228,7 +210,7 @@ public class UserController {
 
     @GetMapping("/loves")
     public R<List<String>> getUserLovedPosts(){
-        User user = userService.getById(BaseContext.getCurrentId());
+/*        User user = userService.getById(BaseContext.getCurrentId());
         String loveList = user.getLoveList();
         try {
             List<String> res = objectMapper.readValue(loveList==null?"[]":loveList, new TypeReference<>() {
@@ -236,7 +218,8 @@ public class UserController {
             return R.success(res);
         } catch (JsonProcessingException e) {
             throw new CustomException("System error");
-        }
+        }*/
+        return null;
     }
 
 

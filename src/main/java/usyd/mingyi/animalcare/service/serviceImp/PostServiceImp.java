@@ -9,28 +9,29 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.yulichang.query.MPJLambdaQueryWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.common.CustomException;
-import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.dto.PostDto;
-import usyd.mingyi.animalcare.mapper.ImageMapper;
+import usyd.mingyi.animalcare.mapper.LovePostMapper;
+import usyd.mingyi.animalcare.mapper.PostImageMapper;
 import usyd.mingyi.animalcare.mapper.PostMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
-import usyd.mingyi.animalcare.pojo.Comment;
+import usyd.mingyi.animalcare.pojo.LovePost;
 import usyd.mingyi.animalcare.pojo.Post;
+import usyd.mingyi.animalcare.pojo.PostImage;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.ImageUtil;
+import usyd.mingyi.animalcare.utils.JWTUtils;
+import usyd.mingyi.animalcare.utils.QueryUtils;
 
-import java.lang.reflect.Type;
+
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements PostService {
@@ -39,9 +40,11 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Autowired
     UserMapper userMapper;
     @Autowired
-    ImageMapper imageMapper;
+    PostImageMapper imageMapper;
     @Autowired
     ObjectMapper mapper;
+    @Autowired
+    LovePostMapper lovePostMapper;
     @Override
     public void addPost(Post post) {
         postMapper.insert(post);
@@ -50,115 +53,70 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
 
 
     @Override
-    public  IPage<PostDto> getAllPosts(long currPage, long pageSize,int order) {
+    public  IPage<PostDto> getAllPosts(Long currPage, Integer pageSize,Integer order) {
+        IPage<PostDto> page = new Page<>(currPage,pageSize);
+        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        query.selectAll(Post.class).eq(Post::getVisible,true);
+       // QueryUtils.postWithPostImages(query);
+        QueryUtils.postWithUser(query);
+        return postMapper.selectJoinPage(page, PostDto.class, query);
 
-        IPage<PostDto> postDtoPage = new Page<>(currPage,pageSize);
-        MPJLambdaWrapper<Post> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Post.class)
-                //.selectAs(" COUNT(comment.comment_id)",PostDto::getCommentList)
-                .selectAs(User::getAvatar,PostDto::getUserAvatar)
-                .selectAs(User::getNickname,PostDto::getNickName)
-                .leftJoin(User.class,User::getId,Post::getUserId)
-                .eq(Post::isVisible,true);
-        if(order==1){
-            wrapper.orderByDesc(Post::getPostTime);
-        }else {
-            wrapper.orderByDesc(Post::getLove);
-        }
-        IPage<PostDto> postDtoIPage = postMapper.selectJoinPage(postDtoPage, PostDto.class, wrapper);
- /*       List<PostDto> records = postDtoIPage.getRecords();
-        List<PostDto> newRecords = records.stream().map(item -> {
-            item.setCommentCount(5L);
-            return item;
-        }).collect(Collectors.toList());
-        postDtoIPage.setRecords(newRecords);*/
-        return postDtoIPage;
+    }
 
+    @Override
+    public Post getPostById(Long postId, Long currentUserId) {
+        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        query.selectAll(Post.class)
+                .eq(Post::getPostId,postId);
+        QueryUtils.postWithPostImages(query);
+        QueryUtils.postWithUser(query);
+       return postMapper.selectJoinOne(PostDto.class, query);
 
     }
 
 
-
     @Override
-    public Post queryPostById(long postId,long currentUserId) {
-
-        MPJLambdaWrapper<Post> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Post.class).selectAs(User::getAvatar,PostDto::getUserAvatar)
-                .selectAs(User::getNickname,PostDto::getNickName)
-                .leftJoin(User.class,User::getId,Post::getUserId).eq(PostDto::getPostId,postId);
-        PostDto postDto = postMapper.selectJoinOne(PostDto.class, wrapper);
-        if(postDto.isVisible()){
-            return postDto;
-        }else if(postDto.getUserId()==currentUserId){
-            return postDto;
-        }else {
-            throw new CustomException("No right to access");
-        }
+    @Transactional
+    public void love(Long userId, Long postId) {
+        LovePost lovePost = new LovePost();
+        lovePost.setUserId(userId);
+        lovePost.setPostId(postId);
+        lovePostMapper.insert(lovePost);
     }
 
     @Override
     @Transactional
-    public void love(long userId, long postId) {
-        LambdaUpdateWrapper<Post> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.setSql("love=love+1").eq(Post::getPostId,postId);
-        postMapper.update(null,wrapper);
-        User user = userMapper.selectById(userId);
-        String loveList = user.getLoveList();
+    public void cancelLove(Long userId, Long postId) {
+        LambdaQueryWrapper<LovePost> query = new LambdaQueryWrapper<>();
+        query.eq(LovePost::getUserId,userId).eq(LovePost::getPostId,postId);
 
-        try {
-            //线程不安全
-            HashSet<String> hashSet = mapper.readValue(loveList==null?"[]":loveList, new TypeReference<HashSet<String>>(){});
-            if(hashSet.contains(String.valueOf(postId))){
-                throw new CustomException("already loved");
-            }
-            hashSet.add(String.valueOf(postId));
-            loveList = mapper.writeValueAsString(hashSet);
-            user.setLoveList(loveList);
-
-            userMapper.update(null,new LambdaUpdateWrapper<User>()
-                    .set(User::getLoveList,loveList).eq(User::getId,userId));
-        } catch (JsonProcessingException e) {
-            throw new CustomException(e.getMessage());
+        int delete = lovePostMapper.delete(query);
+        if(delete==0){
+            throw new CustomException("never love this post before");
         }
     }
 
     @Override
-    @Transactional
-    public void cancelLove(long userId, long postId) {
-        LambdaUpdateWrapper<Post> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.setSql("love=love-1").eq(Post::getPostId,postId);
-        postMapper.update(null,wrapper);
-        User user = userMapper.selectById(userId);
-        String loveList = user.getLoveList();
-
-        try {
-            HashSet<String> hashSet = mapper.readValue(loveList==null?"[]":loveList, new TypeReference<HashSet<String>>(){});
-            if(!hashSet.contains(String.valueOf(postId))){
-                throw new CustomException("did not love before");
-            }
-            hashSet.remove(String.valueOf(postId));
-            loveList = mapper.writeValueAsString(hashSet);
-            user.setLoveList(loveList);
-            userMapper.update(null,new LambdaUpdateWrapper<User>()
-                    .set(User::getLoveList,loveList).eq(User::getId,userId));
-        } catch (JsonProcessingException e) {
-            throw new CustomException(e.getMessage());
-        }
-    }
-
-    @Override
-    public int deletePost(long postId, long userId) {
+    public void deletePost(Long postId, Long userId) {
         LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Post::getPostId,postId).eq(Post::getUserId, BaseContext.getCurrentId());
-        return postMapper.delete(wrapper);
+        int delete = postMapper.delete(wrapper);
+        if(delete==0){
+            throw new CustomException("Fail to delete this post");
+        }
     }
 
 
     @Override
-    public List<Post> getPostByUserId(long userId) {
-        MPJLambdaWrapper<Post> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Post.class).eq(Post::getUserId,userId);
-        return postMapper.selectList(wrapper);
+    public List<PostDto> getPostByUserId(Long userId) {
+        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        query.selectAll(Post.class)
+                .eq(Post::getUserId,userId);
+        QueryUtils.postWithUser(query);
+        QueryUtils.postWithPostImages(query);
+        List<PostDto> postDtos = postMapper.selectJoinList(PostDto.class, query);
+        return  postDtos;
+
     }
 
 
