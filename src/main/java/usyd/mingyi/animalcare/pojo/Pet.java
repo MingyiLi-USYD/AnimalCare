@@ -18,6 +18,7 @@ public class Pet implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long userId;
     private String petName;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date birthday;
     private String category;
     private String petAvatar;

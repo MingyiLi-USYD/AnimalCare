@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -11,9 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PetImage {
+    @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long imageId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long petId;
     String imageUrl;
+    String fileName;
 }

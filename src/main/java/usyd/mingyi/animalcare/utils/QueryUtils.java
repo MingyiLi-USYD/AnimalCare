@@ -2,6 +2,7 @@ package usyd.mingyi.animalcare.utils;
 
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import usyd.mingyi.animalcare.dto.PostDto;
+import usyd.mingyi.animalcare.pojo.FriendRequest;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.PostImage;
 import usyd.mingyi.animalcare.pojo.User;
@@ -22,11 +23,20 @@ public class QueryUtils {
         return query.selectCollection(PostImage.class,PostDto::getImages)
                 .leftJoin(PostImage.class,PostImage::getPostId,Post::getPostId);
     }
-
+/*
     public static <T> MPJLambdaWrapper<T> postPageWithPostImages(MPJLambdaWrapper<T> query) {
         return query
                 .leftJoin(PostImage.class,PostImage::getPostId,Post::getPostId);
+    }*/
+
+    public static MPJLambdaWrapper<FriendRequest> generateFriendRequestQuery(Long userId,Long targetUserId) {
+        MPJLambdaWrapper<FriendRequest> query = new MPJLambdaWrapper<>();
+        query.selectAll(FriendRequest.class)
+                .eq(FriendRequest::getMyId, targetUserId)
+                .eq(FriendRequest::getFriendId, userId);
+        return query;
     }
+
 
 
 }

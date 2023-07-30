@@ -1,11 +1,11 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.yulichang.query.MPJQueryWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import usyd.mingyi.animalcare.dto.FriendRequestDto;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.mapper.FriendRequestMapper;
 import usyd.mingyi.animalcare.mapper.FriendshipMapper;
@@ -24,10 +24,11 @@ public class FriendshipServiceImp implements FriendshipService {
     FriendshipMapper friendshipMapper;
 
     @Autowired
-    UserMapper userMapper;
+    FriendRequestMapper friendRequestMapper;
 
     @Autowired
-    ObjectMapper objectMapper;
+    UserMapper userMapper;
+
 
     @Override
     public List<FriendshipDto> getAllFriends(Long userId) {
@@ -35,8 +36,8 @@ public class FriendshipServiceImp implements FriendshipService {
         MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
         query.selectAll(Friendship.class)
                 .selectAssociation(User.class, FriendshipDto::getFriendIno)
-                .leftJoin(User.class,User::getUserId,Friendship::getFriendId)
-                .eq(Friendship::getMyId,userId);
+                .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
+                .eq(Friendship::getMyId, userId);
         List<FriendshipDto> friendshipDtos = friendshipMapper.selectJoinList(FriendshipDto.class, query);
         System.out.println(friendshipDtos);
         return friendshipDtos;
@@ -46,64 +47,44 @@ public class FriendshipServiceImp implements FriendshipService {
 
     @Override
     @Transactional
-    public int checkFriendshipStatus(long fromId, long toId) {
+    public int checkFriendshipStatus(Long fromId, Long toId) {
 
-/*        try {
-            User user = userMapper.selectById(toId);
-            String friendList = user.getFriendList();
-            if(friendList!=null){
-                Set<String> map = objectMapper.readValue(friendList, new TypeReference<Set<String>>() {});
-                if(map.contains(String.valueOf(fromId))){
-                    return 1;
-                }
+        MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
+        query.selectAll(Friendship.class)
+                .eq(Friendship::getMyId, fromId)
+                .eq(Friendship::getFriendId, toId);
+        Friendship friendship = friendshipMapper.selectOne(query);
+        if (friendship == null) {//证明还不是好友  现在判断是否有发送过好友请求
+            MPJLambdaWrapper<FriendRequest> requestQuery = new MPJLambdaWrapper<>();
+            requestQuery.selectAll(FriendRequest.class)
+                    .eq(FriendRequest::getMyId, fromId)
+                    .eq(FriendRequest::getFriendId, toId);
+            FriendRequest friendRequest = friendRequestMapper.selectOne(requestQuery);
+            if (friendRequest != null) {
+                return 2;//表示已经发送了好友请求 等待同意 pending状态
+            } else {
+                return 3; //表示不是好友 并且重来没有发送过好友请求
             }
-            MPJLambdaWrapper<FriendRequest> wrapper = new MPJLambdaWrapper<>();
-            wrapper.eq(FriendRequest::getUserId, toId);
-            FriendRequest friendRequest = friendRequestMapper.selectOne(wrapper);
-            if(friendRequest==null){
-                return 3;
-            }
-
-            String requestList = friendRequest.getRequestList();
-            Map<String, String> mapTwo = objectMapper.readValue(requestList, new TypeReference<Map<String, String>>() {
-            });
-            if (mapTwo.containsKey(String.valueOf(fromId))) {
-                return 2;
-            }
-        }catch (IOException e) {
-            throw new CustomException("System error");
+        } else {
+            return 1; //表示已经是好友了
         }
-        return 3;*/
-        return 0;
     }
 
     @Override
     @Transactional
-    public void deleteUser(long fromId, long toId) {
+    public void deleteUser(Long fromId, Long toId) {
         deleteUserInFriendList(fromId, toId);
         deleteUserInFriendList(toId, fromId);
     }
 
     @Override
-    public User getFriendSync(long id) {
-/*        MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
-        wrapper.select(User::getNickname).select(User::getAvatar)
-                .select(User::getId).select(User::getDescription).eq(User::getId,id);
-        return userMapper.selectOne(wrapper);*/
-        return null;
+    public User getFriendSync(Long id) {
+        return userMapper.selectById(id);
     }
 
     public void deleteUserInFriendList(Long userId, Long deleteUserId) {
-/*        User user = userMapper.selectById(userId);
-        String friendList = user.getFriendList();
-        try {
-            Set<String> map = objectMapper.readValue(friendList, new TypeReference<Set<String>>() {});
-            map.remove(String.valueOf(deleteUserId));
-            String newFriendList = objectMapper.writeValueAsString(map);
-            user.setFriendList(newFriendList);
-            userMapper.updateById(user);
-        } catch (IOException e) {
-            throw new CustomException("System error");
-        }*/
+        LambdaQueryWrapper<Friendship> query = new LambdaQueryWrapper<>();
+        query.eq(Friendship::getMyId,userId).eq(Friendship::getFriendId,deleteUserId);
+        friendshipMapper.delete(query);
     }
 }

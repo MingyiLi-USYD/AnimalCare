@@ -20,4 +20,5 @@ public class PostImage {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long postId;
     String imageUrl;
+    String fileName;
 }

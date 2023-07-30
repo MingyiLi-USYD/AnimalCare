@@ -26,6 +26,7 @@ import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
 import usyd.mingyi.animalcare.dto.UserDto;
+import usyd.mingyi.animalcare.dto.UserInitDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
@@ -85,6 +86,8 @@ public class UserController {
             if(userInfo.getNickname()==null){
                 userInfo.setNickname("anonymous");
             }
+            userInfo.setPassword("123456");
+            userInfo.setRole("user");
             userService.save(userInfo);
             Map<String, String> map = new HashMap<>();
             map.put("serverToken",JWTUtils.generateToken(userInfo));
@@ -118,7 +121,6 @@ public class UserController {
         if (user==null){
             throw new CustomException("Login first");
         }
-        user.setPassword(null);
         return R.success(user);
     }
 
@@ -208,18 +210,10 @@ public class UserController {
         return R.success("成功");
     }
 
-    @GetMapping("/loves")
-    public R<List<String>> getUserLovedPosts(){
-/*        User user = userService.getById(BaseContext.getCurrentId());
-        String loveList = user.getLoveList();
-        try {
-            List<String> res = objectMapper.readValue(loveList==null?"[]":loveList, new TypeReference<>() {
-            });
-            return R.success(res);
-        } catch (JsonProcessingException e) {
-            throw new CustomException("System error");
-        }*/
-        return null;
+    @GetMapping("/user/init")
+    public R<UserInitDto> initUserInfo(){
+        UserInitDto userInitDto = userService.initUserInfo(BaseContext.getCurrentId());
+        return R.success(userInitDto);
     }
 
 

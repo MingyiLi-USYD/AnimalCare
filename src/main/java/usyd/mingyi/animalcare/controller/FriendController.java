@@ -33,9 +33,9 @@ public class FriendController {
 
     @GetMapping("/friends/status/{id}")
     @ResponseBody
-    public R<Integer> getFriendshipStatus(@PathVariable("id") long toId) {
-        long fromId = BaseContext.getCurrentId();
-        if (fromId == toId) {
+    public R<Integer> getFriendshipStatus(@PathVariable("id") Long toId) {
+        Long fromId = BaseContext.getCurrentId();
+        if (fromId .equals(toId)) {
             return R.success(0);
         }
         return R.success(friendService.checkFriendshipStatus(fromId, toId));

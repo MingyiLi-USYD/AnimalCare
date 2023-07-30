@@ -17,8 +17,6 @@ public class UserDto extends User {
     private List<Post> postList;
     private List<Pet> petList;
     private List<Post> loveList;
-    private List<FriendshipDto> friendList;
-    private List<RequestUserDto> requestUserDtoList;
-
-
+    private List<FriendshipDto> friendshipDtoList;
+    private List<FriendRequestDto> friendRequestDtoList;
 }
