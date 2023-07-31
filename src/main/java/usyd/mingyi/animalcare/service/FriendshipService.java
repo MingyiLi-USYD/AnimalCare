@@ -11,4 +11,5 @@ public interface FriendshipService  {
     int checkFriendshipStatus(Long fromId, Long toId);
     void deleteUser(Long fromId,Long toId);
     User getFriendSync(Long id);
+    FriendshipDto getFriendshipByIds(Long userId, Long friendId);
 }

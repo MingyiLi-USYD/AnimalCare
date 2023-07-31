@@ -9,5 +9,5 @@ import usyd.mingyi.animalcare.pojo.User;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FriendshipDto extends Friendship {
-    User friendIno;
+    User friendInfo;
 }

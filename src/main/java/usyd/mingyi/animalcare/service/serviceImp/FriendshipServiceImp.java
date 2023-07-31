@@ -35,7 +35,7 @@ public class FriendshipServiceImp implements FriendshipService {
 
         MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
         query.selectAll(Friendship.class)
-                .selectAssociation(User.class, FriendshipDto::getFriendIno)
+                .selectAssociation(User.class, FriendshipDto::getFriendInfo)
                 .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
                 .eq(Friendship::getMyId, userId);
         List<FriendshipDto> friendshipDtos = friendshipMapper.selectJoinList(FriendshipDto.class, query);
@@ -86,5 +86,16 @@ public class FriendshipServiceImp implements FriendshipService {
         LambdaQueryWrapper<Friendship> query = new LambdaQueryWrapper<>();
         query.eq(Friendship::getMyId,userId).eq(Friendship::getFriendId,deleteUserId);
         friendshipMapper.delete(query);
+    }
+
+    public FriendshipDto getFriendshipByIds(Long userId, Long friendId){
+        MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
+        query.selectAll(Friendship.class)
+                .selectAssociation(User.class,FriendshipDto::getFriendInfo)
+                .leftJoin(User.class,User::getUserId,Friendship::getFriendId)
+                .eq(Friendship::getMyId,userId)
+                .eq(Friendship::getFriendId,friendId);
+       return friendshipMapper.selectJoinOne(FriendshipDto.class, query);
+
     }
 }

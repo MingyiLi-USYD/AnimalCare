@@ -90,7 +90,6 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
                 .leftJoin(Pet.class,Pet::getUserId,User::getUserId)
                 .eq(User::getUserId,targetId);
         UserDto userDto = userMapper.selectJoinOne(UserDto.class, query);
-        System.out.println(userDto);
         return userDto;
 
     }

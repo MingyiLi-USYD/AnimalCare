@@ -7,6 +7,7 @@ import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.FriendRequestDto;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.dto.UserDto;
+import usyd.mingyi.animalcare.pojo.Friendship;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.*;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
@@ -54,10 +55,9 @@ public class FriendController {
 
     @GetMapping("/friendRequest/{id}")
     @ResponseBody
-    public R<User> approveFriendRequest(@PathVariable("id") long toId) {
+    public R<Friendship> approveFriendRequest(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
-        friendRequestServiceSync.approveRequestSync(currentId, toId);
-        return R.success(friendService.getFriendSync(toId));
+       return R.success( friendRequestServiceSync.approveRequestSync(currentId, toId));
     }
 
     @DeleteMapping("/friendRequest/{id}")

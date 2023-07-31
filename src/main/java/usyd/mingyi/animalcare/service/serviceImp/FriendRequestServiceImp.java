@@ -68,7 +68,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
             friendRequestMapper.deleteById(friendRequest.getRequestId());
             addUserToFriendList(userId,approvedUserId);
             addUserToFriendList(approvedUserId,userId);
-
         }
 
     }
@@ -77,8 +76,9 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     public void addUserToFriendList(Long userId, Long approvedUserId) {
         Friendship friendship = new Friendship();
         friendship.setMyId(userId);
-        friendship.setFriendshipId(approvedUserId);
+        friendship.setFriendId(approvedUserId);
         friendshipMapper.insert(friendship);
+
     }
 
     @Override
@@ -95,17 +95,14 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     }
 
 
-
-
-
     @Override
     @Transactional
     public List<FriendRequestDto> getAllRequest(Long userId) {
         MPJLambdaWrapper<FriendRequest> query = new MPJLambdaWrapper<>();
         query.selectAll(FriendRequest.class)
                 .selectAssociation(User.class, FriendRequestDto::getFriendInfo)
-                .leftJoin(User.class, User::getUserId, FriendRequest::getFriendId)
-                .eq(FriendRequest::getMyId, userId);
+                .leftJoin(User.class, User::getUserId, FriendRequest::getMyId)
+                .eq(FriendRequest::getFriendId, userId);
         List<FriendRequestDto> friendRequestDtos = friendRequestMapper.selectJoinList(FriendRequestDto.class, query);
         System.out.println(friendRequestDtos);
         return friendRequestDtos;
