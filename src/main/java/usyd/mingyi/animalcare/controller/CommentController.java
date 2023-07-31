@@ -38,7 +38,7 @@ public class CommentController {
 
     @GetMapping("/comments/{postId}")
     @ResponseBody
-    public R<IPage<CommentDto>> getCommentsByPostId(@RequestParam("currPage") long currPage, @RequestParam("pageSize") long pageSize,@PathVariable("postId") long postId) {
+    public R<IPage<CommentDto>> getCommentsByPostId(@RequestParam("currPage") Long currPage, @RequestParam("pageSize") Integer pageSize,@PathVariable("postId") Long postId) {
         IPage<CommentDto> commentsByPostId = commentService.getCommentsByPostId(currPage,pageSize,postId);
         return R.success(commentsByPostId);
     }

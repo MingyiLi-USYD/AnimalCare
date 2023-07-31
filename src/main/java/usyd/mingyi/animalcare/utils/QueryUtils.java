@@ -23,6 +23,9 @@ public class QueryUtils {
         return query.selectCollection(PostImage.class,PostDto::getImages)
                 .leftJoin(PostImage.class,PostImage::getPostId,Post::getPostId);
     }
+
+
+
 /*
     public static <T> MPJLambdaWrapper<T> postPageWithPostImages(MPJLambdaWrapper<T> query) {
         return query

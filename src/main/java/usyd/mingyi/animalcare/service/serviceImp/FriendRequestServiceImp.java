@@ -84,6 +84,8 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Override
     @Transactional
     public void rejectRequest(Long userId, Long targetUserId) {
+        System.out.println(userId);
+        System.out.println(targetUserId);
         MPJLambdaWrapper<FriendRequest> query = QueryUtils.generateFriendRequestQuery(userId, targetUserId);
         FriendRequest existRequest = friendRequestMapper.selectOne(query);
         if(existRequest==null){

@@ -19,5 +19,9 @@ public interface PostService extends IService<Post> {
     List<PostDto> getPostByUserId(Long userId);
     List<Post> getPostsByKeywords(String keywords);
 
+    List<PostDto> getAllLovedPost(Long userId);
+
+    List<Long> getAllLovedPostsId(Long userId);
+
 
 }

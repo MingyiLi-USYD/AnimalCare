@@ -19,6 +19,6 @@ public class PostDto extends Post {
 
     private List<PostImage> images;
     @TableField(exist = false)
-    private List<Comment> commentList;
+    private List<CommentDto> commentList;
     private User postUser;
 }

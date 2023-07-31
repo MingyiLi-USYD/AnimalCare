@@ -39,7 +39,6 @@ public class FriendshipServiceImp implements FriendshipService {
                 .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
                 .eq(Friendship::getMyId, userId);
         List<FriendshipDto> friendshipDtos = friendshipMapper.selectJoinList(FriendshipDto.class, query);
-        System.out.println(friendshipDtos);
         return friendshipDtos;
 
     }

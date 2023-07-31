@@ -27,28 +27,25 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
     SubcommentService subcommentService;
 
     @Override
-    public IPage<CommentDto> getCommentsByPostId(long currPage, long pageSize,long postId) {
+    public IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize,Long postId) {
         IPage<CommentDto> commentDtoIPage = new Page<>(currPage,pageSize);
         MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Comment.class)
-                .selectAs(User::getNickname,CommentDto::getNickName)
-                .selectAs(User::getAvatar,CommentDto::getUserAvatar)
-                //.selectCollection(Subcomment.class,CommentDto::getSubcomments)
+                .selectAssociation(User.class,CommentDto::getCommentUser)
                 .leftJoin(User.class,User::getUserId,Comment::getUserId)
-                //.leftJoin(Subcomment.class,Subcomment::getSubcommentId, Comment::getId)
                 .eq(Comment::getPostId,postId);
-
         IPage<CommentDto> res = commentMapper.selectJoinPage(commentDtoIPage, CommentDto.class, wrapper);
-         res.getRecords().forEach(item->{
-             item.setSubcommentDtos(subcommentService.getSubcommentDtos(item.getId(),true));
-             item.setSubcommentsLength(subcommentService.getSubcommentsSize(item.getId()));
-         });
+        res.getRecords().forEach(commentDto -> {
+            commentDto.setSubcommentDtos(subcommentService.getSubcommentDtos(commentDto.getCommentId(),true));
+            commentDto.setSubcommentsLength(subcommentService.getSubcommentsSize(commentDto.getCommentId()));
+        });
+
          return res;
 
     }
     public CommentDto saveAndSync(Comment comment){
          commentMapper.insert(comment);
-
+/*
         MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Comment.class)
                 .selectAs(User::getNickname,CommentDto::getNickName)
@@ -57,7 +54,8 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
                 .eq(Comment::getId,comment.getId());
         CommentDto commentDto = commentMapper.selectJoinOne(CommentDto.class, wrapper);
         commentDto.setSubcommentDtos(new ArrayList<>());
-        commentDto.setSubcommentsLength(0);
-        return commentDto;
+        commentDto.setSubcommentsLength(0);*/
+        return null;
+        //return commentDto;
     }
 }

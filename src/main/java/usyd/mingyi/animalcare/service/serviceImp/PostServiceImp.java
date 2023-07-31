@@ -114,8 +114,7 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
                 .eq(Post::getUserId,userId);
         QueryUtils.postWithUser(query);
         QueryUtils.postWithPostImages(query);
-        List<PostDto> postDtos = postMapper.selectJoinList(PostDto.class, query);
-        return  postDtos;
+        return postMapper.selectJoinList(PostDto.class, query);
 
     }
 
@@ -126,4 +125,28 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         return postMapper.getPostsByKeywords(keywords);
     }
 
+    @Override
+    public List<PostDto> getAllLovedPost(Long userId) {
+        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
+        lovedPost.eq(LovePost::getUserId,userId);
+
+        List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
+        List<Long> list = lovePosts.stream().map(LovePost::getPostId).toList();
+        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        query.selectAll(Post.class)
+                .in(Post::getPostId,list)
+                .eq(Post::getUserId,userId);
+        QueryUtils.postWithUser(query);
+        QueryUtils.postWithPostImages(query);
+        return postMapper.selectJoinList(PostDto.class, query);
+    }
+    @Override
+    public List<Long> getAllLovedPostsId(Long userId) {
+        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
+        lovedPost.eq(LovePost::getUserId,userId);
+        List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
+
+        return lovePosts.stream().map(LovePost::getPostId).toList();
+
+    }
 }

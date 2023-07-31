@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.service.serviceImp;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.mapper.FriendshipMapper;
 import usyd.mingyi.animalcare.pojo.Friendship;
 import usyd.mingyi.animalcare.pojo.User;
@@ -33,7 +34,7 @@ public class FriendRequestServiceSyncImp implements FriendRequestServiceSync {
     }
 
     @Override
-    public Friendship approveRequestSync(Long userId, Long approvedUserId) {
+    public FriendshipDto approveRequestSync(Long userId, Long approvedUserId) {
         friendRequestService.approveRequest(userId,approvedUserId);
         //同时同步通知此人如果在线的话
        // realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(approvedUserId),2));

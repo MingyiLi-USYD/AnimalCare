@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface FriendRequestServiceSync {
     void sendRequestSync(Long fromId,Long toId,String msg);
-    Friendship approveRequestSync(Long userId, Long approvedUserId);
+    FriendshipDto approveRequestSync(Long userId, Long approvedUserId);
     void rejectRequestSync(Long userId,Long approvedUserId);
 }

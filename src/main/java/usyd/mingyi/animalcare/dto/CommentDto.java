@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Subcomment;
+import usyd.mingyi.animalcare.pojo.User;
 
 import java.util.List;
 
@@ -12,9 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentDto extends Comment {
-    private String userAvatar;
-    private String nickName;
-    private String userName;
+    private User commentUser;
     private List<SubcommentDto> subcommentDtos;
     private Integer subcommentsLength;
 }

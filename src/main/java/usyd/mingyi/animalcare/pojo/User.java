@@ -14,7 +14,6 @@ import java.io.Serializable;
 @NoArgsConstructor
 @TableName("user")
 public class User implements Serializable {
-    private static final long serialVersionUID = 1L;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableId
     private Long userId;
@@ -28,5 +27,4 @@ public class User implements Serializable {
     private String avatar;
     private String avatarFile;
     private String tag;
-
 }

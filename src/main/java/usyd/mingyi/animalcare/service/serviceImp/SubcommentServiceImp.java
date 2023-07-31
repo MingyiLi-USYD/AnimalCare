@@ -20,11 +20,11 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
     @Override
     public List<SubcommentDto> getSubcommentDtos(Long commentId,Boolean limit) {
         MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
-                .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
+        wrapper.selectAll(Subcomment.class).selectAssociation(User.class,SubcommentDto::getSubcommentUser)
                 .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
                 .eq(Subcomment::getCommentId,commentId).last(limit,"LIMIT 3");
         return subcommentMapper.selectJoinList(SubcommentDto.class, wrapper);
+
     }
 
     @Override
@@ -36,13 +36,14 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
     }
 
     public SubcommentDto saveAndSync(Subcomment subcomment){
-        subcommentMapper.insert(subcomment);
+/*        subcommentMapper.insert(subcomment);
         MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
         wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
                 .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
                 .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
                 .eq(Subcomment::getSubcommentId,subcomment.getSubcommentId());
-       return subcommentMapper.selectJoinOne(SubcommentDto.class,wrapper);
+       return subcommentMapper.selectJoinOne(SubcommentDto.class,wrapper);*/
+        return null;
     }
 
 

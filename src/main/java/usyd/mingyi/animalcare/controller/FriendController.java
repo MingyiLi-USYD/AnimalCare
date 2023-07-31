@@ -55,7 +55,7 @@ public class FriendController {
 
     @GetMapping("/friendRequest/{id}")
     @ResponseBody
-    public R<Friendship> approveFriendRequest(@PathVariable("id") long toId) {
+    public R<FriendshipDto> approveFriendRequest(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
        return R.success( friendRequestServiceSync.approveRequestSync(currentId, toId));
     }
