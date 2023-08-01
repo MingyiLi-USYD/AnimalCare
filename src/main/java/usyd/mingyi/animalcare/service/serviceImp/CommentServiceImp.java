@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.dto.CommentDto;
 import usyd.mingyi.animalcare.mapper.CommentMapper;
+import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.pojo.User;
@@ -22,6 +23,9 @@ import java.util.ArrayList;
 public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implements CommentService {
     @Autowired
     CommentMapper commentMapper;
+
+    @Autowired
+    UserMapper userMapper;
 
     @Autowired
     SubcommentService subcommentService;
@@ -43,19 +47,16 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
          return res;
 
     }
-    public CommentDto saveAndSync(Comment comment){
-         commentMapper.insert(comment);
-/*
-        MPJLambdaWrapper<Comment> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Comment.class)
-                .selectAs(User::getNickname,CommentDto::getNickName)
-                .selectAs(User::getAvatar,CommentDto::getUserAvatar)
-                .leftJoin(User.class,User::getUserId,Comment::getUserId)
-                .eq(Comment::getId,comment.getId());
-        CommentDto commentDto = commentMapper.selectJoinOne(CommentDto.class, wrapper);
+    public CommentDto saveAndSync(CommentDto commentDto){
+        //插入用户的comment
+         commentMapper.insert(commentDto);
+         //把用户信息同步到这个commentDto中 用户返回给前端
+        User user = userMapper.selectById(commentDto.getUserId());
         commentDto.setSubcommentDtos(new ArrayList<>());
-        commentDto.setSubcommentsLength(0);*/
-        return null;
-        //return commentDto;
+        commentDto.setSubcommentsLength(0);
+        commentDto.setCommentUser(user);
+         return commentDto;
     }
+
+
 }

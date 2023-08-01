@@ -10,7 +10,7 @@ import usyd.mingyi.animalcare.pojo.Post;
 import java.util.List;
 
 public interface PostService extends IService<Post> {
-    void addPost(Post post);
+    void addPost(PostDto post);
     IPage<PostDto> getAllPosts(Long currPage, Integer pageSize,Integer order);
     Post getPostById(Long postId,Long currentUserId);
     void love(Long userId, Long postId);

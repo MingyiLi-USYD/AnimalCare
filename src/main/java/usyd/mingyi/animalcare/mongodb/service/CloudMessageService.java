@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.mongodb.dao.CloudMessageRepository;
 import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 import usyd.mingyi.animalcare.pojo.User;
@@ -62,7 +63,10 @@ public class CloudMessageService {
     public CloudMessage getCloudMessageById(String id) {
 
         Optional<CloudMessage> optionalCloudMessage = cloudMessageRepository.findById(id);
-        return optionalCloudMessage.orElse(null);
+        if (optionalCloudMessage.isEmpty()) {
+            throw new CustomException("No chat records found");
+        }
+        return optionalCloudMessage.orElse(new CloudMessage());
     }
 
     public boolean existsCloudMessageById(String id) {

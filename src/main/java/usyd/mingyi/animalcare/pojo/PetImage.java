@@ -7,6 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+
 @TableName("pet_image")
 @Data
 @NoArgsConstructor
@@ -17,6 +19,8 @@ public class PetImage {
     Long imageId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long petId;
+    @NotBlank(message = "Pet imageUrl can not be blank")
     String imageUrl;
+    @NotBlank(message = "Pet fileName can not be blank")
     String fileName;
 }

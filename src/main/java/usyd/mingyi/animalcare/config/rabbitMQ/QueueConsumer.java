@@ -1,4 +1,3 @@
-/*
 package usyd.mingyi.animalcare.config.rabbitMQ;
 
 import com.corundumstudio.socketio.SocketIOClient;
@@ -11,10 +10,12 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.component.ClientCache;
+import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
-import usyd.mingyi.animalcare.service.FriendService;
+
+import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
@@ -36,7 +37,7 @@ public class QueueConsumer {
     private ObjectMapper objectMapper;
 
     @Resource
-    private FriendService friendService;
+    private FriendshipService friendshipService;
 
     @Resource
     private UserService userService;
@@ -110,7 +111,8 @@ public class QueueConsumer {
         Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
         Long id = basicUserInfoById.getUserId();
         //找到所有好友
-        List<User> allFriends = friendService.getAllFriends(id);
+        List<User> allFriends = friendshipService.getAllFriends(id).stream().map(FriendshipDto::getFriendInfo).toList();
+
         ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2, serviceMessage, basicUserInfoById);
         allFriends.forEach(friend -> {
             String friendId = String.valueOf(friend.getUserId());
@@ -147,4 +149,3 @@ public class QueueConsumer {
         }
     }
 }
-*/

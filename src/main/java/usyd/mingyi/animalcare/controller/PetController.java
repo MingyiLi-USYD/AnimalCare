@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.pojo.Pet;
@@ -66,7 +67,7 @@ public class PetController {
     }
 
     @PostMapping("/pet/image/{petId}")
-    public R<PetImage> uploadImage(@PathVariable("petId") Long petId, @RequestBody PetImage petImage) {
+    public R<PetImage> uploadImage(@PathVariable("petId") Long petId, @RequestBody @Validated PetImage petImage) {
         Long currentId = BaseContext.getCurrentId();
         PetImage newPetImage = petService.saveImageForPet(petId, currentId, petImage);
         return R.success(newPetImage);

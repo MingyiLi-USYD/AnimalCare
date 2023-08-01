@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotBlank;
+
 @TableName("post_image")
 @Data
 @NoArgsConstructor
@@ -19,6 +21,8 @@ public class PostImage {
     Long imageId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long postId;
+    @NotBlank(message = "Must have imageUrl")
     String imageUrl;
+    @NotBlank(message = "Must have fileName")
     String fileName;
 }

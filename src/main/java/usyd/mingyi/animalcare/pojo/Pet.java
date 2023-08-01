@@ -23,5 +23,6 @@ public class Pet implements Serializable {
     private String category;
     private String petAvatar;
     private String petDescription;
+    private String avatarFile;
     private Boolean petVisible;
 }

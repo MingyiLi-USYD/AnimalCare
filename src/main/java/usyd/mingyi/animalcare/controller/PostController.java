@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
@@ -21,6 +22,7 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.ResultData;
 
+import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -43,21 +45,23 @@ public class PostController {
 
     @PostMapping("/post")
     @ResponseBody
-    @Transactional
-    public R<String> upLoadPost(@RequestBody Post post, @RequestParam(value = "date",required = false)@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")Date date) {
+    public R<String> upLoadPost(@RequestBody @Validated PostDto post) {
 
+        post.setPostTime(System.currentTimeMillis());
         post.setUserId(BaseContext.getCurrentId());
-
-        if(date==null){
+        post.setCoverImage(post.getImages().get(0).getImageUrl());
+        if(post.getEstimateDate()==null){
             //立刻上传Post
+            post.setPublishTime(System.currentTimeMillis());
             postService.addPost(post);
         }else {
             // 获取日期时间戳
-            long targetTime = date.getTime();
+            long targetTime = post.getEstimateDate().getTime();
             //放入MQ死信队列 设置TTL
             long currentTimeMillis = System.currentTimeMillis();
             long TTL = targetTime-currentTimeMillis;
-
+            post.setPublishTime(targetTime);
+            //放入消息队列
         }
         log.info("上传文件");
         return R.success("Successfully upload");

@@ -40,15 +40,22 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Autowired
     UserMapper userMapper;
     @Autowired
-    PostImageMapper imageMapper;
+    PostImageMapper postImageMapper;
     @Autowired
     ObjectMapper mapper;
     @Autowired
     LovePostMapper lovePostMapper;
     @Override
-    public void addPost(Post post) {
-        postMapper.insert(post);
+    @Transactional
+    public void addPost(PostDto postDto) {
+
+        postMapper.insert(postDto);
+        postDto.getImages().forEach(postImage -> {postImage.setPostId(postDto.getPostId());
+            postImageMapper.insert(postImage);
+        });
         //然后通知需要分享的人和关注的人
+       // List<Long> referFriends = postDto.getReferFriends();
+
     }
 
 

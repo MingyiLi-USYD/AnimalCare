@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.Date;
 @NoArgsConstructor
 @TableName("comment")
 public class Comment implements Serializable {
+    @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Long commentId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)

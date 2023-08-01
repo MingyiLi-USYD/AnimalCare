@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.mapper.SubcommentMapper;
+import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.SubcommentService;
@@ -17,12 +18,16 @@ import java.util.List;
 public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomment> implements SubcommentService {
     @Autowired
     SubcommentMapper subcommentMapper;
+
+    @Autowired
+    UserMapper userMapper;
+
     @Override
-    public List<SubcommentDto> getSubcommentDtos(Long commentId,Boolean limit) {
+    public List<SubcommentDto> getSubcommentDtos(Long commentId, Boolean limit) {
         MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Subcomment.class).selectAssociation(User.class,SubcommentDto::getSubcommentUser)
-                .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
-                .eq(Subcomment::getCommentId,commentId).last(limit,"LIMIT 3");
+        wrapper.selectAll(Subcomment.class).selectAssociation(User.class, SubcommentDto::getSubcommentUser)
+                .leftJoin(User.class, User::getUserId, Subcomment::getUserId)
+                .eq(Subcomment::getCommentId, commentId).last(limit, "LIMIT 3");
         return subcommentMapper.selectJoinList(SubcommentDto.class, wrapper);
 
     }
@@ -30,20 +35,17 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
     @Override
     public Integer getSubcommentsSize(Long commentId) {
         LambdaQueryWrapper<Subcomment> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Subcomment::getCommentId,commentId);
-       return subcommentMapper.selectCount(wrapper);
+        wrapper.eq(Subcomment::getCommentId, commentId);
+        return subcommentMapper.selectCount(wrapper);
 
     }
 
-    public SubcommentDto saveAndSync(Subcomment subcomment){
-/*        subcommentMapper.insert(subcomment);
-        MPJLambdaWrapper<Subcomment> wrapper = new MPJLambdaWrapper<>();
-        wrapper.selectAll(Subcomment.class).selectAs(User::getNickname, SubcommentDto::getNickName)
-                .selectAs(User::getAvatar,SubcommentDto::getUserAvatar)
-                .leftJoin(User.class,User::getUserId, Subcomment::getUserId)
-                .eq(Subcomment::getSubcommentId,subcomment.getSubcommentId());
-       return subcommentMapper.selectJoinOne(SubcommentDto.class,wrapper);*/
-        return null;
+    public SubcommentDto saveAndSync(SubcommentDto subcommentDto) {
+        subcommentMapper.insert(subcommentDto);
+        User user = userMapper.selectById(subcommentDto.getUserId());
+        subcommentDto.setSubcommentUser(user);
+        return subcommentDto;
+
     }
 
 

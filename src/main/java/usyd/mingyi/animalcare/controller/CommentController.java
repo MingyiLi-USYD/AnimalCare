@@ -24,14 +24,14 @@ public class CommentController {
     SubcommentService subcommentService;
 
     @PostMapping("/comment/{postId}")
-    public R<Comment> addComment(@PathVariable("postId") long postId, @RequestBody Comment comment) {
+    public R<Comment> addComment(@PathVariable("postId") long postId, @RequestBody CommentDto comment) {
         Long id = BaseContext.getCurrentId();
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
         comment.setUserId(id);
         //commentService.save(comment);
         CommentDto commentDto = commentService.saveAndSync(comment);
-        System.out.println(commentDto);
+
         return R.success( commentDto);
     }
 
@@ -50,22 +50,14 @@ public class CommentController {
         System.out.println(byId);
         return null;
     }
-    @GetMapping("/test/subcomment/{commentId}")
-    public R<List<SubcommentDto>> test(@PathVariable("commentId") long commentId){
-        List<SubcommentDto> subcommentDtos = subcommentService.getSubcommentDtos(commentId,false);
-        System.out.println(subcommentService.getSubcommentsSize(commentId));
-        return R.success(subcommentDtos);
-    }
     @PostMapping("/comment/subcomment/{commentId}")
     @ResponseBody
-    public R<Subcomment> addSubcomment(@PathVariable("commentId") long commentId,@RequestBody Subcomment subcomment){
-        System.out.println(subcomment);
+    public R<Subcomment> addSubcomment(@PathVariable("commentId") long commentId,@RequestBody SubcommentDto subcommentDto){
         Long id = BaseContext.getCurrentId();
-        subcomment.setCommentId(commentId);
-        subcomment.setUserId(id);
-        subcomment.setSubcommentTime(System.currentTimeMillis());
-       // subcommentService.save(subcomment);
-        return R.success(subcommentService.saveAndSync(subcomment));
+        subcommentDto.setCommentId(commentId);
+        subcommentDto.setUserId(id);
+        subcommentDto.setSubcommentTime(System.currentTimeMillis());
+        return R.success(subcommentService.saveAndSync(subcommentDto));
     }
 
     @GetMapping("/comment/subcomments/{commentId}")
