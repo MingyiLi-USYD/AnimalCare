@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import usyd.mingyi.animalcare.annotation.Image;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.PostImage;
 import usyd.mingyi.animalcare.pojo.User;

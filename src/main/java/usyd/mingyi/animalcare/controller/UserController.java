@@ -1,6 +1,8 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -18,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import usyd.mingyi.animalcare.annotation.Status;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
@@ -31,12 +35,15 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.*;
 import java.util.stream.Collectors;
 
 
 @RestController
 @Slf4j
+@Validated
 public class UserController {
     @Autowired
     UserService userService;
@@ -216,13 +223,33 @@ public class UserController {
         return R.success(userInitDto);
     }
 
-
-    @GetMapping("/test/MQ")
-    public R<String> getOnlineUsers(){
-        log.info("111");
-        rabbitTemplate.convertAndSend(MQConfig.SYSTEM_EXCHANGE,"C","111");
-      return  null;
+    @GetMapping("/users")
+    public R<Page<User>> getAllUser(@RequestParam("current") Long current
+            ,@RequestParam("size") Long size,@RequestParam("keywords") String keywords){
+        MPJLambdaWrapper<User> query = new MPJLambdaWrapper<>();
+        query.selectAll(User.class).
+                like(keywords!=null&&!keywords.isEmpty(),User::getUsername,keywords);
+        Page<User> page = userService.page(new Page<>(current, size),query);
+        return R.success(page);
     }
+
+    @GetMapping("/changeUser/{userId}")
+    public R<String> changeUser(@PathVariable("userId")Long userId,
+                                @RequestParam(value = "role",required = false)
+                                @Pattern(regexp = "Root|Admin|SuperAdmin|User")String role,
+                                @RequestParam(value = "status",required = false)
+                                @Status Byte status){
+
+
+            LambdaUpdateWrapper<User> update = new LambdaUpdateWrapper<>();
+              update.set(role!=null,User::getRole,role)
+                              .set(status!=null,User::getStatus,status)
+                                      .eq(User::getUserId,userId);
+
+               userService.update(update);
+        return R.success("Success");
+    }
+
 
 
 }

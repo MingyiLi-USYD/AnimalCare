@@ -26,5 +26,6 @@ public class User implements Serializable {
     private String description;
     private String avatar;
     private String avatarFile;
+    private Byte status;
     private String tag;
 }

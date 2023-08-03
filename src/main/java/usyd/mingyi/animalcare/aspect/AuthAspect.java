@@ -26,7 +26,6 @@ public class AuthAspect {
         Method method = methodSignature.getMethod();
         HasPermission annotation = method.getAnnotation(HasPermission.class);
         String[] value = annotation.value();
-
         if(Arrays.asList(value).contains(mockRole)){
             return pjp.proceed();
         }else {
