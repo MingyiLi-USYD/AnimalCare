@@ -53,7 +53,7 @@ public class PetController {
     }
 
     @PutMapping("/pet/{petId}")
-    public R<String> updatePet(@PathVariable("petId") long petId, @RequestBody Pet pet) {
+    public R<String> updatePet(@PathVariable("petId") Long petId, @RequestBody Pet pet) {
         Pet targetPet = petService.getById(petId);
         if (targetPet == null) return R.error("No such pet");
         if (!targetPet.getUserId().equals(BaseContext.getCurrentId())) {

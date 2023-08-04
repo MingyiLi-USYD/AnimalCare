@@ -1,20 +1,13 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.corundumstudio.socketio.SocketIOClient;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.core.MessageDeliveryMode;
-import org.springframework.amqp.core.MessageProperties;
-import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,22 +16,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.annotation.Status;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
-import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.dto.UserInitDto;
+import usyd.mingyi.animalcare.pojo.Subscription;
 import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.service.SubscriptionService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.*;
 
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 
 @RestController
@@ -47,6 +40,9 @@ import java.util.stream.Collectors;
 public class UserController {
     @Autowired
     UserService userService;
+
+    @Autowired
+    SubscriptionService subscriptionService;
     @Autowired
     RedisTemplate redisTemplate;
 
@@ -71,15 +67,15 @@ public class UserController {
         if (user == null) {
             throw new CustomException("No such user");
         } else {
-            if (!PasswordUtils.verifyPassword(password,user.getPassword())) {
+            if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
                 throw new CustomException("Password Error");
             }
         }
 
-            Map<String, String> map = new HashMap<>();
-            map.put("serverToken",JWTUtils.generateToken(user));
-            map.put("firebaseToken",JWTUtils.generateFirebaseToken(String.valueOf(user.getUserId())));
-            return R.success(map);
+        Map<String, String> map = new HashMap<>();
+        map.put("serverToken", JWTUtils.generateToken(user));
+        map.put("firebaseToken", JWTUtils.generateFirebaseToken(String.valueOf(user.getUserId())));
+        return R.success(map);
 
     }
 
@@ -87,21 +83,21 @@ public class UserController {
     @ResponseBody
     public R<Map> thirdPartLogin(@RequestBody User userInfo) {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
-         wrapper.eq(User::getUuid,userInfo.getUuid());
+        wrapper.eq(User::getUuid, userInfo.getUuid());
         User user = userService.getOne(wrapper);
-        if(user==null){
-            if(userInfo.getNickname()==null){
+        if (user == null) {
+            if (userInfo.getNickname() == null) {
                 userInfo.setNickname("anonymous");
             }
             userInfo.setPassword("123456");
             userInfo.setRole("user");
             userService.save(userInfo);
             Map<String, String> map = new HashMap<>();
-            map.put("serverToken",JWTUtils.generateToken(userInfo));
+            map.put("serverToken", JWTUtils.generateToken(userInfo));
             return R.success(map);
-        }else {
+        } else {
             Map<String, String> map = new HashMap<>();
-            map.put("serverToken",JWTUtils.generateToken(user));
+            map.put("serverToken", JWTUtils.generateToken(user));
             return R.success(map);
         }
 
@@ -109,11 +105,11 @@ public class UserController {
 
 
     @GetMapping("/token")
-    public R<String> requestToken(){
+    public R<String> requestToken() {
         Long currentId = BaseContext.getCurrentId();
         User user = userService.getById(currentId);
         try {
-            return R.success(FirebaseAuth.getInstance().createCustomToken(user.getUuid())) ;
+            return R.success(FirebaseAuth.getInstance().createCustomToken(user.getUuid()));
         } catch (FirebaseAuthException e) {
             throw new CustomException("System error");
         }
@@ -125,24 +121,23 @@ public class UserController {
     public R<User> getCurrentUser() {
         Long currentId = BaseContext.getCurrentId();
         User user = userService.getById(currentId);
-        if (user==null){
+        if (user == null) {
             throw new CustomException("Login first");
         }
         return R.success(user);
     }
 
 
-
     @GetMapping("/logout")
     @ResponseBody
-    public R<String> logout( ) {
-        return  R.success("Log Out");
+    public R<String> logout() {
+        return R.success("Log Out");
     }
 
     @PostMapping("/signup")
     @ResponseBody
     public R<String> signup(@RequestBody User userInfo) {
-        if(StringUtil.isNullOrEmpty(userInfo.getAvatar())){
+        if (StringUtil.isNullOrEmpty(userInfo.getAvatar())) {
             userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
         }
         userInfo.setPassword(PasswordUtils.hashPassword(userInfo.getPassword()));
@@ -157,7 +152,7 @@ public class UserController {
     public R<String> usernameCheck(@RequestParam("userName") String userName) {
 
         MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
-        wrapper.eq(User::getUsername,userName);
+        wrapper.eq(User::getUsername, userName);
         User user = userService.getOne(wrapper);
         if (user == null) {
             return R.success("username is valid");
@@ -198,8 +193,6 @@ public class UserController {
     }
 
 
-
-
     @GetMapping("/profile/{userId}")
     public R<UserDto> getProfile(@PathVariable("userId") Long userId) {
         Long currentUserId = BaseContext.getCurrentId();
@@ -209,7 +202,7 @@ public class UserController {
 
     @PutMapping("/profile")
     public R<String> updateProfile(@RequestBody User user) {
-        if(user.getUserId()!=BaseContext.getCurrentId()){
+        if (user.getUserId() != BaseContext.getCurrentId()) {
             throw new CustomException("No right to access");
         }
      /*   long currentUserId = BaseContext.getCurrentId();
@@ -218,38 +211,56 @@ public class UserController {
     }
 
     @GetMapping("/user/init")
-    public R<UserInitDto> initUserInfo(){
+    public R<UserInitDto> initUserInfo() {
         UserInitDto userInitDto = userService.initUserInfo(BaseContext.getCurrentId());
         return R.success(userInitDto);
     }
 
     @GetMapping("/users")
     public R<Page<User>> getAllUser(@RequestParam("current") Long current
-            ,@RequestParam("size") Long size,@RequestParam("keywords") String keywords){
+            , @RequestParam("size") Long size, @RequestParam("keywords") String keywords) {
         MPJLambdaWrapper<User> query = new MPJLambdaWrapper<>();
         query.selectAll(User.class).
-                like(keywords!=null&&!keywords.isEmpty(),User::getUsername,keywords);
-        Page<User> page = userService.page(new Page<>(current, size),query);
+                like(keywords != null && !keywords.isEmpty(), User::getUsername, keywords);
+        Page<User> page = userService.page(new Page<>(current, size), query);
         return R.success(page);
     }
 
     @GetMapping("/changeUser/{userId}")
-    public R<String> changeUser(@PathVariable("userId")Long userId,
-                                @RequestParam(value = "role",required = false)
-                                @Pattern(regexp = "Root|Admin|SuperAdmin|User")String role,
-                                @RequestParam(value = "status",required = false)
-                                @Status Byte status){
+    public R<String> changeUser(@PathVariable("userId") Long userId,
+                                @RequestParam(value = "role", required = false)
+                                @Pattern(regexp = "Root|Admin|SuperAdmin|User") String role,
+                                @RequestParam(value = "status", required = false)
+                                @Status Byte status) {
 
 
-            LambdaUpdateWrapper<User> update = new LambdaUpdateWrapper<>();
-              update.set(role!=null,User::getRole,role)
-                              .set(status!=null,User::getStatus,status)
-                                      .eq(User::getUserId,userId);
+        LambdaUpdateWrapper<User> update = new LambdaUpdateWrapper<>();
+        update.set(role != null, User::getRole, role)
+                .set(status != null, User::getStatus, status)
+                .eq(User::getUserId, userId);
 
-               userService.update(update);
+        userService.update(update);
         return R.success("Success");
     }
 
+    @PostMapping("/subscribe/{id}")
+    public R<String> subscribeUser(@PathVariable("id") Long userId) {
+        Subscription subscription = new Subscription();
+        subscription.setMyId(BaseContext.getCurrentId());
+        subscription.setSubscribedUserId(userId);
+        subscriptionService.save(subscription);
+        return R.success("Subscribe success");
+    }
+    @DeleteMapping("/subscribe/{id}")
+    public R<String> unsubscribeUser(@PathVariable("id") Long userId) {
+        LambdaUpdateWrapper<Subscription> update = new LambdaUpdateWrapper<>();
+         update.eq(Subscription::getMyId,BaseContext.getCurrentId())
+                         .eq(Subscription::getSubscribedUserId,userId);
+        if (!subscriptionService.remove(update)) {
+            throw new CustomException("Never subscribe before");
+        }
 
+        return R.success("Unsubscribe success");
+    }
 
 }

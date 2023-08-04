@@ -64,7 +64,6 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         IPage<PostDto> page = new Page<>(currPage,pageSize);
         MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
         query.selectAll(Post.class).eq(Post::getVisible,true);
-       // QueryUtils.postWithPostImages(query);
         QueryUtils.postWithUser(query);
         return postMapper.selectJoinPage(page, PostDto.class, query);
 
@@ -77,7 +76,11 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
                 .eq(Post::getPostId,postId);
         QueryUtils.postWithPostImages(query);
         QueryUtils.postWithUser(query);
-       return postMapper.selectJoinOne(PostDto.class, query);
+        PostDto postDto = postMapper.selectJoinOne(PostDto.class, query);
+        if(postDto==null){
+            throw new CustomException("No post found");
+        }
+        return postDto;
 
     }
 
@@ -85,18 +88,32 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Override
     @Transactional
     public void love(Long userId, Long postId) {
+
+        Post post = postMapper.selectById(postId);
+        if(post==null){
+            throw new CustomException("Not found post");
+        }
+            post.setLove(post.getLove()+1);
+            postMapper.updateById(post);
         LovePost lovePost = new LovePost();
         lovePost.setUserId(userId);
         lovePost.setPostId(postId);
         lovePostMapper.insert(lovePost);
+
     }
 
     @Override
     @Transactional
     public void cancelLove(Long userId, Long postId) {
+        Post post = postMapper.selectById(postId);
+        if(post==null){
+            throw new CustomException("Not found post");
+        }
+        post.setLove(post.getLove()-1);
+        postMapper.updateById(post);
+
         LambdaQueryWrapper<LovePost> query = new LambdaQueryWrapper<>();
         query.eq(LovePost::getUserId,userId).eq(LovePost::getPostId,postId);
-
         int delete = lovePostMapper.delete(query);
         if(delete==0){
             throw new CustomException("never love this post before");
@@ -148,12 +165,10 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         return postMapper.selectJoinList(PostDto.class, query);
     }
     @Override
-    public List<Long> getAllLovedPostsId(Long userId) {
+    public List<String> getAllLovedPostsId(Long userId) {
         MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
         lovedPost.eq(LovePost::getUserId,userId);
         List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
-
-        return lovePosts.stream().map(LovePost::getPostId).toList();
-
+        return lovePosts.stream().map(lovePost -> String.valueOf(lovePost.getPostId())).toList();
     }
 }

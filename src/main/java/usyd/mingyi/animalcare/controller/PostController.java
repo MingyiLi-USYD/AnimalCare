@@ -71,8 +71,11 @@ public class PostController {
     //采用Restful风格进行一次传参
     @GetMapping("/post/{postId}")
     @ResponseBody
-    public R<Post> getPost(@PathVariable long postId) {
+    public R<Post> getPost(@PathVariable Long postId) {
         Post post = postService.getPostById(postId,BaseContext.getCurrentId());
+        if(!post.getVisible()&&!post.getUserId().equals(BaseContext.getCurrentId())){
+            throw new CustomException("This post is currently invisible");
+        }
         return R.success(post);
     }
     @DeleteMapping("/post/{postId}")

@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.service.serviceImp;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.github.yulichang.wrapper.interfaces.WrapperFunction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,10 +23,8 @@ import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.Pet;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.User;
-import usyd.mingyi.animalcare.service.FriendRequestService;
-import usyd.mingyi.animalcare.service.FriendshipService;
-import usyd.mingyi.animalcare.service.PostService;
-import usyd.mingyi.animalcare.service.UserService;
+import usyd.mingyi.animalcare.service.*;
+import usyd.mingyi.animalcare.utils.BaseContext;
 
 import java.util.List;
 import java.util.Random;
@@ -44,6 +43,9 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
 
     @Autowired
     FriendRequestService friendRequestService;
+
+    @Autowired
+    SubscriptionService subscriptionService;
 
     @Autowired
     PostService postService;
@@ -88,12 +90,14 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         MPJLambdaWrapper<User> query = new MPJLambdaWrapper<>();
         query.selectAll(User.class)
                 .selectCollection(Post.class,UserDto::getPostList)
-                .leftJoin(Post.class,Post::getUserId,User::getUserId)
+                .leftJoin(Post.class, on->on.eq(Post::getUserId,User::getUserId)
+                        .eq(!BaseContext.getCurrentId().equals(targetId),Post::getVisible,true))
                 .selectCollection(Pet.class,UserDto::getPetList)
-                .leftJoin(Pet.class,Pet::getUserId,User::getUserId)
+                .leftJoin(Pet.class,on->on.eq(Pet::getUserId,User::getUserId)
+                        .eq(!BaseContext.getCurrentId().equals(targetId),Pet::getPetVisible,true))
                 .eq(User::getUserId,targetId);
-        UserDto userDto = userMapper.selectJoinOne(UserDto.class, query);
-        return userDto;
+        return userMapper.selectJoinOne(UserDto.class, query);
+
 
     }
 
@@ -123,6 +127,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         userInitDto.setFriendshipDtoList(allFriends);
         userInitDto.setFriendRequestDtoList(allRequest);
         userInitDto.setLoveIdList(postService.getAllLovedPostsId(id));
+        userInitDto.setSubscribedUserIdList(subscriptionService.getAllSubscriptions(id));
         return userInitDto;
     }
 

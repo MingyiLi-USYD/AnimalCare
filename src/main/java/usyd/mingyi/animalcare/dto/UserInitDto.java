@@ -10,6 +10,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInitDto extends UserDto {
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private List<Long> loveIdList;
+    private List<String> loveIdList;
+    private List<String> subscribedUserIdList;
+
 }
