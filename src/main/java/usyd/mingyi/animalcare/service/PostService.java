@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.dto.PostDto;
@@ -23,6 +24,8 @@ public interface PostService extends IService<Post> {
 
     List<String> getAllLovedPostsIdInString(Long userId);
     List<Long> getAllLovedPostsId(Long userId);
+
+    Page<Post> getAllPostMentionedToMe(Long userId, Long current, Integer pageSize);
 
 
 }

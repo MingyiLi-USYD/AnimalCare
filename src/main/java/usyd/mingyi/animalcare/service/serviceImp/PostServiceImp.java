@@ -16,20 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.PostDto;
-import usyd.mingyi.animalcare.mapper.LovePostMapper;
-import usyd.mingyi.animalcare.mapper.PostImageMapper;
-import usyd.mingyi.animalcare.mapper.PostMapper;
-import usyd.mingyi.animalcare.mapper.UserMapper;
-import usyd.mingyi.animalcare.pojo.LovePost;
-import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.PostImage;
-import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.mapper.*;
+import usyd.mingyi.animalcare.pojo.*;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.QueryUtils;
 
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -39,6 +34,10 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     PostMapper postMapper;
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    MentionMapper mentionMapper;
+
     @Autowired
     PostImageMapper postImageMapper;
     @Autowired
@@ -54,8 +53,10 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
             postImageMapper.insert(postImage);
         });
         //然后通知需要分享的人和关注的人
-       // List<Long> referFriends = postDto.getReferFriends();
-
+        List<Long> referFriends = postDto.getReferFriends();
+        referFriends.forEach(id-> {
+            mentionMapper.insert( new Mention(postDto.getPostId(),id));
+        });
     }
 
 
@@ -177,6 +178,14 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         return lovePosts.stream().map(LovePost::getPostId).toList();
     }
 
-
+    @Override
+    public Page<Post> getAllPostMentionedToMe(Long userId,Long current,Integer pageSize) {
+        Page<Post> page = new Page<>(current,pageSize);
+        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        query.selectAll(Post.class)
+                .leftJoin(Mention.class,Mention::getPostId,Post::getPostId)
+                .eq(Mention::getUserId,userId);
+        return postMapper.selectPage(page, query);
+    }
 
 }

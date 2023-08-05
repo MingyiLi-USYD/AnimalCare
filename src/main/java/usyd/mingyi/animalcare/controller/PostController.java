@@ -1,14 +1,11 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -20,12 +17,7 @@ import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.ResultData;
 
-import javax.validation.Valid;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -44,22 +36,21 @@ public class PostController {
 
 
     @PostMapping("/post")
-    @ResponseBody
     public R<String> upLoadPost(@RequestBody @Validated PostDto post) {
 
         post.setPostTime(System.currentTimeMillis());
         post.setUserId(BaseContext.getCurrentId());
         post.setCoverImage(post.getImages().get(0).getImageUrl());
-        if(post.getEstimateDate()==null){
+        if (post.getEstimateDate() == null) {
             //立刻上传Post
             post.setPublishTime(System.currentTimeMillis());
             postService.addPost(post);
-        }else {
+        } else {
             // 获取日期时间戳
             long targetTime = post.getEstimateDate().getTime();
             //放入MQ死信队列 设置TTL
             long currentTimeMillis = System.currentTimeMillis();
-            long TTL = targetTime-currentTimeMillis;
+            long TTL = targetTime - currentTimeMillis;
             post.setPublishTime(targetTime);
             //放入消息队列
         }
@@ -70,14 +61,14 @@ public class PostController {
 
     //采用Restful风格进行一次传参
     @GetMapping("/post/{postId}")
-    @ResponseBody
     public R<Post> getPost(@PathVariable Long postId) {
-        Post post = postService.getPostById(postId,BaseContext.getCurrentId());
-        if(!post.getVisible()&&!post.getUserId().equals(BaseContext.getCurrentId())){
+        Post post = postService.getPostById(postId, BaseContext.getCurrentId());
+        if (!post.getVisible() && !post.getUserId().equals(BaseContext.getCurrentId())) {
             throw new CustomException("This post is currently invisible");
         }
         return R.success(post);
     }
+
     @DeleteMapping("/post/{postId}")
     public R<String> deletePost(@PathVariable("postId") long postId) {
         postService.deletePost(postId, BaseContext.getCurrentId());
@@ -86,9 +77,8 @@ public class PostController {
 
 
     @GetMapping("/post")
-    @ResponseBody
-    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") Long page, @RequestParam("pageSize") Integer pageSize,@RequestParam("order") Integer order) {
-        IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize,order);
+    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") Long page, @RequestParam("pageSize") Integer pageSize, @RequestParam("order") Integer order) {
+        IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize, order);
         return R.success(allPosts);
     }
 
@@ -101,7 +91,7 @@ public class PostController {
     }
 
     @DeleteMapping("/love/{postId}")
-    public R<String>  cancelLove(@PathVariable("postId") long postId) {
+    public R<String> cancelLove(@PathVariable("postId") long postId) {
         long id = BaseContext.getCurrentId();
         postService.cancelLove(id, postId);
         return R.success("success");
@@ -109,7 +99,6 @@ public class PostController {
 
 
     @GetMapping("/posts")
-    @ResponseBody
     public R<List<PostDto>> getMyPosts() {
         long userId = BaseContext.getCurrentId();
         List<PostDto> myPosts = postService.getPostByUserId(userId);
@@ -117,42 +106,45 @@ public class PostController {
     }
 
     @PutMapping("/post/{postId}")
-    public R<String> changeVisibility(@PathVariable("postId") long postId,@RequestParam("visibility")Boolean visibility){
+    public R<String> changeVisibility(@PathVariable("postId") long postId, @RequestParam("visibility") Boolean visibility) {
         System.out.println(visibility);
         Post post = postService.getById(postId);
-        if(!post.getUserId().equals(BaseContext.getCurrentId())){
+        if (!post.getUserId().equals(BaseContext.getCurrentId())) {
             return R.error("No right to access");
-        }else {
+        } else {
             Post newPost = new Post();
             newPost.setPostId(postId);
             newPost.setVisible(visibility);
-            if( postService.updateById(newPost)){
+            if (postService.updateById(newPost)) {
                 return R.success("Update success");
-            }else {
-                return  R.error("No change happen");
+            } else {
+                return R.error("No change happen");
             }
         }
     }
 
 
-
     @GetMapping("/search/{keywords}")
-    @ResponseBody
-    public ResponseEntity<Object> getPosts(@PathVariable("keywords") String keywords) {
-        keywords = "*"+ keywords + "*";
-        List<Post> postsByKeywords = postService.getPostsByKeywords(keywords);
-        return new ResponseEntity<>(ResultData.success(postsByKeywords), HttpStatus.OK);
+    public R<List<Post>> getPosts(@PathVariable("keywords") String keywords) {
+        return null;
     }
 
 
     @GetMapping("/search/trendingPosts")
-    @ResponseBody
     public ResponseEntity<Object> getTrendingPosts() {
 
       /*  //List<Post> posts = RedisUtils.getHots(redisTemplate);
 
         return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);*/
-        return  null;
+        return null;
+    }
+
+
+    @GetMapping("/mention/posts")
+    public R<Page<Post>> getAllMentionedPosts(@RequestParam("current") Long current,
+                                              @RequestParam("pageSize") Integer pageSize) {
+        return R.success(postService.getAllPostMentionedToMe(BaseContext.getCurrentId(), current, pageSize));
+
     }
 
 

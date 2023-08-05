@@ -4,7 +4,6 @@ import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public interface ChatService {
     CloudMessage retrieveDataFromMongoDB(String fromId, String toId);
