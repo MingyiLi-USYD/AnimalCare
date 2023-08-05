@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -65,6 +66,15 @@ public class CommentController {
     public R<List<SubcommentDto>> getSubcommentsByCommentId(@PathVariable("commentId") long commentId){
         List<SubcommentDto> subcommentDtos = subcommentService.getSubcommentDtos(commentId,false);
         return R.success(subcommentDtos);
+    }
+
+
+    @GetMapping("/comments")
+    @ResponseBody
+    public R<Page<CommentDto>> getAllCommentsToMyPost(@RequestParam("current") Long current,
+                                                       @RequestParam("pageSize") Integer pageSize){
+
+        return R.success(commentService.getAllComments(BaseContext.getCurrentId(),current,pageSize));
     }
 
 

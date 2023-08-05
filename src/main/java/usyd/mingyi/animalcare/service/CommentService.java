@@ -1,6 +1,7 @@
 package usyd.mingyi.animalcare.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.dto.CommentDto;
@@ -13,4 +14,10 @@ import java.util.List;
 public interface CommentService extends IService<Comment> {
     IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize, Long postId);
     CommentDto saveAndSync(CommentDto comment);
+
+    Page<CommentDto> getAllComments(Long userId,Long current,Integer pageSize);
+
+
+
+
 }

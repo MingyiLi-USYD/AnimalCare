@@ -69,6 +69,8 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
 
     }
 
+
+
     @Override
     public Post getPostById(Long postId, Long currentUserId) {
         MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
@@ -81,7 +83,6 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
             throw new CustomException("No post found");
         }
         return postDto;
-
     }
 
 
@@ -139,7 +140,6 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         QueryUtils.postWithUser(query);
         QueryUtils.postWithPostImages(query);
         return postMapper.selectJoinList(PostDto.class, query);
-
     }
 
 
@@ -165,10 +165,18 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         return postMapper.selectJoinList(PostDto.class, query);
     }
     @Override
-    public List<String> getAllLovedPostsId(Long userId) {
+    public List<String> getAllLovedPostsIdInString(Long userId) {
+        return getAllLovedPostsId(userId).stream().map(String::valueOf).toList();
+    }
+
+    @Override
+    public List<Long> getAllLovedPostsId(Long userId) {
         MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
         lovedPost.eq(LovePost::getUserId,userId);
         List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
-        return lovePosts.stream().map(lovePost -> String.valueOf(lovePost.getPostId())).toList();
+        return lovePosts.stream().map(LovePost::getPostId).toList();
     }
+
+
+
 }

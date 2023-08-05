@@ -126,7 +126,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         BeanUtils.copyProperties(profile, userInitDto);
         userInitDto.setFriendshipDtoList(allFriends);
         userInitDto.setFriendRequestDtoList(allRequest);
-        userInitDto.setLoveIdList(postService.getAllLovedPostsId(id));
+        userInitDto.setLoveIdList(postService.getAllLovedPostsIdInString(id));
         userInitDto.setSubscribedUserIdList(subscriptionService.getAllSubscriptions(id));
         return userInitDto;
     }

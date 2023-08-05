@@ -21,7 +21,8 @@ public interface PostService extends IService<Post> {
 
     List<PostDto> getAllLovedPost(Long userId);
 
-    List<String> getAllLovedPostsId(Long userId);
+    List<String> getAllLovedPostsIdInString(Long userId);
+    List<Long> getAllLovedPostsId(Long userId);
 
 
 }
