@@ -202,7 +202,7 @@ public class UserController {
 
     @PutMapping("/profile")
     public R<String> updateProfile(@RequestBody User user) {
-        if (user.getUserId() != BaseContext.getCurrentId()) {
+        if (!user.getUserId().equals(BaseContext.getCurrentId()) ) {
             throw new CustomException("No right to access");
         }
      /*   long currentUserId = BaseContext.getCurrentId();
