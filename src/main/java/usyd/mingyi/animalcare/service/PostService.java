@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
+import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
@@ -20,12 +21,15 @@ public interface PostService extends IService<Post> {
     List<PostDto> getPostByUserId(Long userId);
     List<Post> getPostsByKeywords(String keywords);
 
-    List<PostDto> getAllLovedPost(Long userId);
+    List<PostDto> getAllPostsUserLove(Long userId);
 
     List<String> getAllLovedPostsIdInString(Long userId);
     List<Long> getAllLovedPostsId(Long userId);
 
     Page<Post> getAllPostMentionedToMe(Long userId, Long current, Integer pageSize);
+    Page<LovePostDto> getAllLovesToMyPosts(Long userId, Long current, Integer pageSize);
+
+
 
 
 }

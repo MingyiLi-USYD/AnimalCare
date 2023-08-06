@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
+import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.service.CommentService;
@@ -97,6 +98,12 @@ public class PostController {
         return R.success("success");
     }
 
+    @GetMapping("/loves")
+    public R<Post> getAllLovedPosts(){
+        postService.getAllPostsUserLove(BaseContext.getCurrentId());
+        return null;
+    }
+
 
     @GetMapping("/posts")
     public R<List<PostDto>> getMyPosts() {
@@ -140,11 +147,16 @@ public class PostController {
     }
 
 
-    @GetMapping("/mention/posts")
+    @GetMapping("/mentioned/posts")
     public R<Page<Post>> getAllMentionedPosts(@RequestParam("current") Long current,
                                               @RequestParam("pageSize") Integer pageSize) {
         return R.success(postService.getAllPostMentionedToMe(BaseContext.getCurrentId(), current, pageSize));
+    }
 
+    @GetMapping("/loved/posts")
+    public R<Page<LovePostDto>> getAllLovedPosts(@RequestParam("current") Long current,
+                                                 @RequestParam("pageSize") Integer pageSize) {
+        return R.success(postService.getAllLovesToMyPosts(BaseContext.getCurrentId(), current, pageSize));
     }
 
 

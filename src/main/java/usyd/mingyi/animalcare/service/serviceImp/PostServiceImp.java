@@ -10,11 +10,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.query.MPJLambdaQueryWrapper;
+import com.github.yulichang.toolkit.JoinWrappers;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
+import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.mapper.*;
 import usyd.mingyi.animalcare.pojo.*;
@@ -90,17 +92,29 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Override
     @Transactional
     public void love(Long userId, Long postId) {
-
         Post post = postMapper.selectById(postId);
         if(post==null){
             throw new CustomException("Not found post");
         }
             post.setLove(post.getLove()+1);
             postMapper.updateById(post);
-        LovePost lovePost = new LovePost();
-        lovePost.setUserId(userId);
-        lovePost.setPostId(postId);
-        lovePostMapper.insert(lovePost);
+
+        MPJLambdaWrapper<LovePost> query = new MPJLambdaWrapper<>();
+        query.selectAll(LovePost.class)
+                .eq(LovePost::getPostId,postId)
+                .eq(LovePost::getUserId,userId);
+
+        LovePost exist = lovePostMapper.selectOne(query);
+          if(exist==null){
+              LovePost lovePost = new LovePost();
+              lovePost.setUserId(userId);
+              lovePost.setPostId(postId);
+              lovePostMapper.insert(lovePost);
+          }else {//证明之前对这个post点过赞
+              //没有必要再次通知用户了
+              exist.setIsCanceled(false);
+              lovePostMapper.updateById(exist);
+          }
 
     }
 
@@ -111,15 +125,18 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
         if(post==null){
             throw new CustomException("Not found post");
         }
+        LambdaQueryWrapper<LovePost> query = new LambdaQueryWrapper<>();
+        query.eq(LovePost::getUserId,userId).eq(LovePost::getPostId,postId);
+        LovePost lovePost = lovePostMapper.selectOne(query);
+        if(lovePost==null){
+            throw new CustomException("never love this post before");
+        }else {
+            lovePost.setIsCanceled(true);
+            lovePostMapper.updateById(lovePost);
+        }
         post.setLove(post.getLove()-1);
         postMapper.updateById(post);
 
-        LambdaQueryWrapper<LovePost> query = new LambdaQueryWrapper<>();
-        query.eq(LovePost::getUserId,userId).eq(LovePost::getPostId,postId);
-        int delete = lovePostMapper.delete(query);
-        if(delete==0){
-            throw new CustomException("never love this post before");
-        }
     }
 
     @Override
@@ -151,9 +168,9 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     }
 
     @Override
-    public List<PostDto> getAllLovedPost(Long userId) {
+    public List<PostDto> getAllPostsUserLove(Long userId) {
         MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
-        lovedPost.eq(LovePost::getUserId,userId);
+        lovedPost.eq(LovePost::getUserId,userId).eq(LovePost::getIsCanceled,false);
 
         List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
         List<Long> list = lovePosts.stream().map(LovePost::getPostId).toList();
@@ -173,7 +190,8 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
     @Override
     public List<Long> getAllLovedPostsId(Long userId) {
         MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
-        lovedPost.eq(LovePost::getUserId,userId);
+        lovedPost.eq(LovePost::getUserId,userId)
+                .eq(LovePost::getIsCanceled,false);
         List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
         return lovePosts.stream().map(LovePost::getPostId).toList();
     }
@@ -187,5 +205,21 @@ public class PostServiceImp extends ServiceImpl<PostMapper,Post> implements Post
                 .eq(Mention::getUserId,userId);
         return postMapper.selectPage(page, query);
     }
+
+    @Override
+    public Page<LovePostDto> getAllLovesToMyPosts(Long userId, Long current, Integer pageSize) {
+        Page<LovePostDto> page = new Page<>(current,pageSize);
+        MPJLambdaWrapper<LovePost> query = new MPJLambdaWrapper<>();
+          query.selectAll(LovePost.class)
+                  .selectAssociation(User.class,LovePostDto::getUserInfo)
+                  .leftJoin(User.class,User::getUserId,LovePost::getUserId)
+                  .selectAssociation(Post.class,LovePostDto::getRelevantPost)
+                  .leftJoin(Post.class,Post::getPostId,LovePost::getPostId)
+                  .eq(LovePost::getIsRead,false)   //post 首先必须是未读的
+                  .eq(Post::getUserId,userId)          //post 必须是我的才行 不能查到别人的
+                  .ne(LovePost::getUserId,userId);     //虽然可以自己给自己点赞 但是我自己的查看的时候得过滤掉
+        return lovePostMapper.selectJoinPage(page, LovePostDto.class,query);
+    }
+
 
 }
