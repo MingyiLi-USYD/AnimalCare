@@ -53,12 +53,12 @@ public class CommentController {
     }
     @PostMapping("/comment/subcomment/{commentId}")
     @ResponseBody
-    public R<Subcomment> addSubcomment(@PathVariable("commentId") long commentId,@RequestBody SubcommentDto subcommentDto){
+    public R<Subcomment> addSubcomment(@PathVariable("commentId") Long commentId,@RequestBody SubcommentDto subcommentDto){
         Long id = BaseContext.getCurrentId();
         subcommentDto.setCommentId(commentId);
         subcommentDto.setUserId(id);
         subcommentDto.setSubcommentTime(System.currentTimeMillis());
-        return R.success(subcommentService.saveAndSync(subcommentDto));
+        return R.success(subcommentService.saveAndGet(subcommentDto));
     }
 
     @GetMapping("/comment/subcomments/{commentId}")
@@ -76,6 +76,21 @@ public class CommentController {
 
         return R.success(commentService.getAllComments(BaseContext.getCurrentId(),current,pageSize));
     }
+    @GetMapping("/comment/read/{id}")
+    @ResponseBody
+    public R<String> markCommentAsRead(@PathVariable("id") Long commentId){
+        commentService.markAsRead(commentId);
+       return R.success("Success");
+    }
 
+    @PostMapping("/comment/reply")
+    @ResponseBody
+    public R<String> replyComment(@RequestBody SubcommentDto subcommentDto){
+        Long id = BaseContext.getCurrentId();
+        subcommentDto.setUserId(id);
+        subcommentDto.setSubcommentTime(System.currentTimeMillis());
+        commentService.saveSubcommentAndMarkAsRead(subcommentDto);
+        return R.success("Success");
+    }
 
 }

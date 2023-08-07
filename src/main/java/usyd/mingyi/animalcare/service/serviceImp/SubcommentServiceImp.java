@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.mapper.SubcommentMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
@@ -40,7 +41,8 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
 
     }
 
-    public SubcommentDto saveAndSync(SubcommentDto subcommentDto) {
+    @Transactional
+    public SubcommentDto saveAndGet(SubcommentDto subcommentDto) {
         subcommentMapper.insert(subcommentDto);
         User user = userMapper.selectById(subcommentDto.getUserId());
         subcommentDto.setSubcommentUser(user);
@@ -48,5 +50,9 @@ public class SubcommentServiceImp extends ServiceImpl<SubcommentMapper, Subcomme
 
     }
 
+    @Override
+    public void saveSubcomment(SubcommentDto subcommentDto) {
+        this.save(subcommentDto);
+    }
 
 }

@@ -7,8 +7,12 @@ import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.CommentDto;
+import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.mapper.CommentMapper;
+import usyd.mingyi.animalcare.mapper.PostMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.Comment;
 import usyd.mingyi.animalcare.pojo.Post;
@@ -16,6 +20,7 @@ import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.SubcommentService;
+import usyd.mingyi.animalcare.utils.BaseContext;
 
 import java.util.ArrayList;
 
@@ -27,6 +32,9 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    PostMapper postMapper;
 
     @Autowired
     SubcommentService subcommentService;
@@ -75,5 +83,23 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
 
     }
 
+    @Override
+    public void markAsRead(Long commentId) {
+        Comment comment = getById(commentId);
+        if(comment==null){
+            throw new CustomException("No comment found");
+        }
+        Post post = postMapper.selectById(comment.getPostId());
+        if(post!=null&&post.getUserId().equals(BaseContext.getCurrentId())){
+             comment.setIsRead(true);
+             commentMapper.updateById(comment);
+        }
+    }
 
+    @Override
+    @Transactional
+    public void saveSubcommentAndMarkAsRead(SubcommentDto subcommentDto) {
+        subcommentService.saveSubcomment(subcommentDto);
+        this.markAsRead(subcommentDto.getCommentId());
+    }
 }

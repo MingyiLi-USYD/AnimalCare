@@ -23,6 +23,5 @@ public class Subcomment {
     private Long subcommentTime;
     private String subcommentContent;
     private Long subcommentLove;
-    @TableField(exist = false)
     private String targetNickname;
 }
