@@ -15,6 +15,8 @@ public class Mention {
     private Long mentionId;
     private Long postId;
     private Long userId;
+    private Boolean isRead;
+
 
     public Mention(Long postId, Long userId) {
         this.postId = postId;

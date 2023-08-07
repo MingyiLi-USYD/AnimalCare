@@ -99,9 +99,8 @@ public class PostController {
     }
 
     @GetMapping("/loves")
-    public R<Post> getAllLovedPosts(){
-        postService.getAllPostsUserLove(BaseContext.getCurrentId());
-        return null;
+    public R<List<PostDto>> getAllLovedPosts() {
+        return R.success(postService.getAllPostsUserLove(BaseContext.getCurrentId()));
     }
 
 
@@ -147,17 +146,6 @@ public class PostController {
     }
 
 
-    @GetMapping("/mentioned/posts")
-    public R<Page<Post>> getAllMentionedPosts(@RequestParam("current") Long current,
-                                              @RequestParam("pageSize") Integer pageSize) {
-        return R.success(postService.getAllPostMentionedToMe(BaseContext.getCurrentId(), current, pageSize));
-    }
-
-    @GetMapping("/loved/posts")
-    public R<Page<LovePostDto>> getAllLovedPosts(@RequestParam("current") Long current,
-                                                 @RequestParam("pageSize") Integer pageSize) {
-        return R.success(postService.getAllLovesToMyPosts(BaseContext.getCurrentId(), current, pageSize));
-    }
 
 
 }
