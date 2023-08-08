@@ -77,9 +77,11 @@ public class PostController {
     }
 
 
-    @GetMapping("/post")
-    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("currPage") Long page, @RequestParam("pageSize") Integer pageSize, @RequestParam("order") Integer order) {
-        IPage<PostDto> allPosts = postService.getAllPosts(page, pageSize, order);
+    @GetMapping("/posts")
+    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("current") Long current
+            , @RequestParam("pageSize") Integer pageSize, @RequestParam("order") Integer order
+    ,@RequestParam("keywords")String keywords) {
+        IPage<PostDto> allPosts = postService.getAllPosts(current, pageSize, order);
         return R.success(allPosts);
     }
 
@@ -104,7 +106,7 @@ public class PostController {
     }
 
 
-    @GetMapping("/posts")
+    @GetMapping("my/posts")
     public R<List<PostDto>> getMyPosts() {
         long userId = BaseContext.getCurrentId();
         List<PostDto> myPosts = postService.getPostByUserId(userId);

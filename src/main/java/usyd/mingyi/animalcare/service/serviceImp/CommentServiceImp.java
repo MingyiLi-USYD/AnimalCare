@@ -19,6 +19,7 @@ import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.CommentService;
+import usyd.mingyi.animalcare.service.MentionService;
 import usyd.mingyi.animalcare.service.SubcommentService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
@@ -39,6 +40,9 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
     @Autowired
     SubcommentService subcommentService;
 
+    @Autowired
+    MentionService mentionService;
+
     @Override
     public IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize,Long postId) {
         IPage<CommentDto> commentDtoIPage = new Page<>(currPage,pageSize);
@@ -56,7 +60,7 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
          return res;
 
     }
-    public CommentDto saveAndSync(CommentDto commentDto){
+    public CommentDto saveAndGet(CommentDto commentDto){
         //插入用户的comment
          commentMapper.insert(commentDto);
          //把用户信息同步到这个commentDto中 用户返回给前端
@@ -101,5 +105,11 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
     public void saveSubcommentAndMarkAsRead(SubcommentDto subcommentDto) {
         subcommentService.saveSubcomment(subcommentDto);
         this.markAsRead(subcommentDto.getCommentId());
+    }
+
+    @Override
+    public void saveCommentAndMarkAsRead(Comment comment,Long mentionId) {
+        this.save(comment);
+        mentionService.markMentionAsRead(BaseContext.getCurrentId(),mentionId);
     }
 }

@@ -15,12 +15,13 @@ import java.util.List;
 
 public interface CommentService extends IService<Comment> {
     IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize, Long postId);
-    CommentDto saveAndSync(CommentDto comment);
+    CommentDto saveAndGet(CommentDto comment);
 
     Page<CommentDto> getAllComments(Long userId,Long current,Integer pageSize);
 
     void markAsRead(Long commentId);
 
     void saveSubcommentAndMarkAsRead(SubcommentDto subcomment);
+    void saveCommentAndMarkAsRead(Comment comment,Long mentionId);
 
 }

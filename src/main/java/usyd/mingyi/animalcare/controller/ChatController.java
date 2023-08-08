@@ -12,6 +12,7 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.utils.BaseContext;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @Slf4j
@@ -49,11 +50,18 @@ public class ChatController {
 
     }
 
-    @GetMapping("/chat/retrieve")
+    @GetMapping("/chat/retrieve/all")
     public R<List<CloudMessage>> getAllMessages(){
         Long currentId = BaseContext.getCurrentId();
         return  R.success(chatService.retrieveAllDataFromMongoDB(String.valueOf(currentId)));
-
+    }
+    @PostMapping("/chat/retrieve/partly")
+    public R<List<CloudMessage>> getPartly(@RequestBody Map<String,Long> localStorage){
+        Long currentId = BaseContext.getCurrentId();
+       if(!localStorage.isEmpty()){
+          return R.success(chatService.retrievePartlyDataFromMongoDB(String.valueOf(BaseContext.getCurrentId()),localStorage));
+       }
+        return null;
     }
 
 }

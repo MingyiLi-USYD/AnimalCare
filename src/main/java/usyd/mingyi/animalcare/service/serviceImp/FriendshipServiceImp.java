@@ -14,6 +14,8 @@ import usyd.mingyi.animalcare.pojo.FriendRequest;
 import usyd.mingyi.animalcare.pojo.Friendship;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendshipService;
+import usyd.mingyi.animalcare.service.RealTimeService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 
 import java.util.List;
 
@@ -29,6 +31,9 @@ public class FriendshipServiceImp implements FriendshipService {
     @Autowired
     UserMapper userMapper;
 
+    @Autowired
+    RealTimeService realTimeService;
+
 
     @Override
     public List<FriendshipDto> getAllFriends(Long userId) {
@@ -38,8 +43,7 @@ public class FriendshipServiceImp implements FriendshipService {
                 .selectAssociation(User.class, FriendshipDto::getFriendInfo)
                 .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
                 .eq(Friendship::getMyId, userId);
-        List<FriendshipDto> friendshipDtos = friendshipMapper.selectJoinList(FriendshipDto.class, query);
-        return friendshipDtos;
+        return friendshipMapper.selectJoinList(FriendshipDto.class, query);
 
     }
 
@@ -74,6 +78,13 @@ public class FriendshipServiceImp implements FriendshipService {
     public void deleteUser(Long fromId, Long toId) {
         deleteUserInFriendList(fromId, toId);
         deleteUserInFriendList(toId, fromId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUserSyncSocket(Long fromId, Long toId) {
+        this.deleteUser(fromId,toId);
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId),0));
     }
 
     @Override

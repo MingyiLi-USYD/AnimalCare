@@ -1,8 +1,6 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.FriendRequestDto;
+import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.mapper.FriendRequestMapper;
 import usyd.mingyi.animalcare.mapper.FriendshipMapper;
@@ -18,9 +17,12 @@ import usyd.mingyi.animalcare.pojo.FriendRequest;
 import usyd.mingyi.animalcare.pojo.Friendship;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
+import usyd.mingyi.animalcare.service.FriendshipService;
+import usyd.mingyi.animalcare.service.RealTimeService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 import usyd.mingyi.animalcare.utils.QueryUtils;
 
-import java.util.*;
+import java.util.List;
 
 
 @Service
@@ -34,6 +36,13 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Autowired
     UserMapper userMapper;
 
+    @Autowired
+    RealTimeService realTimeService;
+
+    @Autowired
+    FriendshipService friendshipService;
+
+
 
     @Override
     @Transactional
@@ -41,10 +50,10 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         //当发现对方之前已经发生给好友请求 并且还在你的好友请求记录中 立刻成为好友
         MPJLambdaWrapper<FriendRequest> query = QueryUtils.generateFriendRequestQuery(userId, targetUserId);
         FriendRequest existRequest = friendRequestMapper.selectOne(query);
-        if(existRequest!=null){
+        if (existRequest != null) {
             friendRequestMapper.deleteById(existRequest.getRequestId());
-            addUserToFriendList(userId,targetUserId);
-            addUserToFriendList(targetUserId,userId);
+            addUserToFriendList(userId, targetUserId);
+            addUserToFriendList(targetUserId, userId);
             return;
         }
         FriendRequest friendRequest = new FriendRequest();
@@ -52,25 +61,45 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         friendRequest.setFriendId(targetUserId);
         friendRequest.setMsg(msg);
         friendRequestMapper.insert(friendRequest);
-
     }
+
+    @Transactional
+    @Override
+    public void sendRequestSyncSocket(Long fromId, Long toId, String msg) {
+        this.sendRequest(fromId, toId, msg);
+        realTimeService.remindFriends(
+                new ServiceMessage(String.valueOf(fromId), System.currentTimeMillis(), String.valueOf(toId), 1)
+        );
+    }
+
 
     @Override
     @Transactional
     public void approveRequest(Long userId, Long approvedUserId) {
         MPJLambdaWrapper<FriendRequest> query = QueryUtils.generateFriendRequestQuery(userId, approvedUserId);
         FriendRequest friendRequest = friendRequestMapper.selectOne(query);
-        if(friendRequest==null){
+        if (friendRequest == null) {
             //没有发现此请求记录
             throw new CustomException("Not found such friend request in your request list");
-        }else {
+        } else {
             //存在好友请求  删除请求并且互相添加为好友
             friendRequestMapper.deleteById(friendRequest.getRequestId());
-            addUserToFriendList(userId,approvedUserId);
-            addUserToFriendList(approvedUserId,userId);
+            addUserToFriendList(userId, approvedUserId);
+            addUserToFriendList(approvedUserId, userId);
         }
 
     }
+
+    @Transactional
+    @Override
+    public FriendshipDto approveRequestAndGetSyncSocket(Long userId, Long approvedUserId){
+        this.approveRequest(userId,approvedUserId);
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(approvedUserId),2));
+        return friendshipService.getFriendshipByIds(userId,approvedUserId);
+    }
+
+
+
 
     @Override
     public void addUserToFriendList(Long userId, Long approvedUserId) {
@@ -78,7 +107,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         friendship.setMyId(userId);
         friendship.setFriendId(approvedUserId);
         friendshipMapper.insert(friendship);
-
     }
 
     @Override
@@ -88,14 +116,20 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
         System.out.println(targetUserId);
         MPJLambdaWrapper<FriendRequest> query = QueryUtils.generateFriendRequestQuery(userId, targetUserId);
         FriendRequest existRequest = friendRequestMapper.selectOne(query);
-        if(existRequest==null){
+        if (existRequest == null) {
             throw new CustomException("Not found such friend request in your request list");
-        }else {
+        } else {
             friendRequestMapper.deleteById(existRequest.getRequestId());
         }
 
     }
 
+    @Override
+    @Transactional
+    public void rejectRequestSyncSocket(Long userId, Long rejectUserId){
+         this.rejectRequest(userId,rejectUserId);
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(rejectUserId),3));
+    }
 
     @Override
     @Transactional
@@ -114,7 +148,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Override
     public UserDto getRequestById(Long userId, Long target) {
         return null;
-
     }
 
 

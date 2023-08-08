@@ -10,5 +10,4 @@ public class RequestMessage {
     private String fromId;
     private Long date;
     private String toId;
-
 }

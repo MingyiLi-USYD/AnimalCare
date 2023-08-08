@@ -25,13 +25,13 @@ public class CommentController {
     SubcommentService subcommentService;
 
     @PostMapping("/comment/{postId}")
-    public R<Comment> addComment(@PathVariable("postId") long postId, @RequestBody CommentDto comment) {
+    public R<Comment> addComment(@PathVariable("postId") Long postId, @RequestBody CommentDto comment) {
         Long id = BaseContext.getCurrentId();
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
         comment.setUserId(id);
         //commentService.save(comment);
-        CommentDto commentDto = commentService.saveAndSync(comment);
+        CommentDto commentDto = commentService.saveAndGet(comment);
 
         return R.success( commentDto);
     }
@@ -90,6 +90,16 @@ public class CommentController {
         subcommentDto.setUserId(id);
         subcommentDto.setSubcommentTime(System.currentTimeMillis());
         commentService.saveSubcommentAndMarkAsRead(subcommentDto);
+        return R.success("Success");
+    }
+
+    @PostMapping("/mention/reply")
+    @ResponseBody
+    public R<String> replyMention(@RequestBody CommentDto comment,@RequestParam("mentionId") Long mentionId){
+        Long id = BaseContext.getCurrentId();
+        comment.setCommentTime(System.currentTimeMillis());
+        comment.setUserId(id);
+        commentService.saveCommentAndMarkAsRead(comment,mentionId);
         return R.success("Success");
     }
 

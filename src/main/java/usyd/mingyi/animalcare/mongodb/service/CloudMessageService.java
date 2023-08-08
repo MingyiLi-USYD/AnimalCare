@@ -3,9 +3,7 @@ package usyd.mingyi.animalcare.mongodb.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.TypedAggregation;
+import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -18,10 +16,7 @@ import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
 import usyd.mingyi.animalcare.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import java.util.*;
 
 
 @Service
@@ -96,6 +91,18 @@ public class CloudMessageService {
         return cloudMessages;
     }
 
+    public List<CloudMessage> getChatRecordsPartly(String userId, Map<String,Long> localStorage){
 
+        Map<String, Long> newLocalStorage = CommonUtils.combineParticipates(userId, localStorage);
+        Set<String> ids = newLocalStorage.keySet();
+/*
+        AggregationOperation matchOperation = Aggregation.match(Criteria.where("id").in(ids));
+        AggregationOperation projectOperation  = Aggregation.project(CloudMessage.class).and("chatList").filter("date",Math);
+        TypedAggregation<CloudMessage> aggregation = Aggregation.newAggregation(CloudMessage.class, matchOperation, projectOperation);
+        List<CloudMessage> cloudMessages = mongoTemplate.aggregate(aggregation, CloudMessage.class).getMappedResults();
+*/
+
+        return null;
+    }
 
 }

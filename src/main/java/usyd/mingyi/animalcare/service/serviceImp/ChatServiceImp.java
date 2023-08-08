@@ -22,6 +22,7 @@ import usyd.mingyi.animalcare.utils.CommonUtils;
 import javax.annotation.Resource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +62,11 @@ public class ChatServiceImp implements ChatService {
     @Override
     public List<CloudMessage> retrieveAllDataFromMongoDB(String userId) {
         return cloudMessageService.getChatRecords(userId);
+    }
+
+    @Override
+    public List<CloudMessage> retrievePartlyDataFromMongoDB(String userId,  Map<String,Long>  localStorage) {
+          return cloudMessageService.getChatRecordsPartly(userId,localStorage);
     }
 
     public void sendMsgToQueue(ChatMessage chatMessage){

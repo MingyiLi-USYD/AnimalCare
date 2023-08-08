@@ -10,6 +10,7 @@ public interface FriendshipService  {
     List<FriendshipDto> getAllFriends(Long id);//根据用户id获取用户所有的friends
     int checkFriendshipStatus(Long fromId, Long toId);
     void deleteUser(Long fromId,Long toId);
+    void deleteUserSyncSocket(Long fromId,Long toId);
     User getFriendSync(Long id);
     FriendshipDto getFriendshipByIds(Long userId, Long friendId);
 }

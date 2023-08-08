@@ -21,13 +21,10 @@ public class FriendController {
 
     @Autowired
     FriendshipService friendService;
-    @Autowired
-    FriendServiceSync friendServiceSync;
+
     @Autowired
     FriendRequestService friendRequestService;
 
-    @Autowired
-    FriendRequestServiceSync friendRequestServiceSync;
 
 
 
@@ -47,7 +44,7 @@ public class FriendController {
     @ResponseBody
     public R<String> sendFriendRequest(@PathVariable("id") Long toId, @RequestParam("msg") String msg) {
         Long currentId = BaseContext.getCurrentId();
-        friendRequestServiceSync.sendRequestSync(currentId, toId, msg);
+        friendRequestService.sendRequestSyncSocket(currentId, toId, msg);
         return R.success("request have been sent");
     }
 
@@ -57,14 +54,14 @@ public class FriendController {
     @ResponseBody
     public R<FriendshipDto> approveFriendRequest(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
-       return R.success( friendRequestServiceSync.approveRequestSync(currentId, toId));
+       return R.success( friendRequestService.approveRequestAndGetSyncSocket(currentId, toId));
     }
 
     @DeleteMapping("/friendRequest/{id}")
     @ResponseBody
     public R<String> rejectFriendRequest(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
-        friendRequestServiceSync.rejectRequestSync(currentId, toId);
+        friendRequestService.rejectRequestSyncSocket(currentId, toId);
         return R.success("Successfully reject");
     }
 
@@ -81,8 +78,7 @@ public class FriendController {
     @ResponseBody
     public R<String> deleteFriendFromList(@PathVariable("id") long toId) {
         Long currentId = BaseContext.getCurrentId();
-        friendServiceSync.deleteUserSync(currentId, toId);
+        friendService.deleteUserSyncSocket(currentId, toId);
         return R.success("Successfully delete");
     }
-
 }

@@ -33,11 +33,11 @@ public class GlobalExceptionHandler {
         return R.error("存在参数异常");
     }
 
-        @ExceptionHandler(HttpMessageNotReadableException.class)
+/*        @ExceptionHandler(HttpMessageNotReadableException.class)
         public R<String> HttpMessageNotReadableExceptionHandler(HttpMessageNotReadableException exception){
             log.info("日期格式不对");
         return R.error("日期格式不对");
-    }
+    }*/
 
     @ExceptionHandler(ConstraintViolationException.class)
     public R<String> constraintViolationExceptionHandler(ConstraintViolationException exception){
