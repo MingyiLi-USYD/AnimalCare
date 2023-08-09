@@ -14,7 +14,7 @@ import java.util.List;
 public interface PostService extends IService<Post> {
     void addPost(PostDto post);
 
-    IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order);
+    IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order,String keyword);
 
     Post getPostById(Long postId, Long currentUserId);
 

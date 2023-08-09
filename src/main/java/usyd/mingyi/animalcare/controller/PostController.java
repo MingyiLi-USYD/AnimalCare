@@ -1,7 +1,6 @@
 package usyd.mingyi.animalcare.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
-import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Post;
 import usyd.mingyi.animalcare.service.CommentService;
@@ -78,10 +76,11 @@ public class PostController {
 
 
     @GetMapping("/posts")
-    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("current") Long current
-            , @RequestParam("pageSize") Integer pageSize, @RequestParam("order") Integer order
-    ,@RequestParam("keywords")String keywords) {
-        IPage<PostDto> allPosts = postService.getAllPosts(current, pageSize, order);
+    public R<IPage<PostDto>> getPostsWithPagination(@RequestParam("current") Long current,
+                                                    @RequestParam("pageSize") Integer pageSize,
+                                                    @RequestParam(value = "order",required = false) Integer order,
+                                                    @RequestParam(value = "keywords",required = false)String keywords) {
+        IPage<PostDto> allPosts = postService.getAllPosts(current, pageSize, order,keywords);
         return R.success(allPosts);
     }
 
@@ -106,7 +105,7 @@ public class PostController {
     }
 
 
-    @GetMapping("my/posts")
+    @GetMapping("/my/posts")
     public R<List<PostDto>> getMyPosts() {
         long userId = BaseContext.getCurrentId();
         List<PostDto> myPosts = postService.getPostByUserId(userId);

@@ -6,7 +6,7 @@ import usyd.mingyi.animalcare.pojo.Subscription;
 import java.util.List;
 
 public interface SubscriptionService extends IService<Subscription> {
-    List<String> getAllSubscriptions(Long userId);
-   // List<SubscriptionDto> getAllSubscriptions(Long userId);
+    List<String> getAllSubscribes(Long userId);
+    List<String> getAllSubscribers(Long userId);
 
 }

@@ -195,19 +195,17 @@ public class UserController {
 
     @GetMapping("/profile/{userId}")
     public R<UserDto> getProfile(@PathVariable("userId") Long userId) {
-        Long currentUserId = BaseContext.getCurrentId();
+        //Long currentUserId = BaseContext.getCurrentId();
         UserDto profile = userService.getProfile(userId);
         return R.success(profile);
     }
 
     @PutMapping("/profile")
     public R<String> updateProfile(@RequestBody User user) {
-        if (!user.getUserId().equals(BaseContext.getCurrentId()) ) {
-            throw new CustomException("No right to access");
-        }
-     /*   long currentUserId = BaseContext.getCurrentId();
-        UserDto profile = userService.getProfile(userId,currentUserId);*/
-        return R.success("成功");
+        user.setUserId(BaseContext.getCurrentId());
+        user.setRole(null);
+        userService.updateById(user);
+        return R.success( "Success");
     }
 
     @GetMapping("/user/init")
@@ -245,16 +243,25 @@ public class UserController {
 
     @PostMapping("/subscribe/{id}")
     public R<String> subscribeUser(@PathVariable("id") Long userId) {
+        Long currentId = BaseContext.getCurrentId();
+        if(currentId.equals(userId)){
+           return R.error("Can not subscribe yourself");
+        }
         Subscription subscription = new Subscription();
-        subscription.setMyId(BaseContext.getCurrentId());
+        subscription.setMyId(currentId);
         subscription.setSubscribedUserId(userId);
         subscriptionService.save(subscription);
         return R.success("Subscribe success");
     }
     @DeleteMapping("/subscribe/{id}")
     public R<String> unsubscribeUser(@PathVariable("id") Long userId) {
+        Long currentId = BaseContext.getCurrentId();
+        if(currentId.equals(userId)){
+            return R.error("Can not unsubscribe yourself");
+        }
+
         LambdaUpdateWrapper<Subscription> update = new LambdaUpdateWrapper<>();
-         update.eq(Subscription::getMyId,BaseContext.getCurrentId())
+         update.eq(Subscription::getMyId,currentId)
                          .eq(Subscription::getSubscribedUserId,userId);
         if (!subscriptionService.remove(update)) {
             throw new CustomException("Never subscribe before");

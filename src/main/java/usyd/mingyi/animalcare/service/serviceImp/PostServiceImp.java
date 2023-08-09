@@ -65,10 +65,13 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
 
     @Override
-    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order) {
+    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order,String keyword) {
         IPage<PostDto> page = new Page<>(currPage, pageSize);
         MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
-        query.selectAll(Post.class).eq(Post::getVisible, true);
+        query.selectAll(Post.class).eq(Post::getVisible, true)
+                .orderByDesc(order==1,Post::getPostTime)
+                .orderByDesc(order==2,Post::getLove)
+                .like(keyword!=null&&!keyword.isEmpty(),Post::getPostContent,keyword);
         QueryUtils.postWithUser(query);
         return postMapper.selectJoinPage(page, PostDto.class, query);
 

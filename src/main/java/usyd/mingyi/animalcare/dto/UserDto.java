@@ -19,4 +19,9 @@ public class UserDto extends User {
     private List<Post> loveList;
     private List<FriendshipDto> friendshipDtoList;
     private List<FriendRequestDto> friendRequestDtoList;
+    private List<String> subscribeIdList;
+    private List<String> subscriberIdList;
+    private List<String> loveIdList;
+/*    private Integer subscribeCount;
+    private Integer subscriberCount;*/
 }

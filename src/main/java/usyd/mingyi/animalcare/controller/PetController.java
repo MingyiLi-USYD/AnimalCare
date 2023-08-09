@@ -27,7 +27,7 @@ public class PetController {
         return R.success("成功了");
     }
 
-    @GetMapping("/pets")
+    @GetMapping("/my/pets")
     public R<List<Pet>> getPetList() {
         long id = BaseContext.getCurrentId();
         List<Pet> petList = petService.getPetList(id);

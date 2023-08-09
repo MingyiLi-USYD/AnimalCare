@@ -24,7 +24,6 @@ public class MQConfig {
     public static final String SERVICE_B = "ServiceB";
 
 
-
     public static final String SYSTEM_A = "SystemA";
     public static final String SYSTEM_B = "SystemB";
 
