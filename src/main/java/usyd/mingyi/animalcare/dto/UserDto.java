@@ -1,6 +1,5 @@
 package usyd.mingyi.animalcare.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,6 +21,5 @@ public class UserDto extends User {
     private List<String> subscribeIdList;
     private List<String> subscriberIdList;
     private List<String> loveIdList;
-/*    private Integer subscribeCount;
-    private Integer subscriberCount;*/
+
 }

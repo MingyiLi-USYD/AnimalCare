@@ -99,7 +99,10 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
                 .eq(User::getUserId,targetId);
 
         UserDto userDto = userMapper.selectJoinOne(UserDto.class, query);
-
+        //初始化其他的数据 只要Id 不要具体内容
+        userDto.setLoveIdList(postService.getAllLovedPostsIdInString(targetId));
+        userDto.setSubscribeIdList(subscriptionService.getAllSubscribes(targetId));
+        userDto.setSubscriberIdList(subscriptionService.getAllSubscribers(targetId));
 
           return userDto;
 
@@ -119,21 +122,17 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
     }
 
     @Override
-    public UserInitDto initUserInfo(Long id) {
-        UserInitDto userInitDto = new UserInitDto();
-        UserDto profile = getProfile(id);
+    public UserDto initUserInfo(Long id) {
+
+        UserDto profile = this.getProfile(id);
         if(profile==null){
             throw new CustomException("Not found this user");
         }
-        List<FriendshipDto> allFriends = friendshipService.getAllFriends(id);
-        List<FriendRequestDto> allRequest = friendRequestService.getAllRequest(id);
-        BeanUtils.copyProperties(profile, userInitDto);
-        userInitDto.setFriendshipDtoList(allFriends);
-        userInitDto.setFriendRequestDtoList(allRequest);
-        userInitDto.setLoveIdList(postService.getAllLovedPostsIdInString(id));
-        userInitDto.setSubscribedUserIdList(subscriptionService.getAllSubscribes(id));
 
-        return userInitDto;
+        profile.setFriendshipDtoList(friendshipService.getAllFriends(id));
+        profile.setFriendRequestDtoList( friendRequestService.getAllRequest(id));
+
+        return profile;
     }
 
 

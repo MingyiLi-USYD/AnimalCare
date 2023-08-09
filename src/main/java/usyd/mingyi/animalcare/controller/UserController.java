@@ -209,8 +209,8 @@ public class UserController {
     }
 
     @GetMapping("/user/init")
-    public R<UserInitDto> initUserInfo() {
-        UserInitDto userInitDto = userService.initUserInfo(BaseContext.getCurrentId());
+    public R<UserDto> initUserInfo() {
+        UserDto userInitDto = userService.initUserInfo(BaseContext.getCurrentId());
         return R.success(userInitDto);
     }
 

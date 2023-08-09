@@ -24,7 +24,7 @@ public interface UserService extends IService<User> {
 
     User getBasicUserInfoById(Long id);
 
-    UserInitDto initUserInfo(Long id);
+    UserDto initUserInfo(Long id);
 
 
 }
