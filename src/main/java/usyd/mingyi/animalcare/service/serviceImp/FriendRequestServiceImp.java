@@ -1,5 +1,6 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.FriendRequestDto;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
-import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.mapper.FriendRequestMapper;
 import usyd.mingyi.animalcare.mapper.FriendshipMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
@@ -43,7 +43,6 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
 
     @Autowired
     FriendshipService friendshipService;
-
 
 
     @Override
@@ -94,13 +93,11 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
 
     @Transactional
     @Override
-    public FriendshipDto approveRequestAndGetSyncSocket(Long userId, Long approvedUserId){
-        this.approveRequest(userId,approvedUserId);
-        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(approvedUserId),AGREE_ADD_FRIEND));
-        return friendshipService.getFriendshipByIds(userId,approvedUserId);
+    public FriendshipDto approveRequestAndGetSyncSocket(Long userId, Long approvedUserId) {
+        this.approveRequest(userId, approvedUserId);
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId), System.currentTimeMillis(), String.valueOf(approvedUserId), AGREE_ADD_FRIEND));
+        return friendshipService.getFriendshipByIds(userId, approvedUserId);
     }
-
-
 
 
     @Override
@@ -128,28 +125,29 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
 
     @Override
     @Transactional
-    public void rejectRequestSyncSocket(Long userId, Long rejectUserId){
-         this.rejectRequest(userId,rejectUserId);
-        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(rejectUserId),REJECT_ADD_FRIEND));
+    public void rejectRequestSyncSocket(Long userId, Long rejectUserId) {
+        this.rejectRequest(userId, rejectUserId);
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId), System.currentTimeMillis()
+                , String.valueOf(rejectUserId), REJECT_ADD_FRIEND));
     }
 
     @Override
-    @Transactional
-    public List<FriendRequestDto> getAllRequest(Long userId) {
+    public List<FriendRequestDto> getAllRequests(Long userId) {
         MPJLambdaWrapper<FriendRequest> query = new MPJLambdaWrapper<>();
         query.selectAll(FriendRequest.class)
                 .selectAssociation(User.class, FriendRequestDto::getFriendInfo)
                 .leftJoin(User.class, User::getUserId, FriendRequest::getMyId)
                 .eq(FriendRequest::getFriendId, userId);
-        List<FriendRequestDto> friendRequestDtos = friendRequestMapper.selectJoinList(FriendRequestDto.class, query);
-        System.out.println(friendRequestDtos);
-        return friendRequestDtos;
-
+        return friendRequestMapper.selectJoinList(FriendRequestDto.class, query);
     }
 
     @Override
-    public UserDto getRequestById(Long userId, Long target) {
-        return null;
+    @Transactional
+    public List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId) {
+        this.update(new LambdaUpdateWrapper<FriendRequest>()
+                .set(FriendRequest::getIsRead, true)
+                .eq(FriendRequest::getFriendId, userId));
+        return this.getAllRequests(userId);
     }
 
 

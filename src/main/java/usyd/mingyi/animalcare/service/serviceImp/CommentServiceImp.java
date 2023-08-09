@@ -72,6 +72,7 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
         commentDto.setSubcommentDtos(new ArrayList<>());
         commentDto.setSubcommentsLength(0);
         commentDto.setCommentUser(user);
+        commentDto.setCommentLove(0L);
         //realTimeService.remindFriends();
          return commentDto;
     }
@@ -84,10 +85,12 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
          query.selectAll(Comment.class)
                  .selectAssociation(Post.class,CommentDto::getRelevantPost)
                  .leftJoin(Post.class,on->on.eq(Post::getPostId,Comment::getPostId)
-                         .eq(Post::getUserId,userId))
+                 .eq(Post::getUserId,userId))
                  .selectAssociation(User.class,CommentDto::getCommentUser)
                  .leftJoin(User.class,User::getUserId,Comment::getUserId)
-                 .eq(Post::getUserId,userId).ne(Comment::getUserId,userId);
+                 .eq(Comment::getIsRead,false)
+                 .eq(Post::getUserId,userId)
+                 .ne(Comment::getUserId,userId);
 
         return commentMapper.selectJoinPage(page, CommentDto.class, query);
 

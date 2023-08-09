@@ -18,8 +18,9 @@ public class FriendRequestController {
     @GetMapping("/friendRequests")
     public R<List<FriendRequestDto>> getAllRequests(){
         Long currentId = BaseContext.getCurrentId();
-        List<FriendRequestDto> allRequest = friendRequestService.getAllRequest(currentId);
-        System.out.println(allRequest);
+        List<FriendRequestDto> allRequest = friendRequestService.getAllRequestsAndMarkRead(currentId);
         return R.success(allRequest);
     }
+
+
 }

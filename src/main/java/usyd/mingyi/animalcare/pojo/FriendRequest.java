@@ -19,4 +19,5 @@ public class FriendRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long friendId;
     String msg;
+    Boolean isRead;
 }

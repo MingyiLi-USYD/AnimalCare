@@ -21,7 +21,6 @@ import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.UserDto;
-import usyd.mingyi.animalcare.dto.UserInitDto;
 import usyd.mingyi.animalcare.pojo.Subscription;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.SubscriptionService;

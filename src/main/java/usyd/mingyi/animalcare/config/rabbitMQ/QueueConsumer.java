@@ -11,13 +11,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
-import usyd.mingyi.animalcare.dto.UserDto;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendRequestService;
-
 import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.socketEntity.*;
+import usyd.mingyi.animalcare.socketEntity.ChatMessage;
+import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+import usyd.mingyi.animalcare.socketEntity.SystemMessage;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -45,7 +46,7 @@ public class QueueConsumer {
     @Resource
     private FriendRequestService friendRequestService;
 
-    @RabbitListener(queues = MQConfig.MESSAGE+"${serverId}")
+    @RabbitListener(queues = MQConfig.MESSAGE + "${serverId}")
     public void receiveD(Message message, Channel channel) {
 
         try {
@@ -68,20 +69,18 @@ public class QueueConsumer {
 
     }
 
-    @RabbitListener(queues = MQConfig.SERVICE+"${serverId}")
+    @RabbitListener(queues = MQConfig.SERVICE + "${serverId}")
     public void receiveServiceMessage(Message message, Channel channel) {
 
         try {
             String receivedBytes = new String(message.getBody());
             ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes, ServiceMessage.class);
-            if (serviceMessage.getType() == ADD_FRIEND) {
-                syncFriendRequestToClient(serviceMessage);
-            } else if (serviceMessage.getType()==AGREE_ADD_FRIEND||
-                    serviceMessage.getType()==REJECT_ADD_FRIEND||
-                    serviceMessage.getType()==DELETE_FRIEND) {
+            if (serviceMessage.getType() == ADD_FRIEND ||
+                    serviceMessage.getType() == AGREE_ADD_FRIEND ||
+                    serviceMessage.getType() == REJECT_ADD_FRIEND ||
+                    serviceMessage.getType() == DELETE_FRIEND) {
                 syncFriendOperationToClient(serviceMessage);
-            }
-           else {
+            } else {
                 syncOnAndOffToClient(serviceMessage);
             }
         } catch (Exception e) {
@@ -89,11 +88,11 @@ public class QueueConsumer {
         }
     }
 
-    @RabbitListener(queues = MQConfig.SYSTEM+"${serverId}")
+    @RabbitListener(queues = MQConfig.SYSTEM + "${serverId}")
     public void receiveSystemMessage(Message message, Channel channel) {
         MessageProperties messageProperties = message.getMessageProperties();
         String clusterId = messageProperties.getClusterId();
-        if(clusterId.equals(serverId)){
+        if (clusterId.equals(serverId)) {
             log.info("收到自己服务器的通知");
             return;
         }
@@ -127,23 +126,15 @@ public class QueueConsumer {
         });
     }
 
-    public void syncFriendRequestToClient(ServiceMessage serviceMessage) {
-        UserDto userDto = friendRequestService.getRequestById(Long.valueOf(serviceMessage.getToId()), Long.valueOf(serviceMessage.getFromId()));
-        if (userDto == null) {
-            return;
-        }
-        this.socketSendMsg(serviceMessage,userDto);
-    }
-
     public void syncFriendOperationToClient(ServiceMessage serviceMessage) {
-        User basicUserInfoById = userService.getBasicUserInfoById(Long.valueOf(serviceMessage.getFromId()));
-        if (basicUserInfoById == null) {
+        User user = userService.getBasicUserInfoById(Long.valueOf(serviceMessage.getFromId()));
+        if (user == null) {
             return;
         }
-        socketSendMsg(serviceMessage,basicUserInfoById);
+        socketSendMsg(serviceMessage, user);
     }
 
-    public void socketSendMsg(ServiceMessage serviceMessage,User user){
+    public void socketSendMsg(ServiceMessage serviceMessage, User user) {
         Map<String, SocketIOClient> chatServer = clientCache.getChatServer();
         ResponseMessage<ServiceMessage> res = new ResponseMessage<>(2, serviceMessage, user);
         if (chatServer.containsKey(serviceMessage.getToId())) {

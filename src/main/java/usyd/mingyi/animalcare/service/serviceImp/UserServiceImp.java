@@ -1,11 +1,8 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,20 +10,14 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
-import usyd.mingyi.animalcare.dto.FriendRequestDto;
-import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.dto.UserDto;
-import usyd.mingyi.animalcare.dto.UserInitDto;
-import usyd.mingyi.animalcare.mapper.SubscriptionMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
 import usyd.mingyi.animalcare.pojo.Pet;
 import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.Subscription;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.*;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -128,13 +119,9 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         if(profile==null){
             throw new CustomException("Not found this user");
         }
-
         profile.setFriendshipDtoList(friendshipService.getAllFriends(id));
-        profile.setFriendRequestDtoList( friendRequestService.getAllRequest(id));
-
+        profile.setFriendRequestDtoList( friendRequestService.getAllRequests(id));
         return profile;
     }
-
-
 
 }

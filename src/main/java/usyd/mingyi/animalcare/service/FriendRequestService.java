@@ -11,9 +11,9 @@ import java.util.List;
 public interface FriendRequestService extends IService<FriendRequest> {
     void sendRequest(Long fromId,Long toId,String msg);
 
-    List<FriendRequestDto> getAllRequest(Long userId);
+    List<FriendRequestDto> getAllRequests(Long userId);
+    List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId);
 
-    UserDto getRequestById(Long userId,Long target);
     void approveRequest(Long userId,Long approvedUserId);
     void rejectRequest(Long userId,Long approvedUserId);
     void addUserToFriendList(Long userId,Long approvedUserId);
