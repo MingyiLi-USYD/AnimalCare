@@ -35,9 +35,12 @@ public class PetController {
     }
 
     @GetMapping("/pet/{petId}")
-    public R<Pet> getPet(@PathVariable("petId") long petId) {
+    public R<Pet> getPet(@PathVariable("petId") Long petId) {
         Long id = BaseContext.getCurrentId();
         Pet pet = petService.getPet(petId, id);
+        if(pet==null){
+            return R.error("No pet found");
+        }
         if (pet.getUserId().equals(BaseContext.getCurrentId()) || pet.getPetVisible()) {
             return R.success(pet);
         } else {

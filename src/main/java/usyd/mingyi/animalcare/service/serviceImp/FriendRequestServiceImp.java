@@ -24,6 +24,8 @@ import usyd.mingyi.animalcare.utils.QueryUtils;
 
 import java.util.List;
 
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.*;
+
 
 @Service
 @Slf4j
@@ -68,7 +70,7 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     public void sendRequestSyncSocket(Long fromId, Long toId, String msg) {
         this.sendRequest(fromId, toId, msg);
         realTimeService.remindFriends(
-                new ServiceMessage(String.valueOf(fromId), System.currentTimeMillis(), String.valueOf(toId), 1)
+                new ServiceMessage(String.valueOf(fromId), System.currentTimeMillis(), String.valueOf(toId), ADD_FRIEND)
         );
     }
 
@@ -94,7 +96,7 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Override
     public FriendshipDto approveRequestAndGetSyncSocket(Long userId, Long approvedUserId){
         this.approveRequest(userId,approvedUserId);
-        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(approvedUserId),2));
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(approvedUserId),AGREE_ADD_FRIEND));
         return friendshipService.getFriendshipByIds(userId,approvedUserId);
     }
 
@@ -128,7 +130,7 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
     @Transactional
     public void rejectRequestSyncSocket(Long userId, Long rejectUserId){
          this.rejectRequest(userId,rejectUserId);
-        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(rejectUserId),3));
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(userId),System.currentTimeMillis(),String.valueOf(rejectUserId),REJECT_ADD_FRIEND));
     }
 
     @Override

@@ -20,6 +20,7 @@ import usyd.mingyi.animalcare.pojo.Subcomment;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.MentionService;
+import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.service.SubcommentService;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
@@ -42,6 +43,9 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
 
     @Autowired
     MentionService mentionService;
+
+    @Autowired
+    RealTimeService realTimeService;
 
     @Override
     public IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize,Long postId) {
@@ -68,8 +72,10 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
         commentDto.setSubcommentDtos(new ArrayList<>());
         commentDto.setSubcommentsLength(0);
         commentDto.setCommentUser(user);
+        //realTimeService.remindFriends();
          return commentDto;
     }
+
 
     @Override
     public Page<CommentDto> getAllComments(Long userId,Long current,Integer pageSize) {

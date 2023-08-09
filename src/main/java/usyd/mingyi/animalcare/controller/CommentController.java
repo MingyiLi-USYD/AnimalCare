@@ -30,9 +30,7 @@ public class CommentController {
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
         comment.setUserId(id);
-        //commentService.save(comment);
         CommentDto commentDto = commentService.saveAndGet(comment);
-
         return R.success( commentDto);
     }
 

@@ -30,7 +30,6 @@ public class RealTimeServiceImp implements RealTimeService {
 
     @Override
     public void remindFriends(ServiceMessage serviceMessage) {
-
         try {
             //log.info("入队消息ID: {}",correlationId);
             rabbitTemplate.convertAndSend(MQConfig.SERVICE_EXCHANGE, "#", objectMapper.writeValueAsString(serviceMessage), message -> {

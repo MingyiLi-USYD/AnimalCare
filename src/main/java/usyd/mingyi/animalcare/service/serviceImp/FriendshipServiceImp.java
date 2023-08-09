@@ -16,6 +16,7 @@ import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessageType;
 
 import java.util.List;
 
@@ -84,7 +85,7 @@ public class FriendshipServiceImp implements FriendshipService {
     @Transactional
     public void deleteUserSyncSocket(Long fromId, Long toId) {
         this.deleteUser(fromId,toId);
-        realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId),0));
+        realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId), ServiceMessageType.DELETE_FRIEND));
     }
 
     @Override

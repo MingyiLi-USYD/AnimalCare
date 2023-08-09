@@ -17,13 +17,13 @@ import usyd.mingyi.animalcare.service.FriendRequestService;
 
 import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.socketEntity.ChatMessage;
-import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
-import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
-import usyd.mingyi.animalcare.socketEntity.SystemMessage;
+import usyd.mingyi.animalcare.socketEntity.*;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.*;
 
 
 @Component
@@ -74,9 +74,11 @@ public class QueueConsumer {
         try {
             String receivedBytes = new String(message.getBody());
             ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes, ServiceMessage.class);
-            if (serviceMessage.getType() == 1) {
+            if (serviceMessage.getType() == ADD_FRIEND) {
                 syncFriendRequestToClient(serviceMessage);
-            } else if (serviceMessage.getType()==2||serviceMessage.getType()==3||serviceMessage.getType()==0) {
+            } else if (serviceMessage.getType()==AGREE_ADD_FRIEND||
+                    serviceMessage.getType()==REJECT_ADD_FRIEND||
+                    serviceMessage.getType()==DELETE_FRIEND) {
                 syncFriendOperationToClient(serviceMessage);
             }
            else {
@@ -127,8 +129,10 @@ public class QueueConsumer {
 
     public void syncFriendRequestToClient(ServiceMessage serviceMessage) {
         UserDto userDto = friendRequestService.getRequestById(Long.valueOf(serviceMessage.getToId()), Long.valueOf(serviceMessage.getFromId()));
-        if (userDto == null) return;
-        socketSendMsg(serviceMessage,userDto);
+        if (userDto == null) {
+            return;
+        }
+        this.socketSendMsg(serviceMessage,userDto);
     }
 
     public void syncFriendOperationToClient(ServiceMessage serviceMessage) {
@@ -137,7 +141,6 @@ public class QueueConsumer {
             return;
         }
         socketSendMsg(serviceMessage,basicUserInfoById);
-
     }
 
     public void socketSendMsg(ServiceMessage serviceMessage,User user){

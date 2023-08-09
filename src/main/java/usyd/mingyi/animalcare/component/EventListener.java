@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ResponseMessage;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessageType;
 import usyd.mingyi.animalcare.socketEntity.SystemMessage;
 import usyd.mingyi.animalcare.utils.JWTUtils;
 
@@ -81,7 +82,7 @@ public class EventListener {
         //主动下线
         if (!StringUtils.isEmpty(userId)) {
             log.info("主动下线");
-            ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, 5);
+            ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, ServiceMessageType.FRIEND_OFFLINE);
             realTimeService.remindFriends(serviceMessage);
             clientCache.deleteUserClient(userId);
         }
@@ -126,7 +127,7 @@ public class EventListener {
 
     public void afterSaveToCache(String userId){
         //通知好友上线
-        ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, 4);
+        ServiceMessage serviceMessage = new ServiceMessage(userId, System.currentTimeMillis(), null, ServiceMessageType.FRIEND_ONLINE);
         realTimeService.remindFriends(serviceMessage);
     }
 
