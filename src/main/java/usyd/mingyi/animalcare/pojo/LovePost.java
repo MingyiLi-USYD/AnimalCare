@@ -8,11 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("love_post")
-public class LovePost {
+public class LovePost implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableId
     private Long loveId;

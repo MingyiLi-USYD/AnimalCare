@@ -15,7 +15,7 @@ import java.util.List;
 
 public interface CommentService extends IService<Comment> {
     IPage<CommentDto> getCommentsByPostId(Long currPage, Integer pageSize, Long postId);
-    CommentDto saveAndGet(CommentDto comment);
+    CommentDto saveAndGet(Comment comment);
 
     Page<CommentDto> getAllComments(Long userId,Long current,Integer pageSize);
 

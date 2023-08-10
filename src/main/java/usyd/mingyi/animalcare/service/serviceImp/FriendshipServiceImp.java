@@ -88,10 +88,7 @@ public class FriendshipServiceImp implements FriendshipService {
         realTimeService.remindFriends(new ServiceMessage(String.valueOf(fromId),System.currentTimeMillis(),String.valueOf(toId), ServiceMessageType.DELETE_FRIEND));
     }
 
-    @Override
-    public User getFriendSync(Long id) {
-        return userMapper.selectById(id);
-    }
+
 
     public void deleteUserInFriendList(Long userId, Long deleteUserId) {
         LambdaQueryWrapper<Friendship> query = new LambdaQueryWrapper<>();
@@ -109,4 +106,14 @@ public class FriendshipServiceImp implements FriendshipService {
        return friendshipMapper.selectJoinOne(FriendshipDto.class, query);
 
     }
+
+    @Override
+    public Boolean isFriend(Long userId, Long friendId) {
+       return friendshipMapper.selectCount
+               (new LambdaQueryWrapper<Friendship>()
+                       .eq(Friendship::getMyId,userId)
+                       .eq(Friendship::getFriendId,friendId))>0;
+    }
+
+
 }

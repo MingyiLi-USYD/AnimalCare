@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("mention")
-public class Mention {
+public class Mention implements Serializable {
     @TableId
     private Long mentionId;
     private Long postId;

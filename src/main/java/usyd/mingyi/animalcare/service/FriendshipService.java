@@ -1,7 +1,7 @@
 package usyd.mingyi.animalcare.service;
 
 import usyd.mingyi.animalcare.dto.FriendshipDto;
-import usyd.mingyi.animalcare.pojo.User;
+
 
 import java.util.List;
 
@@ -11,6 +11,8 @@ public interface FriendshipService  {
     int checkFriendshipStatus(Long fromId, Long toId);
     void deleteUser(Long fromId,Long toId);
     void deleteUserSyncSocket(Long fromId,Long toId);
-    User getFriendSync(Long id);
+
     FriendshipDto getFriendshipByIds(Long userId, Long friendId);
+
+    Boolean isFriend(Long userId,Long friendId);
 }

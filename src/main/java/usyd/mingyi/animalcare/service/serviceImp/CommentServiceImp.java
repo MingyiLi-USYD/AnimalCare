@@ -3,6 +3,7 @@ package usyd.mingyi.animalcare.service.serviceImp;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.toolkit.JoinWrappers;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +23,13 @@ import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.MentionService;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.service.SubcommentService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessageType;
 import usyd.mingyi.animalcare.utils.BaseContext;
 
 import java.util.ArrayList;
+
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.NEW_COMMENT;
 
 @Service
 @Slf4j
@@ -64,17 +69,27 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
          return res;
 
     }
-    public CommentDto saveAndGet(CommentDto commentDto){
+    public CommentDto saveAndGet(Comment comment){
         //插入用户的comment
-         commentMapper.insert(commentDto);
-         //把用户信息同步到这个commentDto中 用户返回给前端
-        User user = userMapper.selectById(commentDto.getUserId());
-        commentDto.setSubcommentDtos(new ArrayList<>());
-        commentDto.setSubcommentsLength(0);
-        commentDto.setCommentUser(user);
-        commentDto.setCommentLove(0L);
-        //realTimeService.remindFriends();
-         return commentDto;
+         commentMapper.insert(comment);
+        Post post = postMapper.selectById(comment.getPostId());
+        realTimeService.remindFriends(
+                new ServiceMessage(BaseContext.getCurrentId(),
+                        System.currentTimeMillis(),
+                        post.getUserId(),
+                        NEW_COMMENT)
+        );
+        //把用户信息同步到这个commentDto中 用户返回给前端
+      return  this.getCommentWithUserInfo(comment.getCommentId());
+    }
+
+    public CommentDto getCommentWithUserInfo(Long commentId){
+      return  commentMapper.selectJoinOne(CommentDto.class,
+              JoinWrappers.lambda(Comment.class)
+              .selectAssociation(User.class,CommentDto::getCommentUser)
+                      .leftJoin(User.class,on->on.eq(User::getUserId,Comment::getUserId))
+                      .eq(Comment::getCommentId,commentId)
+      );
     }
 
 

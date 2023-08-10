@@ -25,11 +25,10 @@ public class CommentController {
     SubcommentService subcommentService;
 
     @PostMapping("/comment/{postId}")
-    public R<Comment> addComment(@PathVariable("postId") Long postId, @RequestBody CommentDto comment) {
-        Long id = BaseContext.getCurrentId();
+    public R<Comment> addComment(@PathVariable("postId") Long postId, @RequestBody Comment comment) {
         comment.setPostId(postId);
         comment.setCommentTime(System.currentTimeMillis());
-        comment.setUserId(id);
+        comment.setUserId(BaseContext.getCurrentId());
         CommentDto commentDto = commentService.saveAndGet(comment);
         return R.success( commentDto);
     }

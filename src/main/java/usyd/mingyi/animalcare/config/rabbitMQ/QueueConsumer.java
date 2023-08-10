@@ -75,13 +75,11 @@ public class QueueConsumer {
         try {
             String receivedBytes = new String(message.getBody());
             ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes, ServiceMessage.class);
-            if (serviceMessage.getType() == ADD_FRIEND ||
-                    serviceMessage.getType() == AGREE_ADD_FRIEND ||
-                    serviceMessage.getType() == REJECT_ADD_FRIEND ||
-                    serviceMessage.getType() == DELETE_FRIEND) {
-                syncFriendOperationToClient(serviceMessage);
-            } else {
+            if (serviceMessage.getType() == FRIEND_ONLINE ||
+                serviceMessage.getType() == FRIEND_OFFLINE) {
                 syncOnAndOffToClient(serviceMessage);
+            } else {
+                syncFriendOperationToClient(serviceMessage);
             }
         } catch (Exception e) {
             e.printStackTrace();

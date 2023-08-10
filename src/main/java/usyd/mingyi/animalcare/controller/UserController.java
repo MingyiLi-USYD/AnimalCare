@@ -47,8 +47,7 @@ public class UserController {
 
     @Autowired
     RabbitTemplate rabbitTemplate;
-    @Autowired
-    RestTemplate restTemplate;
+
     @Autowired
     ClientCache clientCache;
     @Autowired
@@ -57,11 +56,10 @@ public class UserController {
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
     @ResponseBody
-    public R<Map> login(@RequestBody User userInfo) {
+    public R<Map> login(@RequestParam("username")String username,
+                        @RequestParam("password")String password ) {
 
         log.info("登录");
-        String username = userInfo.getUsername();
-        String password = userInfo.getPassword();
         User user = userService.getUserByUsername(username);
         if (user == null) {
             throw new CustomException("No such user");

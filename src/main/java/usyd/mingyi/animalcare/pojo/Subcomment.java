@@ -8,11 +8,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("subcomment")
-public class Subcomment {
+public class Subcomment implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableId
     private Long subcommentId;

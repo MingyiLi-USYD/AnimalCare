@@ -9,13 +9,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 @TableName("post_image")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class PostImage {
+public class PostImage implements Serializable {
     @TableId("image_id")
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long imageId;

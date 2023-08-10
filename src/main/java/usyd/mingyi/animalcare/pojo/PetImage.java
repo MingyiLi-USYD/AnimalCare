@@ -8,12 +8,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import java.io.Serializable;
 
 @TableName("pet_image")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PetImage {
+public class PetImage implements Serializable {
     @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long imageId;

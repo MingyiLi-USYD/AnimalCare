@@ -30,8 +30,7 @@ public class PostController {
     CommentService commentService;
     @Autowired
     RedisTemplate redisTemplate;
-    @Autowired
-    RestTemplate restTemplate;
+
 
 
     @PostMapping("/post")
@@ -43,7 +42,7 @@ public class PostController {
         if (post.getEstimateDate() == null) {
             //立刻上传Post
             post.setPublishTime(System.currentTimeMillis());
-            postService.addPost(post);
+            postService.addPostAndSyncSocket(post);
         } else {
             // 获取日期时间戳
             long targetTime = post.getEstimateDate().getTime();
@@ -61,7 +60,7 @@ public class PostController {
     //采用Restful风格进行一次传参
     @GetMapping("/post/{postId}")
     public R<Post> getPost(@PathVariable Long postId) {
-        Post post = postService.getPostById(postId, BaseContext.getCurrentId());
+        Post post = postService.getPostById(postId);
         if (!post.getVisible() && !post.getUserId().equals(BaseContext.getCurrentId())) {
             throw new CustomException("This post is currently invisible");
         }

@@ -21,6 +21,9 @@ spring:
     username: root
     password: 123456
     publisher-confirm-type: correlated
+  cache:
+    redis:
+      time-to-live: 18000000
 
   mail:
     port: 587
@@ -46,7 +49,7 @@ spring:
        max-wait: -1
        max-idle: 8
        min-idle: 0
-    password: LMY741917776!
+    password: 123456
 
 
   thymeleaf:

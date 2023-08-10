@@ -1,34 +1,32 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.yulichang.query.MPJLambdaQueryWrapper;
-import com.github.yulichang.toolkit.JoinWrappers;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
-import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.mapper.*;
-import usyd.mingyi.animalcare.pojo.*;
+import usyd.mingyi.animalcare.pojo.LovePost;
+import usyd.mingyi.animalcare.pojo.Mention;
+import usyd.mingyi.animalcare.pojo.Post;
+import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.PostService;
+import usyd.mingyi.animalcare.service.RealTimeService;
+import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
 import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.QueryUtils;
 
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.MENTION;
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.NEW_LIKE;
 
 @Service
 public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements PostService {
@@ -43,9 +41,14 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
     @Autowired
     PostImageMapper postImageMapper;
     @Autowired
-    ObjectMapper mapper;
-    @Autowired
     LovePostMapper lovePostMapper;
+
+    @Autowired
+    RealTimeService realTimeService;
+
+    @Autowired
+    FriendshipService friendshipService;
+
 
     @Override
     @Transactional
@@ -63,15 +66,32 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         });
     }
 
+    @Override
+    @Transactional
+    public void addPostAndSyncSocket(PostDto postDto) {
+        this.addPost(postDto);
+        postDto.getReferFriends().forEach(
+                friendId->{
+                    if (friendshipService.isFriend(postDto.getUserId(),friendId)) {
+                        realTimeService.remindFriends(new ServiceMessage(
+                                postDto.getUserId(),System.currentTimeMillis(),friendId,
+                                MENTION
+                        ));
+                    }
+                }
+        );
+
+    }
+
 
     @Override
-    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order,String keyword) {
+    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order, String keyword) {
         IPage<PostDto> page = new Page<>(currPage, pageSize);
         MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
         query.selectAll(Post.class).eq(Post::getVisible, true)
-                .orderByDesc(order==1,Post::getPostTime)
-                .orderByDesc(order==2,Post::getLove)
-                .like(keyword!=null&&!keyword.isEmpty(),Post::getPostContent,keyword);
+                .orderByDesc(order == 1, Post::getPostTime)
+                .orderByDesc(order == 2, Post::getLove)
+                .like(keyword != null && !keyword.isEmpty(), Post::getPostContent, keyword);
         QueryUtils.postWithUser(query);
         return postMapper.selectJoinPage(page, PostDto.class, query);
 
@@ -79,7 +99,9 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
 
     @Override
-    public Post getPostById(Long postId, Long currentUserId) {
+    @Cacheable(value = "postCache", key = "#postId")
+    public Post getPostById(Long postId) {
+
         MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
         query.selectAll(Post.class)
                 .eq(Post::getPostId, postId);
@@ -102,12 +124,10 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         }
         post.setLove(post.getLove() + 1);
         postMapper.updateById(post);
-
         MPJLambdaWrapper<LovePost> query = new MPJLambdaWrapper<>();
         query.selectAll(LovePost.class)
                 .eq(LovePost::getPostId, postId)
                 .eq(LovePost::getUserId, userId);
-
         LovePost exist = lovePostMapper.selectOne(query);
         if (exist == null) {
             LovePost lovePost = new LovePost();
@@ -120,6 +140,17 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
             lovePostMapper.updateById(exist);
         }
 
+    }
+
+    @Override
+    @Transactional
+    public void loveAndSyncServer(Long userId, Long postId) {
+        this.love(userId, postId);
+        Post post = postMapper.selectById(postId);
+        realTimeService.remindFriends(
+                new ServiceMessage(userId, System.currentTimeMillis(),
+                        post.getUserId(), NEW_LIKE)
+        );
     }
 
     @Override
@@ -169,7 +200,7 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
         lovedPost.eq(LovePost::getUserId, userId).eq(LovePost::getIsCanceled, false);
         List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
-        if(lovePosts.isEmpty()){
+        if (lovePosts.isEmpty()) {
             return new ArrayList<>();
         }
         List<Long> list = lovePosts.stream().map(LovePost::getPostId).toList();

@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServerInfo {
+public class ServerInfo implements Serializable {
     private Long totalMemory;       // 总内存大小
     private Long freeMemory;        // 空闲内存大小
     private Double memoryUsage;     // 内存使用率

@@ -12,13 +12,16 @@ import usyd.mingyi.animalcare.pojo.Post;
 import java.util.List;
 
 public interface PostService extends IService<Post> {
-    void addPost(PostDto post);
+    void addPost(PostDto postDto);
+    void addPostAndSyncSocket(PostDto postDto);
+
 
     IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order,String keyword);
 
-    Post getPostById(Long postId, Long currentUserId);
+    Post getPostById(Long postId);
 
     void love(Long userId, Long postId);
+    void loveAndSyncServer(Long userId, Long postId);
 
     void cancelLove(Long userId, Long postId);
 

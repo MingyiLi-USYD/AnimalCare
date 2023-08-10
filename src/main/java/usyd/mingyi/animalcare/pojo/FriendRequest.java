@@ -6,11 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("request")
-public class FriendRequest {
+public class FriendRequest implements Serializable {
     @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long requestId;

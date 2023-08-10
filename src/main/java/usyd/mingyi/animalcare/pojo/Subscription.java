@@ -7,11 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @TableName("subscription")
-public class Subscription {
+public class Subscription implements Serializable {
     @TableId
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     Long subscriptionId;
