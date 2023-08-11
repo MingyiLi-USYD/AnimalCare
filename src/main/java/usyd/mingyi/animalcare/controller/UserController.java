@@ -11,11 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import usyd.mingyi.animalcare.annotation.Status;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.common.R;
@@ -25,7 +23,9 @@ import usyd.mingyi.animalcare.pojo.Subscription;
 import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.service.SubscriptionService;
 import usyd.mingyi.animalcare.service.UserService;
-import usyd.mingyi.animalcare.utils.*;
+import usyd.mingyi.animalcare.utils.BaseContext;
+import usyd.mingyi.animalcare.utils.JWTUtils;
+import usyd.mingyi.animalcare.utils.PasswordUtils;
 
 import javax.validation.constraints.Pattern;
 import java.util.HashMap;
@@ -39,15 +39,12 @@ import java.util.UUID;
 public class UserController {
     @Autowired
     UserService userService;
-
     @Autowired
     SubscriptionService subscriptionService;
     @Autowired
-    RedisTemplate redisTemplate;
-
+    RedisTemplate<String, Object> redisTemplate;
     @Autowired
     RabbitTemplate rabbitTemplate;
-
     @Autowired
     ClientCache clientCache;
     @Autowired
@@ -55,18 +52,15 @@ public class UserController {
 
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
-    @ResponseBody
-    public R<Map> login(@RequestParam("username")String username,
-                        @RequestParam("password")String password ) {
+    public R<Map<String, String>> emailLogin(@RequestParam("username") String username,
+                                             @RequestParam("password") String password) {
 
-        log.info("登录");
         User user = userService.getUserByUsername(username);
         if (user == null) {
             throw new CustomException("No such user");
-        } else {
-            if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
-                throw new CustomException("Password Error");
-            }
+        }
+        if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
+            throw new CustomException("Password Error");
         }
 
         Map<String, String> map = new HashMap<>();
@@ -77,17 +71,19 @@ public class UserController {
     }
 
     @PostMapping("/login/thirdPart")
-    @ResponseBody
-    public R<Map> thirdPartLogin(@RequestBody User userInfo) {
+    public R<Map<String, String>> thirdPartLogin(@RequestBody User userInfo) {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(User::getUuid, userInfo.getUuid());
         User user = userService.getOne(wrapper);
         if (user == null) {
-            if (userInfo.getNickname() == null) {
-                userInfo.setNickname("anonymous");
-            }
-            userInfo.setPassword("123456");
-            userInfo.setRole("user");
+            //证明是第一次登录 就先注册
+            //其中Google前端会传入{
+            //                  uuid,
+            //                    username,
+            //                    nickname,
+            //                    avatar,
+            //                    email,
+            //                }
             userService.save(userInfo);
             Map<String, String> map = new HashMap<>();
             map.put("serverToken", JWTUtils.generateToken(userInfo));
@@ -126,13 +122,11 @@ public class UserController {
 
 
     @GetMapping("/logout")
-    @ResponseBody
     public R<String> logout() {
         return R.success("Log Out");
     }
 
     @PostMapping("/signup")
-    @ResponseBody
     public R<String> signup(@RequestBody User userInfo) {
         if (StringUtil.isNullOrEmpty(userInfo.getAvatar())) {
             userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
@@ -145,7 +139,6 @@ public class UserController {
     }
 
     @GetMapping("/username")
-    @ResponseBody
     public R<String> usernameCheck(@RequestParam("userName") String userName) {
 
         MPJLambdaWrapper<User> wrapper = new MPJLambdaWrapper<>();
@@ -158,7 +151,6 @@ public class UserController {
     }
 
     @PostMapping("/email")
-    @ResponseBody
     public R<String> sendEmailByUsername(@RequestBody Map map) {
         String email = (String) map.get("email");
         String userName = (String) map.get("userName");
@@ -167,26 +159,8 @@ public class UserController {
     }
 
     @PostMapping("/validate")
-    @ResponseBody
     public ResponseEntity<Object> validateCode(@RequestBody Map map) {
-        String code = (String) map.get("code");
-        String userName = (String) map.get("userName");
-        String password = (String) map.get("password");
-
-        if (redisTemplate.hasKey(userName)) {
-            if (redisTemplate.opsForValue().get(userName).toString().equals(code)) {
-                if (userService.updatePassword(userName, JasyptEncryptorUtils.encode(password)) >= 1) {
-                    redisTemplate.delete(userName);
-                    return new ResponseEntity<>(ResultData.success("Success to change password "), HttpStatus.OK);
-                } else {
-                    return new ResponseEntity<>(ResultData.fail(201, "Fail to change password"), HttpStatus.CREATED);
-                }
-
-            } else {
-                return new ResponseEntity<>(ResultData.fail(201, "Code not equal"), HttpStatus.CREATED);
-            }
-        }
-        return new ResponseEntity<>(ResultData.fail(201, "No code in the system"), HttpStatus.CREATED);
+        return null;
     }
 
 
@@ -202,7 +176,7 @@ public class UserController {
         user.setUserId(BaseContext.getCurrentId());
         user.setRole(null);
         userService.updateById(user);
-        return R.success( "Success");
+        return R.success("Success");
     }
 
     @GetMapping("/user/init")
@@ -241,8 +215,8 @@ public class UserController {
     @PostMapping("/subscribe/{id}")
     public R<String> subscribeUser(@PathVariable("id") Long userId) {
         Long currentId = BaseContext.getCurrentId();
-        if(currentId.equals(userId)){
-           return R.error("Can not subscribe yourself");
+        if (currentId.equals(userId)) {
+            return R.error("Can not subscribe yourself");
         }
         Subscription subscription = new Subscription();
         subscription.setMyId(currentId);
@@ -250,16 +224,17 @@ public class UserController {
         subscriptionService.save(subscription);
         return R.success("Subscribe success");
     }
+
     @DeleteMapping("/subscribe/{id}")
     public R<String> unsubscribeUser(@PathVariable("id") Long userId) {
         Long currentId = BaseContext.getCurrentId();
-        if(currentId.equals(userId)){
+        if (currentId.equals(userId)) {
             return R.error("Can not unsubscribe yourself");
         }
 
         LambdaUpdateWrapper<Subscription> update = new LambdaUpdateWrapper<>();
-         update.eq(Subscription::getMyId,currentId)
-                         .eq(Subscription::getSubscribedUserId,userId);
+        update.eq(Subscription::getMyId, currentId)
+                .eq(Subscription::getSubscribedUserId, userId);
         if (!subscriptionService.remove(update)) {
             throw new CustomException("Never subscribe before");
         }
