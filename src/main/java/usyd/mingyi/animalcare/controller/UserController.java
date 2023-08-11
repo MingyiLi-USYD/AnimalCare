@@ -27,6 +27,7 @@ import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.PasswordUtils;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,14 +53,13 @@ public class UserController {
 
     //Two main ways to receive data from frontend map and pojo, we plan to use pojo to receive data for better maintain in future
     @PostMapping("/login")
-    public R<Map<String, String>> emailLogin(@RequestParam("username") String username,
-                                             @RequestParam("password") String password) {
+    public R<Map<String, String>> emailLogin(@RequestBody @Validated User loginUser) {
 
-        User user = userService.getUserByUsername(username);
+        User user = userService.getUserByUsername(loginUser.getUsername());
         if (user == null) {
             throw new CustomException("No such user");
         }
-        if (!PasswordUtils.verifyPassword(password, user.getPassword())) {
+        if (!PasswordUtils.verifyPassword(loginUser.getPassword(), user.getPassword())) {
             throw new CustomException("Password Error");
         }
 
@@ -69,31 +69,59 @@ public class UserController {
         return R.success(map);
 
     }
+    @PostMapping("/signup")
+    public R<String> signup(@RequestBody @Validated User userInfo) {
+        User user = generateBasicUserInfo(userInfo);
+        String password = user.getPassword();
+        user.setPassword(PasswordUtils.hashPassword(password));
+        userService.save(user);
+        //邮件通知注册成功
+        return R.success("Sign up success");
+    }
+
+    private User generateBasicUserInfo(User user){
+        if(user.getAvatar()==null){
+            user.setAvatar("https://robohash.org/"+user.hashCode());
+        }
+        if(user.getNickname()==null){
+            user.setAvatar("User"+user.hashCode());
+        }
+        if(user.getPassword()==null){
+            UUID uuid = UUID.randomUUID();
+            String password = uuid.toString().replace("-", "").substring(0, 10);
+            user.setPassword(password);
+        }
+        if(user.getUuid()==null){
+            user.setUuid(UUID.randomUUID().toString());
+        }
+        user.setRole("User");
+        user.setStatus((byte)1);
+        return user;
+    }
+
 
     @PostMapping("/login/thirdPart")
     public R<Map<String, String>> thirdPartLogin(@RequestBody User userInfo) {
+
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(User::getUuid, userInfo.getUuid());
-        User user = userService.getOne(wrapper);
-        if (user == null) {
-            //证明是第一次登录 就先注册
-            //其中Google前端会传入{
-            //                  uuid,
-            //                    username,
-            //                    nickname,
-            //                    avatar,
-            //                    email,
-            //                }
-            userService.save(userInfo);
-            Map<String, String> map = new HashMap<>();
+        User dbUser = userService.getOne(wrapper);
+        Map<String, String> map = new HashMap<>();
+        if (dbUser == null) {
+            User user = generateBasicUserInfo(userInfo);
+            String password = user.getPassword();
+            user.setPassword(PasswordUtils.hashPassword(password));
+            userService.save(user);
+            //发邮件通知注册成功
             map.put("serverToken", JWTUtils.generateToken(userInfo));
             return R.success(map);
-        } else {
-            Map<String, String> map = new HashMap<>();
-            map.put("serverToken", JWTUtils.generateToken(user));
-            return R.success(map);
         }
-
+        if(!dbUser.getUsername().equals(userInfo.getUsername())){
+            throw new CustomException("Userinfo not match");
+        }
+            //这个表示已经注册过 直接登录
+            map.put("serverToken", JWTUtils.generateToken(dbUser));
+            return R.success(map);
     }
 
 
@@ -121,22 +149,12 @@ public class UserController {
     }
 
 
+
     @GetMapping("/logout")
     public R<String> logout() {
         return R.success("Log Out");
     }
 
-    @PostMapping("/signup")
-    public R<String> signup(@RequestBody User userInfo) {
-        if (StringUtil.isNullOrEmpty(userInfo.getAvatar())) {
-            userInfo.setAvatar("http://35.189.24.208:8080/api/images/default.jpg");
-        }
-        userInfo.setPassword(PasswordUtils.hashPassword(userInfo.getPassword()));
-        userInfo.setUuid(UUID.randomUUID().toString());
-        userService.save(userInfo);
-        return R.success("Sign up success");
-
-    }
 
     @GetMapping("/username")
     public R<String> usernameCheck(@RequestParam("userName") String userName) {

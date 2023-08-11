@@ -3,6 +3,8 @@ package usyd.mingyi.animalcare.common;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.ConstraintViolationException;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.List;
 
 @ControllerAdvice(annotations = {RestController.class, Controller.class})
 @ResponseBody
@@ -30,7 +33,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public R<String> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException exception){
         log.info("存在参数异常");
-        return R.error("存在参数异常");
+
+        BindingResult bindingResult = exception.getBindingResult();
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+
+        StringBuilder errorMsgs = new StringBuilder();
+        for (FieldError fieldError : fieldErrors) {
+            String fieldName = fieldError.getField();
+            String errorMessage = fieldError.getDefaultMessage();
+            errorMsgs.append(fieldName).append(": ").append(errorMessage).append("; ");
+        }
+        //log.info("参数验证错误信息: " + errorMsgs.toString());
+
+        return R.error(errorMsgs.toString());
     }
 
 /*        @ExceptionHandler(HttpMessageNotReadableException.class)
