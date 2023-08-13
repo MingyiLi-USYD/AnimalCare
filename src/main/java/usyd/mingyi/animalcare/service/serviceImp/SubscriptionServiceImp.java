@@ -21,25 +21,15 @@ public class SubscriptionServiceImp extends ServiceImpl<SubscriptionMapper,Subsc
     public List<String> getAllSubscribes(Long userId) {
         return this.getSubscriptions(Subscription::getMyId,userId);
 
-        /*return subscriptionMapper.selectList(
-                new LambdaQueryWrapper<Subscription>().eq(Subscription::getMyId,userId)
-                )
-                .stream().map(Subscription::getSubscribedUserId)
-                .map(String::valueOf).toList();*/
     }
 
     @Override
     public List<String> getAllSubscribers(Long userId) {
         return this.getSubscriptions(Subscription::getSubscribedUserId,userId);
 
-/*        return subscriptionMapper.selectList(
-                        new LambdaQueryWrapper<Subscription>().eq(Subscription::getSubscribedUserId,userId)
-                )
-                .stream().map(Subscription::getSubscribedUserId)
-                .map(String::valueOf).toList();*/
     }
 
-    private List<String> getSubscriptions(SFunction<Subscription, ?> field,Long userId){
+    public List<String> getSubscriptions(SFunction<Subscription, ?> field,Long userId){
         return subscriptionMapper.selectList(
                         new LambdaQueryWrapper<Subscription>().eq(field,userId)
                 )

@@ -6,12 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import usyd.mingyi.animalcare.annotation.Status;
@@ -27,7 +25,6 @@ import usyd.mingyi.animalcare.utils.BaseContext;
 import usyd.mingyi.animalcare.utils.JWTUtils;
 import usyd.mingyi.animalcare.utils.PasswordUtils;
 
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +66,7 @@ public class UserController {
         return R.success(map);
 
     }
+
     @PostMapping("/signup")
     public R<String> signup(@RequestBody @Validated User userInfo) {
         User user = generateBasicUserInfo(userInfo);
@@ -79,23 +77,23 @@ public class UserController {
         return R.success("Sign up success");
     }
 
-    private User generateBasicUserInfo(User user){
-        if(user.getAvatar()==null){
-            user.setAvatar("https://robohash.org/"+user.hashCode());
+    private User generateBasicUserInfo(User user) {
+        if (user.getAvatar() == null) {
+            user.setAvatar("https://robohash.org/" + user.hashCode());
         }
-        if(user.getNickname()==null){
-            user.setAvatar("User"+user.hashCode());
+        if (user.getNickname() == null) {
+            user.setAvatar("User" + user.hashCode());
         }
-        if(user.getPassword()==null){
+        if (user.getPassword() == null) {
             UUID uuid = UUID.randomUUID();
             String password = uuid.toString().replace("-", "").substring(0, 10);
             user.setPassword(password);
         }
-        if(user.getUuid()==null){
+        if (user.getUuid() == null) {
             user.setUuid(UUID.randomUUID().toString());
         }
         user.setRole("User");
-        user.setStatus((byte)1);
+        user.setStatus((byte) 1);
         return user;
     }
 
@@ -116,12 +114,12 @@ public class UserController {
             map.put("serverToken", JWTUtils.generateToken(userInfo));
             return R.success(map);
         }
-        if(!dbUser.getUsername().equals(userInfo.getUsername())){
+        if (!dbUser.getUsername().equals(userInfo.getUsername())) {
             throw new CustomException("Userinfo not match");
         }
-            //这个表示已经注册过 直接登录
-            map.put("serverToken", JWTUtils.generateToken(dbUser));
-            return R.success(map);
+        //这个表示已经注册过 直接登录
+        map.put("serverToken", JWTUtils.generateToken(dbUser));
+        return R.success(map);
     }
 
 
@@ -149,7 +147,6 @@ public class UserController {
     }
 
 
-
     @GetMapping("/logout")
     public R<String> logout() {
         return R.success("Log Out");
@@ -169,22 +166,19 @@ public class UserController {
     }
 
     @PostMapping("/email")
-    public R<String> sendEmailByUsername(@RequestBody Map map) {
-        String email = (String) map.get("email");
-        String userName = (String) map.get("userName");
-        userService.sendEmail(email, userName);
+    public R<String> sendEmailByUsername(@RequestBody User user) {
+
         return R.success("成功发送邮件");
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<Object> validateCode(@RequestBody Map map) {
+    public R<String> validateCode() {
         return null;
     }
 
 
     @GetMapping("/profile/{userId}")
     public R<UserDto> getProfile(@PathVariable("userId") Long userId) {
-        //Long currentUserId = BaseContext.getCurrentId();
         UserDto profile = userService.getProfile(userId);
         return R.success(profile);
     }
