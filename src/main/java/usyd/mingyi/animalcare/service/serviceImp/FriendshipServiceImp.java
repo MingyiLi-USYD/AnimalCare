@@ -38,14 +38,24 @@ public class FriendshipServiceImp implements FriendshipService {
 
     @Override
     public List<FriendshipDto> getAllFriends(Long userId) {
-
-        MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
+       return this.getAllFriends(userId,null);
+ /*       MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
         query.selectAll(Friendship.class)
                 .selectAssociation(User.class, FriendshipDto::getFriendInfo)
                 .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
                 .eq(Friendship::getMyId, userId);
-        return friendshipMapper.selectJoinList(FriendshipDto.class, query);
+        return friendshipMapper.selectJoinList(FriendshipDto.class, query);*/
+    }
 
+    @Override
+    public List<FriendshipDto> getAllFriends(Long userId, Long[] ids) {
+        MPJLambdaWrapper<Friendship> query = new MPJLambdaWrapper<>();
+        query.selectAll(Friendship.class)
+                .selectAssociation(User.class, FriendshipDto::getFriendInfo)
+                .leftJoin(User.class, User::getUserId, Friendship::getFriendId)
+                .eq(Friendship::getMyId, userId)
+                .in(ids!=null,Friendship::getFriendId,ids);
+        return friendshipMapper.selectJoinList(FriendshipDto.class, query);
     }
 
 

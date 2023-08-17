@@ -53,7 +53,6 @@ public class PushServer implements InitializingBean {
         config.setUpgradeTimeout(upgradeTimeout);
         config.setPingTimeout(pingTimeout);
         config.setPingInterval(pingInterval);
-
         SocketConfig socketConfig = new SocketConfig();
         socketConfig.setReuseAddress(true);
         socketConfig.setTcpNoDelay(true);

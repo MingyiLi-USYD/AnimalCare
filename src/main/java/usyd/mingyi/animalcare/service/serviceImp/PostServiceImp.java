@@ -1,6 +1,5 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,12 +14,11 @@ import usyd.mingyi.animalcare.mapper.*;
 import usyd.mingyi.animalcare.pojo.LovePost;
 import usyd.mingyi.animalcare.pojo.Mention;
 import usyd.mingyi.animalcare.pojo.Post;
+import usyd.mingyi.animalcare.query.QueryBuilderFactory;
 import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.PostService;
 import usyd.mingyi.animalcare.service.RealTimeService;
 import usyd.mingyi.animalcare.socketEntity.ServiceMessage;
-import usyd.mingyi.animalcare.utils.BaseContext;
-import usyd.mingyi.animalcare.utils.QueryUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,10 +69,10 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
     public void addPostAndSyncSocket(PostDto postDto) {
         this.addPost(postDto);
         postDto.getReferFriends().forEach(
-                friendId->{
-                    if (friendshipService.isFriend(postDto.getUserId(),friendId)) {
+                friendId -> {
+                    if (friendshipService.isFriend(postDto.getUserId(), friendId)) {
                         realTimeService.remindFriends(new ServiceMessage(
-                                postDto.getUserId(),System.currentTimeMillis(),friendId,
+                                postDto.getUserId(), System.currentTimeMillis(), friendId,
                                 MENTION
                         ));
                     }
@@ -85,14 +83,14 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
 
     @Override
-    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order, String keyword) {
+    public IPage<PostDto> getAllPosts(Long currPage, Integer pageSize, Integer order, String keywords) {
         IPage<PostDto> page = new Page<>(currPage, pageSize);
-        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
-        query.selectAll(Post.class).eq(Post::getVisible, true)
-                .orderByDesc(order == 1, Post::getPostTime)
-                .orderByDesc(order == 2, Post::getLove)
-                .like(keyword != null && !keyword.isEmpty(), Post::getPostContent, keyword);
-        QueryUtils.postWithUser(query);
+        MPJLambdaWrapper<Post> query = QueryBuilderFactory.createPostQueryBuilder()
+                .selectAll()
+                .associationUser()
+                .order(order)
+                .like(keywords)
+                .build();
         return postMapper.selectJoinPage(page, PostDto.class, query);
 
     }
@@ -102,11 +100,11 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
     @Cacheable(value = "postCache", key = "#postId")
     public Post getPostById(Long postId) {
 
-        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
-        query.selectAll(Post.class)
-                .eq(Post::getPostId, postId);
-        QueryUtils.postWithPostImages(query);
-        QueryUtils.postWithUser(query);
+        MPJLambdaWrapper<Post> query = QueryBuilderFactory.createPostQueryBuilder()
+                .associationUser()
+                .collectionImage()
+                .eqPostId(postId)
+                .build();
         PostDto postDto = postMapper.selectJoinOne(PostDto.class, query);
         if (postDto == null) {
             throw new CustomException("No post found");
@@ -124,10 +122,11 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         }
         post.setLove(post.getLove() + 1);
         postMapper.updateById(post);
-        MPJLambdaWrapper<LovePost> query = new MPJLambdaWrapper<>();
-        query.selectAll(LovePost.class)
-                .eq(LovePost::getPostId, postId)
-                .eq(LovePost::getUserId, userId);
+        MPJLambdaWrapper<LovePost> query =
+                QueryBuilderFactory.createLovePostQueryBuilder()
+                        .eqUserId(userId)
+                        .eqPostId(postId)
+                        .build();
         LovePost exist = lovePostMapper.selectOne(query);
         if (exist == null) {
             LovePost lovePost = new LovePost();
@@ -160,8 +159,11 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         if (post == null) {
             throw new CustomException("Not found post");
         }
-        LambdaQueryWrapper<LovePost> query = new LambdaQueryWrapper<>();
-        query.eq(LovePost::getUserId, userId).eq(LovePost::getPostId, postId);
+        MPJLambdaWrapper<LovePost> query =
+                QueryBuilderFactory.createLovePostQueryBuilder()
+                        .eqUserId(userId)
+                        .eqPostId(postId)
+                        .build();
         LovePost lovePost = lovePostMapper.selectOne(query);
         if (lovePost == null) {
             throw new CustomException("never love this post before");
@@ -176,9 +178,13 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
     @Override
     public void deletePost(Long postId, Long userId) {
-        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Post::getPostId, postId).eq(Post::getUserId, BaseContext.getCurrentId());
-        int delete = postMapper.delete(wrapper);
+        MPJLambdaWrapper<Post> query = QueryBuilderFactory.createPostQueryBuilder()
+                .eqPostId(postId)
+                .eqUserId(userId)
+                .build();
+/*        LambdaQueryWrapper<Post> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Post::getPostId, postId).eq(Post::getUserId, BaseContext.getCurrentId());*/
+        int delete = postMapper.delete(query);
         if (delete == 0) {
             throw new CustomException("Fail to delete this post");
         }
@@ -187,42 +193,58 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
     @Override
     public List<PostDto> getPostByUserId(Long userId) {
-        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
-        query.selectAll(Post.class)
-                .eq(Post::getUserId, userId);
-        QueryUtils.postWithUser(query);
-        QueryUtils.postWithPostImages(query);
+        MPJLambdaWrapper<Post> query = QueryBuilderFactory.createPostQueryBuilder()
+                .selectAll()
+                .collectionImage()
+                .associationUser()
+                .eqUserId(userId)
+                .build();
         return postMapper.selectJoinList(PostDto.class, query);
     }
 
     @Override
     public List<PostDto> getAllPostsUserLove(Long userId) {
-        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
-        lovedPost.eq(LovePost::getUserId, userId).eq(LovePost::getIsCanceled, false);
-        List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
+        MPJLambdaWrapper<LovePost> build = QueryBuilderFactory
+                .createLovePostQueryBuilder()
+                .eqUserId(userId)
+                .isCanceled(false)
+                .build();
+/*        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
+        lovedPost.eq(LovePost::getUserId, userId).eq(LovePost::getIsCanceled, false);*/
+        List<LovePost> lovePosts = lovePostMapper.selectList(build);
         if (lovePosts.isEmpty()) {
             return new ArrayList<>();
         }
         List<Long> list = lovePosts.stream().map(LovePost::getPostId).toList();
-        MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
+        MPJLambdaWrapper<Post> query = QueryBuilderFactory.
+                createPostQueryBuilder()
+                .associationUser()
+                .in(list)
+                .eqUserId(userId)
+                .build();
+  /*      MPJLambdaWrapper<Post> query = new MPJLambdaWrapper<>();
         query.selectAll(Post.class)
                 .in(Post::getPostId, list)
                 .eq(Post::getUserId, userId);
-        QueryUtils.postWithUser(query);
+        QueryUtils.postWithUser(query);*/
         return postMapper.selectJoinList(PostDto.class, query);
     }
 
     @Override
     public List<String> getAllLovedPostsIdInString(Long userId) {
-        return getAllLovedPostsId(userId).stream().map(String::valueOf).toList();
+        return this.getAllLovedPostsId(userId).stream().map(String::valueOf).toList();
     }
 
     @Override
     public List<Long> getAllLovedPostsId(Long userId) {
-        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
+        MPJLambdaWrapper<LovePost> query = QueryBuilderFactory.createLovePostQueryBuilder()
+                .eqUserId(userId)
+                .isCanceled(false)
+                .build();
+/*        MPJLambdaWrapper<LovePost> lovedPost = new MPJLambdaWrapper<>();
         lovedPost.eq(LovePost::getUserId, userId)
-                .eq(LovePost::getIsCanceled, false);
-        List<LovePost> lovePosts = lovePostMapper.selectList(lovedPost);
+                .eq(LovePost::getIsCanceled, false);*/
+        List<LovePost> lovePosts = lovePostMapper.selectList(query);
         return lovePosts.stream().map(LovePost::getPostId).toList();
     }
 

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.pojo.User;
-import usyd.mingyi.animalcare.service.FriendRequestService;
 import usyd.mingyi.animalcare.service.FriendshipService;
 import usyd.mingyi.animalcare.service.UserService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
@@ -24,7 +23,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 
-import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.*;
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.FRIEND_OFFLINE;
+import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.FRIEND_ONLINE;
 
 
 @Component
@@ -43,8 +43,6 @@ public class QueueConsumer {
     @Resource
     private UserService userService;
 
-    @Resource
-    private FriendRequestService friendRequestService;
 
     @RabbitListener(queues = MQConfig.MESSAGE + "${serverId}")
     public void receiveD(Message message, Channel channel) {
@@ -76,7 +74,7 @@ public class QueueConsumer {
             String receivedBytes = new String(message.getBody());
             ServiceMessage serviceMessage = objectMapper.readValue(receivedBytes, ServiceMessage.class);
             if (serviceMessage.getType() == FRIEND_ONLINE ||
-                serviceMessage.getType() == FRIEND_OFFLINE) {
+                    serviceMessage.getType() == FRIEND_OFFLINE) {
                 syncOnAndOffToClient(serviceMessage);
             } else {
                 syncFriendOperationToClient(serviceMessage);

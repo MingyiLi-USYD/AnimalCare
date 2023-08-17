@@ -133,21 +133,33 @@ public class FriendRequestServiceImp extends ServiceImpl<FriendRequestMapper, Fr
 
     @Override
     public List<FriendRequestDto> getAllRequests(Long userId) {
+
+       return this.getAllRequests(userId,null);
+    }
+
+    @Override
+    public List<FriendRequestDto> getAllRequests(Long userId,Long[] ids) {
         MPJLambdaWrapper<FriendRequest> query = new MPJLambdaWrapper<>();
         query.selectAll(FriendRequest.class)
                 .selectAssociation(User.class, FriendRequestDto::getFriendInfo)
                 .leftJoin(User.class, User::getUserId, FriendRequest::getMyId)
-                .eq(FriendRequest::getFriendId, userId);
+                .eq(FriendRequest::getFriendId, userId)
+                .in(ids!=null,FriendRequest::getMyId,ids);
         return friendRequestMapper.selectJoinList(FriendRequestDto.class, query);
     }
 
     @Override
     @Transactional
     public List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId) {
+           return   this.getAllRequestsAndMarkRead(userId,null);
+    }
+
+    @Override
+    public List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId, Long[] ids) {
         this.update(new LambdaUpdateWrapper<FriendRequest>()
                 .set(FriendRequest::getIsRead, true)
                 .eq(FriendRequest::getFriendId, userId));
-        return this.getAllRequests(userId);
+        return this.getAllRequests(userId,ids);
     }
 
 

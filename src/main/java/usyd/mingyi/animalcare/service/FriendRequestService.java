@@ -12,7 +12,9 @@ public interface FriendRequestService extends IService<FriendRequest> {
     void sendRequest(Long fromId,Long toId,String msg);
 
     List<FriendRequestDto> getAllRequests(Long userId);
+    List<FriendRequestDto> getAllRequests(Long userId,Long[] ids);
     List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId);
+    List<FriendRequestDto> getAllRequestsAndMarkRead(Long userId,Long[] ids);
 
     void approveRequest(Long userId,Long approvedUserId);
     void rejectRequest(Long userId,Long approvedUserId);

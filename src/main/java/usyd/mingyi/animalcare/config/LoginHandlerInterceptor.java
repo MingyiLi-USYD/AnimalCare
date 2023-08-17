@@ -2,6 +2,7 @@ package usyd.mingyi.animalcare.config;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -16,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class LoginHandlerInterceptor implements HandlerInterceptor {
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
 
         //log.info("拦截前的线程ID {}和URI {}",  Thread.currentThread().getId(),request.getRequestURI());
         String token = request.getHeader("auth");
@@ -43,7 +44,7 @@ public class LoginHandlerInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-
+        BaseContext.clearCurrentId(); // 清理ThreadLocal中的数据
     }
 
 
