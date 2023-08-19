@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.config.rabbitMQ.MQConfig;
 
+import usyd.mingyi.animalcare.config.rabbitMQ.MyConfirmCallback;
 import usyd.mingyi.animalcare.mongodb.entity.CloudMessage;
 import usyd.mingyi.animalcare.mongodb.service.CloudMessageService;
 import usyd.mingyi.animalcare.socketEntity.ChatMessage;
@@ -26,29 +27,25 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static usyd.mingyi.animalcare.config.rabbitMQ.MyConfirmCallback.Max_Retry;
+import static usyd.mingyi.animalcare.config.rabbitMQ.MyConfirmCallback.messages;
 
 @Service
 @Slf4j
 public class ChatServiceImp implements ChatService {
-    @Resource
+    @Autowired
     private ObjectMapper objectMapper;
 
-    private final RabbitTemplate rabbitTemplate;
-
-    @Resource
-    private CloudMessageService cloudMessageService;
-
-    private static final ConcurrentHashMap<String,ChatMessage> messages = new ConcurrentHashMap<>();
     @Autowired
-    public ChatServiceImp(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
-        rabbitTemplate.setConfirmCallback(confirmCallback());
-    }
+    private  RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private CloudMessageService cloudMessageService;
 
 
     // 生成聊天ID
-
-
     @Override
     public CloudMessage retrieveDataFromMongoDB(String fromId, String toId) {
         return cloudMessageService.getCloudMessageById(CommonUtils.combineId(fromId,toId));
@@ -70,9 +67,22 @@ public class ChatServiceImp implements ChatService {
     }
 
     public void sendMsgToQueue(ChatMessage chatMessage){
-       // Message message1 = new Message();
 
         try {
+            String correlationId = UUID.randomUUID().toString();
+            String messageString = objectMapper.writeValueAsString(chatMessage);
+            MessageProperties properties = new MessageProperties();
+            properties.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+            properties.setHeader(Max_Retry,new AtomicInteger(3));
+            Message message = new Message(messageString.getBytes(), properties);
+            properties.setReceivedExchange(MQConfig.MESSAGE_EXCHANGE);
+            properties.setReceivedRoutingKey("#");
+            messages.put(correlationId,message);
+            rabbitTemplate.send(MQConfig.MESSAGE_EXCHANGE, "#", message,new CorrelationData(correlationId));
+        }catch (Exception e){
+            throw new CustomException(e.getMessage());
+        }
+/*        try {
             String correlationId = UUID.randomUUID().toString();
             //log.info("入队消息ID: {}",correlationId);
             messages.put(correlationId,chatMessage);
@@ -83,7 +93,7 @@ public class ChatServiceImp implements ChatService {
             },new CorrelationData(correlationId));
         } catch (JsonProcessingException e) {
             throw new CustomException("System Error");
-        }
+        }*/
     }
 
     @Override
@@ -91,7 +101,7 @@ public class ChatServiceImp implements ChatService {
         cloudMessageService.insertMsg(chatMessage);
     }
 
-    private RabbitTemplate.ConfirmCallback confirmCallback() {
+/*    private RabbitTemplate.ConfirmCallback confirmCallback() {
         return (correlationData, ack, cause) -> {
             //log.info("成功入队消息ID: {}",correlationData.getId());
             if(correlationData==null){
@@ -103,16 +113,11 @@ public class ChatServiceImp implements ChatService {
                 }
             } else {
                 if(messages.contains(correlationData.getId())){
-                    sendMsgToQueue(messages.get(correlationData.getId()));
+                    //sendMsgToQueue(messages.get(correlationData.getId()));
                    messages.remove(correlationData.getId());
                 }
             }
         };
-    }
+    }*/
 
-    private void requeueMessage(Message returnedMessage) {
-        rabbitTemplate.send(returnedMessage.getMessageProperties().getReceivedExchange(),
-                returnedMessage.getMessageProperties().getReceivedRoutingKey(),
-                returnedMessage);
-    }
 }
