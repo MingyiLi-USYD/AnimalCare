@@ -34,11 +34,6 @@ public class MentionController {
         mentionService.markMentionAsRead(BaseContext.getCurrentId(),mentionId);
         return R.success("Success");
     }
-/*    @GetMapping("/mention/count")
-    public R<String> countMention() {
-        mentionService.countMentions(BaseContext.getCurrentId());
-        return R.success("Success");
-    }*/
 
 
 }

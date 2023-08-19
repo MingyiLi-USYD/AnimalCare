@@ -102,7 +102,8 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
                  .leftJoin(User.class,User::getUserId,Comment::getUserId)
                  .eq(Comment::getIsRead,false)//并且要未读
                  .eq(Post::getUserId,userId)//评论的我的
-                 .ne(Comment::getUserId,userId);//过滤掉自己的评论
+                 .ne(Comment::getUserId,userId)
+                 .orderByDesc(Comment::getCreateTime);//过滤掉自己的评论
 
         return commentMapper.selectJoinPage(page, CommentDto.class, query);
 

@@ -30,7 +30,8 @@ public class MentionServiceImp extends ServiceImpl<MentionMapper, Mention> imple
                 .selectAssociation(User.class, MentionDto::getUserInfo)
                 .leftJoin(User.class, User::getUserId, Post::getUserId)
                 .eq(Mention::getUserId, userId)
-                .eq(Mention::getIsRead, false);
+                .eq(Mention::getIsRead, false)
+                .orderByDesc(Mention::getCreateTime);
         return mentionMapper.selectJoinPage(page, MentionDto.class, query);
     }
 

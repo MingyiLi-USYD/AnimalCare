@@ -99,7 +99,6 @@ public class ChatServiceImp implements ChatService {
                 if(messages.contains(correlationData.getId())){
                     messages.remove(correlationData.getId());
                 }
-
             } else {
                 if(messages.contains(correlationData.getId())){
                     sendMsgToQueue(messages.get(correlationData.getId()));

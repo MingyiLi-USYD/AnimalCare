@@ -45,7 +45,6 @@ public class EventListener {
         beforeSaveToCache(userId);
         processSavingToCache(client,userId);
         afterSaveToCache(userId);
-
     }
 
 
@@ -64,7 +63,6 @@ public class EventListener {
             log.info("token有问题");
             return;
         }
-
         if (!StringUtils.isEmpty(reason) && reason.equals(ClientCache.RE_LOGIN)) {
             //用户再次登录 检查到本地已经有了 在进入次方法前已经删除了之前的
             log.info("本地再次登录下线");
@@ -73,7 +71,6 @@ public class EventListener {
         String userId = client.getHandshakeData().getSingleUrlParam("userId");
 
         if (!StringUtils.isEmpty(reason) && reason.equals(ClientCache.OTHER_LOGIN)) {
-
             log.info("异地再次登录下线");
             //需要从本地cache移除
             clientCache.deleteUserClient(userId);
@@ -122,7 +119,7 @@ public class EventListener {
     }
 
     public void processSavingToCache(SocketIOClient client,String userId){
-        clientCache.saveClient(userId,client);
+        clientCache.saveUserClient(userId,client);
     }
 
     public void afterSaveToCache(String userId){

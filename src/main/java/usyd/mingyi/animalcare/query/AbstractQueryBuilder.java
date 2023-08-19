@@ -87,4 +87,9 @@ public abstract class AbstractQueryBuilder<T> implements QueryBuilder<T> {
     public QueryBuilder<T> isCanceled(Boolean isCanceled) {
         return this;
     }
+
+    @Override
+    public QueryBuilder<T> orderByTimeDes() {
+        return this;
+    }
 }

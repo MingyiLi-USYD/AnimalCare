@@ -14,6 +14,7 @@ public interface QueryBuilder<T> {
     QueryBuilder<T> neUserId(Long userId);
     QueryBuilder<T> eqPostId(Long postId);
     QueryBuilder<T> order(Integer order);
+    QueryBuilder<T> orderByTimeDes();
     QueryBuilder<T> like(String keywords);
     QueryBuilder<T> in(List<Long> ids);
     QueryBuilder<T> isRead(Boolean isRead);

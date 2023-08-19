@@ -56,4 +56,10 @@ public class LovePostQueryBuilder extends AbstractQueryBuilder<LovePost>{
         query.eq(LovePost::getIsRead, isRead);
         return this;
     }
+
+    @Override
+    public QueryBuilder<LovePost> orderByTimeDes() {
+        query.orderByDesc(LovePost::getCreateTime);
+        return this;
+    }
 }
