@@ -7,8 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import usyd.mingyi.animalcare.component.CacheManager;
 import usyd.mingyi.animalcare.component.ClientCache;
 import usyd.mingyi.animalcare.dto.FriendshipDto;
 import usyd.mingyi.animalcare.pojo.User;
@@ -32,15 +35,16 @@ import static usyd.mingyi.animalcare.socketEntity.ServiceMessageType.FRIEND_ONLI
 public class QueueConsumer {
     @Value("${serverId}")
     private String serverId;
-    @Resource
-    private ClientCache clientCache;
-    @Resource
+    @Autowired
+    @Qualifier("redisDecorator")
+    private CacheManager clientCache;
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @Resource
+    @Autowired
     private FriendshipService friendshipService;
 
-    @Resource
+    @Autowired
     private UserService userService;
 
 
@@ -96,7 +100,7 @@ public class QueueConsumer {
             String receivedBytes = new String(message.getBody());
             SystemMessage systemMessage = objectMapper.readValue(receivedBytes, SystemMessage.class);
             log.info("收到其他服务器的通知");
-            clientCache.receiveDisconnectMsg(systemMessage.getFromId());
+           // clientCache.receiveDisconnectMsg(systemMessage.getFromId());
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -70,6 +70,8 @@ public class ChatServiceImp implements ChatService {
     }
 
     public void sendMsgToQueue(ChatMessage chatMessage){
+       // Message message1 = new Message();
+
         try {
             String correlationId = UUID.randomUUID().toString();
             //log.info("入队消息ID: {}",correlationId);

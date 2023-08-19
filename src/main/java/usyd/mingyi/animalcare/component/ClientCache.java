@@ -6,12 +6,9 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * kcm
- */
-@Component
+@Component("clientCache")
 @Slf4j
-public class ClientCache {
+public class ClientCache implements CacheManager {
     public final static String TOKEN_ISSUE = "TOKEN_ISSUE";
     public final static String RE_LOGIN = "RE_LOGIN";
     public final static String OTHER_LOGIN = "OTHER_LOGIN";
