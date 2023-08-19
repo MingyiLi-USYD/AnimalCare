@@ -15,10 +15,7 @@ import usyd.mingyi.animalcare.dto.SubcommentDto;
 import usyd.mingyi.animalcare.mapper.CommentMapper;
 import usyd.mingyi.animalcare.mapper.PostMapper;
 import usyd.mingyi.animalcare.mapper.UserMapper;
-import usyd.mingyi.animalcare.pojo.Comment;
-import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.Subcomment;
-import usyd.mingyi.animalcare.pojo.User;
+import usyd.mingyi.animalcare.pojo.*;
 import usyd.mingyi.animalcare.service.CommentService;
 import usyd.mingyi.animalcare.service.MentionService;
 import usyd.mingyi.animalcare.service.RealTimeService;
@@ -103,9 +100,9 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
                  .eq(Post::getUserId,userId))
                  .selectAssociation(User.class,CommentDto::getCommentUser)
                  .leftJoin(User.class,User::getUserId,Comment::getUserId)
-                 .eq(Comment::getIsRead,false)
-                 .eq(Post::getUserId,userId)
-                 .ne(Comment::getUserId,userId);
+                 .eq(Comment::getIsRead,false)//并且要未读
+                 .eq(Post::getUserId,userId)//评论的我的
+                 .ne(Comment::getUserId,userId);//过滤掉自己的评论
 
         return commentMapper.selectJoinPage(page, CommentDto.class, query);
 
@@ -135,5 +132,13 @@ public class CommentServiceImp extends ServiceImpl<CommentMapper, Comment>implem
     public void saveCommentAndMarkAsRead(Comment comment,Long mentionId) {
         this.save(comment);
         mentionService.markMentionAsRead(BaseContext.getCurrentId(),mentionId);
+    }
+    public Integer countCommentsReceived(Long userId){
+        MPJLambdaWrapper<Comment> query = new MPJLambdaWrapper<>();
+        query.leftJoin(Post.class,Post::getPostId,Comment::getPostId)
+                .eq(Comment::getIsRead,false)//并且要未读
+                .eq(Post::getUserId,userId)//评论的我的
+                .ne(Comment::getUserId,userId);//过滤掉自己的评论
+        return commentMapper.selectCount(query);
     }
 }

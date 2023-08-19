@@ -9,4 +9,5 @@ import usyd.mingyi.animalcare.pojo.LovePost;
 public interface LovePostService extends IService<LovePost> {
     Page<LovePostDto> getLovePostsToMe(Long userId, Long current, Integer pageSize);
     void markLovePostRead(Long userId, Long lovePostId);
+    Integer countLovePostsReceived(Long userId);
 }

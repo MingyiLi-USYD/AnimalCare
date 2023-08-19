@@ -16,13 +16,10 @@ public class JacksonConfig {
     @Primary
     public ObjectMapper getObjectMapper(Jackson2ObjectMapperBuilder builder) {
         ObjectMapper mapper = builder.build();
-
         // 日期格式
         mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd hh:mm:ss"));
-
         // 美化输出
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
-
         return mapper;
     }
 }

@@ -5,8 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import usyd.mingyi.animalcare.common.CustomException;
 import usyd.mingyi.animalcare.dto.PostDto;
@@ -46,6 +49,8 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
 
     @Autowired
     FriendshipService friendshipService;
+    @Autowired
+    RedisTemplate<String,Object> redisTemplate;
 
 
     @Override
@@ -112,53 +117,72 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
         return postDto;
     }
 
+    @Transactional(propagation = Propagation.REQUIRED )
+    public Post changeLoveOfPostOptimistic(Long postId, Integer delta) {
+        int maxRetries = 3;
+        int retries = 0;
+        while (retries < maxRetries) {
+            Post post = postMapper.selectById(postId);
+            if (post == null) {
+                throw new CustomException("Not found post");
+            }
+            // Modify the post data
+            post.setLove(post.getLove() + delta);
+
+            int affectedRows = postMapper.updateById(post);
+
+            if (affectedRows > 0) {
+                return post; // Update succeeded
+            }
+
+            // Update failed, retry after a short sleep
+            retries++;
+            try {
+                Thread.sleep(5); // Sleep for 5 milliseconds
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
+        }
+
+        // Max retries exceeded, throw an exception
+        throw new CustomException("Failed to update post after multiple retries");
+    }
 
     @Override
     @Transactional
-    public void love(Long userId, Long postId) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new CustomException("Not found post");
-        }
-        post.setLove(post.getLove() + 1);
-        postMapper.updateById(post);
+    @CachePut(value = "postCache", key = "#postId")
+    public Post loveAndSyncSocket(Long userId, Long postId) {
+        //先给post的赞加1
+        Post post = this.changeLoveOfPostOptimistic(postId, 1);
         MPJLambdaWrapper<LovePost> query =
                 QueryBuilderFactory.createLovePostQueryBuilder()
                         .eqUserId(userId)
                         .eqPostId(postId)
                         .build();
+        //现在是来判断 是否点过赞 先查询
         LovePost exist = lovePostMapper.selectOne(query);
         if (exist == null) {
             LovePost lovePost = new LovePost();
             lovePost.setUserId(userId);
             lovePost.setPostId(postId);
             lovePostMapper.insert(lovePost);
+            //证明第一次点赞 socket推送
+            realTimeService.remindFriends(
+                    new ServiceMessage(userId, System.currentTimeMillis(),
+                            post.getUserId(), NEW_LIKE)
+            );
         } else {//证明之前对这个post点过赞
             //没有必要再次通知用户了
             exist.setIsCanceled(false);
             lovePostMapper.updateById(exist);
         }
-
+        return post;
     }
 
     @Override
     @Transactional
-    public void loveAndSyncServer(Long userId, Long postId) {
-        this.love(userId, postId);
-        Post post = postMapper.selectById(postId);
-        realTimeService.remindFriends(
-                new ServiceMessage(userId, System.currentTimeMillis(),
-                        post.getUserId(), NEW_LIKE)
-        );
-    }
-
-    @Override
-    @Transactional
-    public void cancelLove(Long userId, Long postId) {
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new CustomException("Not found post");
-        }
+    @CachePut(value = "postCache", key = "#postId")
+    public Post cancelLove(Long userId, Long postId) {
         MPJLambdaWrapper<LovePost> query =
                 QueryBuilderFactory.createLovePostQueryBuilder()
                         .eqUserId(userId)
@@ -171,8 +195,7 @@ public class PostServiceImp extends ServiceImpl<PostMapper, Post> implements Pos
             lovePost.setIsCanceled(true);
             lovePostMapper.updateById(lovePost);
         }
-        post.setLove(post.getLove() - 1);
-        postMapper.updateById(post);
+       return this.changeLoveOfPostOptimistic(postId, -1);
 
     }
 

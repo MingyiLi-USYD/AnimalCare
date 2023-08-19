@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import usyd.mingyi.animalcare.dto.LovePostDto;
 import usyd.mingyi.animalcare.dto.PostDto;
 import usyd.mingyi.animalcare.pojo.Comment;
+import usyd.mingyi.animalcare.pojo.LovePost;
 import usyd.mingyi.animalcare.pojo.Post;
 
 import java.util.List;
@@ -20,10 +21,10 @@ public interface PostService extends IService<Post> {
 
     Post getPostById(Long postId);
 
-    void love(Long userId, Long postId);
-    void loveAndSyncServer(Long userId, Long postId);
+    Post changeLoveOfPostOptimistic(Long postId, Integer delta);
+    Post loveAndSyncSocket(Long userId, Long postId);
 
-    void cancelLove(Long userId, Long postId);
+    Post cancelLove(Long userId, Long postId);
 
     void deletePost(Long postId, Long userId);
 

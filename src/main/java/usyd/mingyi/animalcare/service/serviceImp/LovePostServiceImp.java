@@ -11,7 +11,6 @@ import usyd.mingyi.animalcare.mapper.LovePostMapper;
 import usyd.mingyi.animalcare.mapper.PostMapper;
 import usyd.mingyi.animalcare.pojo.LovePost;
 import usyd.mingyi.animalcare.pojo.Post;
-import usyd.mingyi.animalcare.pojo.User;
 import usyd.mingyi.animalcare.query.QueryBuilderFactory;
 import usyd.mingyi.animalcare.service.LovePostService;
 
@@ -63,6 +62,16 @@ public class LovePostServiceImp extends ServiceImpl<LovePostMapper, LovePost> im
         }
         lovePost.setIsRead(true);
         lovePostMapper.updateById(lovePost);
+    }
 
+    public Integer countLovePostsReceived(Long userId){
+        MPJLambdaWrapper<LovePost> query = QueryBuilderFactory.createLovePostQueryBuilder()
+                .associationUser()
+                .associationPost()
+                .isRead(false)
+                .neUserId(userId)
+                .filterPostByUserId(userId)
+                .build();
+        return lovePostMapper.selectCount(query);
     }
 }

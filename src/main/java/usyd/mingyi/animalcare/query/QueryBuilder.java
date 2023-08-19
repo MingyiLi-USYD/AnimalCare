@@ -19,8 +19,6 @@ public interface QueryBuilder<T> {
     QueryBuilder<T> isRead(Boolean isRead);
     QueryBuilder<T> isCanceled(Boolean isCanceled);
     QueryBuilder<T> filterPostByUserId(Long userId);
-
-    //QueryBuilder<T> collectionImage();
     MPJLambdaWrapper<T> build();
 
 }

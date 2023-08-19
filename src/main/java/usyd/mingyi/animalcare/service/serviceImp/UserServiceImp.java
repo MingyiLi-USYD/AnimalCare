@@ -39,6 +39,13 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
 
     @Autowired
     PostService postService;
+    @Autowired
+    CommentService commentService;
+    @Autowired
+    MentionService mentionService;
+
+    @Autowired
+    LovePostService lovePostService;
 
     @Autowired
     JavaMailSenderImpl mailSender;
@@ -94,9 +101,7 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         userDto.setLoveIdList(postService.getAllLovedPostsIdInString(targetId));
         userDto.setSubscribeIdList(subscriptionService.getAllSubscribes(targetId));
         userDto.setSubscriberIdList(subscriptionService.getAllSubscribers(targetId));
-
           return userDto;
-
     }
 
     @Override
@@ -121,6 +126,9 @@ public class UserServiceImp extends ServiceImpl<UserMapper,User> implements User
         }
         profile.setFriendshipDtoList(friendshipService.getAllFriends(id));
         profile.setFriendRequestDtoList( friendRequestService.getAllRequests(id));
+        profile.setCommentsReceived(commentService.countCommentsReceived(id));
+        profile.setLovesReceived(lovePostService.countLovePostsReceived(id));
+        profile.setMentionsReceived(mentionService.countMentionsReceived(id));
         return profile;
     }
 

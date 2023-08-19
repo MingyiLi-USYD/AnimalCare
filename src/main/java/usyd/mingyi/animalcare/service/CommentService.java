@@ -23,5 +23,6 @@ public interface CommentService extends IService<Comment> {
 
     void saveSubcommentAndMarkAsRead(SubcommentDto subcomment);
     void saveCommentAndMarkAsRead(Comment comment,Long mentionId);
+    Integer countCommentsReceived(Long userId);
 
 }

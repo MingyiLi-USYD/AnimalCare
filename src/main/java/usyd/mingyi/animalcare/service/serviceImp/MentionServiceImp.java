@@ -1,7 +1,9 @@
 package usyd.mingyi.animalcare.service.serviceImp;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.yulichang.query.MPJQueryWrapper;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,5 +48,12 @@ public class MentionServiceImp extends ServiceImpl<MentionMapper, Mention> imple
             this.updateById(mention);
         }
 
+    }
+
+    @Override
+    public Integer countMentionsReceived(Long userId) {
+        LambdaQueryWrapper<Mention> query = new LambdaQueryWrapper<>();
+       return mentionMapper
+               .selectCount(query.eq(Mention::getUserId,userId));
     }
 }

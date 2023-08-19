@@ -3,6 +3,8 @@ package usyd.mingyi.animalcare.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -29,7 +31,7 @@ public class PostController {
     @Autowired
     CommentService commentService;
     @Autowired
-    RedisTemplate redisTemplate;
+    RedisTemplate<String,Object> redisTemplate;
 
 
 
@@ -84,25 +86,10 @@ public class PostController {
     }
 
 
-    @GetMapping("/love/{postId}")
-    public R<String> love(@PathVariable("postId") long postId) {
-        long id = BaseContext.getCurrentId();
-        postService.love(id, postId);
-        return R.success("success");
-    }
-
-    @DeleteMapping("/love/{postId}")
-    public R<String> cancelLove(@PathVariable("postId") long postId) {
-        long id = BaseContext.getCurrentId();
-        postService.cancelLove(id, postId);
-        return R.success("success");
-    }
-
     @GetMapping("/loves")
     public R<List<PostDto>> getAllLovedPosts() {
         return R.success(postService.getAllPostsUserLove(BaseContext.getCurrentId()));
     }
-
 
     @GetMapping("/my/posts")
     public R<List<PostDto>> getMyPosts() {
@@ -110,7 +97,6 @@ public class PostController {
         List<PostDto> myPosts = postService.getPostByUserId(userId);
         return R.success(myPosts);
     }
-
     @PutMapping("/post/{postId}")
     public R<String> changeVisibility(@PathVariable("postId") long postId, @RequestParam("visibility") Boolean visibility) {
         System.out.println(visibility);
@@ -129,19 +115,9 @@ public class PostController {
         }
     }
 
-
-    @GetMapping("/search/{keywords}")
-    public R<List<Post>> getPosts(@PathVariable("keywords") String keywords) {
-        return null;
-    }
-
-
     @GetMapping("/search/trendingPosts")
     public ResponseEntity<Object> getTrendingPosts() {
 
-      /*  //List<Post> posts = RedisUtils.getHots(redisTemplate);
-
-        return new ResponseEntity<>(ResultData.success(posts), HttpStatus.OK);*/
         return null;
     }
 

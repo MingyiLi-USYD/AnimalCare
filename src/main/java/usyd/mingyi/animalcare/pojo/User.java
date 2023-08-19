@@ -1,5 +1,7 @@
 package usyd.mingyi.animalcare.pojo;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +15,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 //用户信息
 @Data
@@ -37,4 +40,16 @@ public class User implements Serializable {
     private String avatarFile;
     private Byte status;
     private String tag;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonIgnore
+    private LocalDateTime createTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonIgnore
+    private LocalDateTime updateTime;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonIgnore
+    private Long createUser;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @JsonIgnore
+    private Long updateUser;
 }
